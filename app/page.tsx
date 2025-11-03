@@ -2,13 +2,13 @@
 
 import { motion } from "framer-motion";
 import { Construction } from "lucide-react";
-import SideNav from "./Components/SideNav";
+
 
 export default function Home() {
   return (
     <div
       dir="rtl"
-      className="flex flex-col items-center justify-center h-full bg-gray-50 text-center px-6"
+      className="flex flex-col items-center justify-center h-full  text-center px-6"
     >
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -20,7 +20,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold text-gray-800 mb-3">
           🚧 هذا التطبيق قيد التطوير 🚧
         </h1>
-        <p className="text-gray-600 leading-relaxed text-lg max-w-md">
+        <p className="text-gray-600 leading-relaxed font-medium text-lg max-w-md">
           هذا التطبيق حالياً في مرحلة التطوير.
           النسخة الحالية تعرض فقط واجهة المستخدم وتجربة للاستخدام،
           ولا تحتوي على أي وظائف فعلية بعد.
