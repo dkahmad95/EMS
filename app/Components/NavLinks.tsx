@@ -11,6 +11,7 @@ import {
   UserGroupIcon,
   UsersIcon,
   Cog6ToothIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/outline";
 
 const links = [
@@ -28,6 +29,11 @@ const links = [
     name: "قائمة المستخدمين",
     href: "/UsersList",
     icon: UsersIcon, // 👤 Users list
+  },
+  {
+    name: "الإيرادات",
+    href: "/Revenues",
+    icon: BanknotesIcon, // 💵 Revenues page
   },
   {
     name: "إدارة النظام",
