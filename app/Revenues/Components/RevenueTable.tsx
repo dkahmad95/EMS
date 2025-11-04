@@ -4,15 +4,18 @@ import React, { useState, useEffect } from "react";
 import {
   TextField,
   Autocomplete,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 
-// Revenue data interface
 interface RevenueEntry {
   id: number;
   employeeName: string;
@@ -22,7 +25,6 @@ interface RevenueEntry {
   notes?: string;
 }
 
-// Dummy employee & office lists
 const employees = [
   "أحمد دكماك",
   "سارة خليل",
@@ -35,7 +37,6 @@ const employees = [
 
 const offices = ["بيروت", "طرابلس", "صيدا", "زحلة", "صور"];
 
-// Dummy revenues
 const initialRevenues: RevenueEntry[] = [
   { id: 1, employeeName: "أحمد دكماك", office: "بيروت", date: "2025-11-01", revenueAmount: 2500, notes: "يوم جيد" },
   { id: 2, employeeName: "سارة خليل", office: "طرابلس", date: "2025-11-01", revenueAmount: 1800, notes: "مبيعات ثابتة" },
@@ -51,17 +52,18 @@ const RevenuesTable = () => {
   const [filtered, setFiltered] = useState<RevenueEntry[]>(initialRevenues);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // Add Revenue form states
+  // Form states
   const [employeeName, setEmployeeName] = useState("");
   const [office, setOffice] = useState("");
   const [date, setDate] = useState("");
   const [revenueAmount, setRevenueAmount] = useState<number | string>("");
   const [notes, setNotes] = useState("");
 
-  // Search & Filter states
+  // Search states
   const [searchEmployee, setSearchEmployee] = useState<string | null>(null);
   const [searchOffice, setSearchOffice] = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
@@ -73,7 +75,7 @@ const RevenuesTable = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Add Revenue Handler
+  // Add Revenue
   const handleAddRevenue = () => {
     if (!employeeName || !office || !date || !revenueAmount) {
       alert("يرجى إدخال جميع البيانات المطلوبة");
@@ -98,17 +100,56 @@ const RevenuesTable = () => {
     setNotes("");
   };
 
-  // Delete handler
+  // Delete Revenue
   const handleDelete = () => {
     if (selectedId !== null) {
       const updated = revenues.filter((r) => r.id !== selectedId);
       setRevenues(updated);
       setFiltered(updated);
-      setOpen(false);
+      setOpenDelete(false);
     }
   };
 
-  // Search Handler
+  // Edit Revenue
+  const handleEditClick = (row: RevenueEntry) => {
+    setSelectedId(row.id);
+    setEmployeeName(row.employeeName);
+    setOffice(row.office);
+    setDate(row.date);
+    setRevenueAmount(row.revenueAmount);
+    setNotes(row.notes || "");
+    setOpenEdit(true);
+  };
+
+  const handleUpdateRevenue = () => {
+    if (!selectedId) return;
+
+    const updated = revenues.map((r) =>
+      r.id === selectedId
+        ? {
+            ...r,
+            employeeName,
+            office,
+            date,
+            revenueAmount: Number(revenueAmount),
+            notes,
+          }
+        : r
+    );
+
+    setRevenues(updated);
+    setFiltered(updated);
+    setOpenEdit(false);
+
+    // reset
+    setEmployeeName("");
+    setOffice("");
+    setDate("");
+    setRevenueAmount("");
+    setNotes("");
+  };
+
+  // Search
   const handleSearch = () => {
     let filteredData = revenues;
 
@@ -127,7 +168,6 @@ const RevenuesTable = () => {
     setFiltered(filteredData);
   };
 
-  // Table Columns
   const columns = [
     { field: "id", headerName: "الرقم", width: 70 },
     { field: "employeeName", headerName: "اسم الموظف", width: 150 },
@@ -147,16 +187,20 @@ const RevenuesTable = () => {
     {
       field: "actions",
       headerName: "العمليات",
-      width: 100,
+      width: 120,
       renderCell: (params: any) => (
-    <div className="flex justify-center items-center">
-        <TrashIcon
-          className="w-5 text-red-600 cursor-pointer mt-4 "
-          onClick={() => {
-            setSelectedId(params.row.id);
-            setOpen(true);
-          }}
-        />
+        <div className="flex gap-2 items-center jcustify-center">
+          <PencilIcon
+            className="w-5 text-blue-400 cursor-pointer mt-4"
+            onClick={() => handleEditClick(params.row)}
+          />
+          <TrashIcon
+            className="w-5 text-red-600 cursor-pointer mt-4"
+            onClick={() => {
+              setSelectedId(params.row.id);
+              setOpenDelete(true);
+            }}
+          />
         </div>
       ),
     },
@@ -164,7 +208,7 @@ const RevenuesTable = () => {
 
   return (
     <div dir="rtl" className="space-y-6">
-           {/* ====== Search Section ====== */}
+      {/* ====== Search Section ====== */}
       <div className="bg-white p-4 rounded-lg shadow space-y-3">
         <h2 className="text-lg font-semibold text-gray-700 mb-2">بحث الإيرادات</h2>
         <div className="flex flex-wrap items-end gap-2 md:gap-4">
@@ -172,36 +216,19 @@ const RevenuesTable = () => {
             options={employees}
             value={searchEmployee}
             onChange={(_, newValue) => setSearchEmployee(newValue || "")}
-            renderInput={(params) => (
-              <TextField {...params} label="اسم الموظف" variant="outlined" />
-            )}
+            renderInput={(params) => <TextField {...params} label="اسم الموظف" variant="outlined" />}
             sx={{ minWidth: 200 }}
           />
           <Autocomplete
             options={offices}
             value={searchOffice}
             onChange={(_, newValue) => setSearchOffice(newValue || "")}
-            renderInput={(params) => (
-              <TextField {...params} label="المكتب" variant="outlined" />
-            )}
+            renderInput={(params) => <TextField {...params} label="المكتب" variant="outlined" />}
             sx={{ minWidth: 200 }}
           />
-          <Input
-            type="date"
-            label="من تاريخ"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <Input
-            type="date"
-            label="إلى تاريخ"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-          <Button
-            onClick={handleSearch}
-            className="bg-green-600 text-white hover:bg-green-700"
-          >
+          <Input type="date" label="من تاريخ" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <Input type="date" label="إلى تاريخ" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <Button onClick={handleSearch} className="bg-green-600 text-white hover:bg-green-700">
             بحث
           </Button>
         </div>
@@ -215,38 +242,19 @@ const RevenuesTable = () => {
             options={employees}
             value={employeeName}
             onChange={(_, newValue) => setEmployeeName(newValue || "")}
-            renderInput={(params) => (
-              <TextField {...params} label="اسم الموظف" variant="outlined" />
-            )}
+            renderInput={(params) => <TextField {...params} label="اسم الموظف" variant="outlined" />}
             sx={{ minWidth: 200 }}
           />
           <Autocomplete
             options={offices}
             value={office}
             onChange={(_, newValue) => setOffice(newValue || "")}
-            renderInput={(params) => (
-              <TextField {...params} label="المكتب" variant="outlined" />
-            )}
+            renderInput={(params) => <TextField {...params} label="المكتب" variant="outlined" />}
             sx={{ minWidth: 200 }}
           />
-          <Input
-            type="date"
-            label="التاريخ"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-          <Input
-            type="number"
-            label="قيمة الإيراد"
-            value={revenueAmount}
-            onChange={(e) => setRevenueAmount(e.target.value)}
-          />
-          <Input
-            label="ملاحظات"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="اختياري"
-          />
+          <Input type="date" label="التاريخ" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="number" label="قيمة الإيراد" value={revenueAmount} onChange={(e) => setRevenueAmount(e.target.value)} />
+          <Input label="ملاحظات" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="اختياري" />
           <Button
             onClick={handleAddRevenue}
             disabled={!employeeName || !office || !date || !revenueAmount}
@@ -257,22 +265,48 @@ const RevenuesTable = () => {
         </div>
       </div>
 
-   
       {/* ====== Table Section ====== */}
-      {isLoading ? (
-        <DataTableSkeleton />
-      ) : (
-        <DataTable columns={columns} rows={filtered} />
-      )}
+      {isLoading ? <DataTableSkeleton /> : <DataTable columns={columns} rows={filtered} />}
 
       {/* ====== Delete Modal ====== */}
       <DeleteModal
-        open={open}
-        setOpen={setOpen}
+        open={openDelete}
+        setOpen={setOpenDelete}
         Title="حذف الإيراد"
         Body="هل أنت متأكد أنك تريد حذف هذا الإيراد؟"
         handleClick={handleDelete}
       />
+
+      {/* ====== Edit Dialog ====== */}
+      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} dir="rtl" sx={{gap:2}}>
+        <DialogTitle>تعديل الإيراد</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Autocomplete
+            options={employees}
+            value={employeeName}
+            onChange={(_, newValue) => setEmployeeName(newValue || "")}
+            renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
+            sx={{mt:2}}
+          />
+          <Autocomplete
+            options={offices}
+            value={office}
+            onChange={(_, newValue) => setOffice(newValue || "")}
+            renderInput={(params) => <TextField {...params} label="المكتب" />}
+          />
+          <Input type="date" label="التاريخ" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="number" label="قيمة الإيراد" value={revenueAmount} onChange={(e) => setRevenueAmount(e.target.value)} />
+          <Input label="ملاحظات" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </DialogContent>
+        <DialogActions sx={{ flexDirection: "row-reverse",  mb: 2, mr: 2 }}>
+          <Button onClick={() => setOpenEdit(false)} >
+            إلغاء
+          </Button>
+          <Button onClick={handleUpdateRevenue} >
+            حفظ التعديلات
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
