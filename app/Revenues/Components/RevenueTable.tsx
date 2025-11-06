@@ -8,6 +8,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
@@ -15,6 +19,7 @@ import DataTable from "@/app/Components/DataTable";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
+
 
 interface RevenueEntry {
   id: number;
@@ -61,6 +66,7 @@ const RevenuesTable = () => {
   const [office, setOffice] = useState("");
   const [date, setDate] = useState("");
   const [revenueAmount, setRevenueAmount] = useState<number | string>("");
+  const [currency, setCurrency] = useState("");
   const [notes, setNotes] = useState("");
 
   // Search states
@@ -234,37 +240,75 @@ const RevenuesTable = () => {
         </div>
       </div>
 
-      {/* ====== Add Revenue Section ====== */}
-      <div className="bg-white p-4 rounded-lg shadow space-y-3">
-        <h2 className="text-lg font-semibold text-gray-700 mb-2">إضافة الإيراد اليومي</h2>
-        <div className="flex flex-wrap items-end gap-2 md:gap-4">
-          <Autocomplete
-            options={employees}
-            value={employeeName}
-            onChange={(_, newValue) => setEmployeeName(newValue || "")}
-            renderInput={(params) => <TextField {...params} label="اسم الموظف" variant="outlined" />}
-            sx={{ minWidth: 200 }}
-          />
-          <Autocomplete
-            options={offices}
-            value={office}
-            onChange={(_, newValue) => setOffice(newValue || "")}
-            renderInput={(params) => <TextField {...params} label="المكتب" variant="outlined" />}
-            sx={{ minWidth: 200 }}
-          />
-          <Input type="date" label="التاريخ" value={date} onChange={(e) => setDate(e.target.value)} />
-          <Input type="number" label="قيمة الإيراد" value={revenueAmount} onChange={(e) => setRevenueAmount(e.target.value)} />
-          <Input label="ملاحظات" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="اختياري" />
-          <Button
-            onClick={handleAddRevenue}
-            disabled={!employeeName || !office || !date || !revenueAmount}
-            className="bg-blue-600 text-white hover:bg-blue-700"
-          >
-            إضافة الإيراد
-          </Button>
-        </div>
-      </div>
+     {/* ====== Add Revenue Section ====== */}
+<div className="bg-white p-4 rounded-lg shadow space-y-3">
+  <h2 className="text-lg font-semibold text-gray-700 mb-2">إضافة الإيراد اليومي</h2>
+  <div className="flex flex-wrap items-end gap-2 md:gap-4">
+    <Autocomplete
+      options={employees}
+      value={employeeName}
+      onChange={(_, newValue) => setEmployeeName(newValue || "")}
+      renderInput={(params) => (
+        <TextField {...params} label="اسم الموظف" variant="outlined" />
+      )}
+      sx={{ minWidth: 200 }}
+    />
 
+    <Autocomplete
+      options={offices}
+      value={office}
+      onChange={(_, newValue) => setOffice(newValue || "")}
+      renderInput={(params) => (
+        <TextField {...params} label="المكتب" variant="outlined" />
+      )}
+      sx={{ minWidth: 200 }}
+    />
+
+    <Input
+      type="date"
+      label="التاريخ"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+    />
+
+    <Input
+      type="number"
+      label="قيمة الإيراد"
+      value={revenueAmount}
+      onChange={(e) => setRevenueAmount(e.target.value)}
+    />
+
+    {/* ====== Select Currency ====== */}
+    <FormControl sx={{ minWidth: 120 }}>
+      <InputLabel id="currency-label">العملة</InputLabel>
+      <Select
+        labelId="currency-label"
+        value={currency}
+        label="العملة"
+        onChange={(e) => setCurrency(e.target.value)}
+      >
+        <MenuItem value="USD">دولار</MenuItem>
+        <MenuItem value="LBP">ليرة</MenuItem>
+        <MenuItem value="EUR">يورو</MenuItem>
+      </Select>
+    </FormControl>
+
+    <Input
+      label="ملاحظات"
+      value={notes}
+      onChange={(e) => setNotes(e.target.value)}
+      placeholder="اختياري"
+    />
+
+    <Button
+      onClick={handleAddRevenue}
+      disabled={!employeeName || !office || !date || !revenueAmount || !currency}
+      className="bg-blue-600 text-white hover:bg-blue-700"
+    >
+      إضافة الإيراد
+    </Button>
+  </div>
+</div>
       {/* ====== Table Section ====== */}
       {isLoading ? <DataTableSkeleton /> : <DataTable columns={columns} rows={filtered} />}
 
