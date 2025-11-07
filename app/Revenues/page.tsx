@@ -1,17 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import RevenuesTable from "./Components/RevenuesTable";
 
-const RevenuesTable = dynamic(() => import("./Components/RevenueTable"), {
-  ssr: false,
-});
+
 
 const RevenuesList = () => {
   return (
     <main className="w-full">
       
 
-      <RevenuesTable />
+<RevenuesTable/>
     </main>
   );
 };
