@@ -4,11 +4,15 @@ import { useState } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
 
 export default function PermissionsTab() {
+  const [permissions, setPermissions] = useLocalStorage<string[]>(
+    "permissions",
+    []
+  );
   const [permission, setPermission] = useState("");
-  const [permissions, setPermissions] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -16,16 +20,17 @@ export default function PermissionsTab() {
   const handleAddOrUpdate = () => {
     if (!permission.trim()) return;
 
+    let updated;
     if (editingIndex !== null) {
-      const updated = [...permissions];
+      updated = [...permissions];
       updated[editingIndex] = permission.trim();
-      setPermissions(updated);
       setEditingIndex(null);
     } else {
       if (permissions.includes(permission.trim())) return;
-      setPermissions([...permissions, permission.trim()]);
+      updated = [...permissions, permission.trim()];
     }
 
+    setPermissions(updated);
     setPermission("");
   };
 
@@ -53,7 +58,7 @@ export default function PermissionsTab() {
           value={permission}
           onChange={(e) => setPermission(e.target.value)}
         />
-         <Button
+        <Button
           onClick={handleAddOrUpdate}
           disabled={!permission.trim()}
           className={`flex items-center gap-2 text-white ${
@@ -62,7 +67,6 @@ export default function PermissionsTab() {
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-       
           {editingIndex !== null ? "تحديث" : "إضافة"}
         </Button>
       </div>

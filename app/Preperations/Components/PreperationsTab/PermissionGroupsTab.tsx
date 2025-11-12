@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
+import DeleteModal from "@/app/Components/DeleteModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import DeleteModal from "@/app/Components/DeleteModal"; // ✅ Import your modal
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
 
 export default function PermissionGroupsTab() {
   const [groupName, setGroupName] = useState("");
@@ -14,17 +15,12 @@ export default function PermissionGroupsTab() {
   >([]);
   const [editId, setEditId] = useState<number | null>(null);
 
-  // 🔴 Modal state
+  // Modal state
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
-  // Mock permissions list
-  const permissionsList = [
-    { value: "add_employee", label: "إضافة موظف" },
-    { value: "edit_employee", label: "تعديل موظف" },
-    { value: "view_reports", label: "عرض التقارير" },
-    { value: "manage_offices", label: "إدارة المكاتب" },
-  ];
+  // Load permissions from localStorage
+  const [permissions] = useLocalStorage<string[]>("permissions", []);
 
   // Handle permission checkbox toggle
   const handlePermissionChange = (permValue: string) => {
@@ -40,7 +36,6 @@ export default function PermissionGroupsTab() {
     if (!groupName.trim() || selectedPermissions.length === 0) return;
 
     if (editId !== null) {
-      // Edit mode
       setGroups((prev) =>
         prev.map((g) =>
           g.id === editId
@@ -50,7 +45,6 @@ export default function PermissionGroupsTab() {
       );
       setEditId(null);
     } else {
-      // Add mode
       setGroups((prev) => [
         ...prev,
         {
@@ -74,13 +68,13 @@ export default function PermissionGroupsTab() {
     setEditId(id);
   };
 
-  // Open delete confirmation modal
+  // Open delete modal
   const handleDeleteGroup = (id: number) => {
     setSelectedGroupId(id);
     setOpenDeleteModal(true);
   };
 
-  // Confirm delete action
+  // Confirm delete
   const confirmDeleteGroup = () => {
     if (selectedGroupId !== null) {
       setGroups((prev) => prev.filter((g) => g.id !== selectedGroupId));
@@ -104,32 +98,35 @@ export default function PermissionGroupsTab() {
 
         {/* Permission checkboxes */}
         <div className="grid grid-cols-2 gap-2 text-gray-700">
-          {permissionsList.map((perm) => (
-            <label key={perm.value} className="flex items-center gap-2">
+          {permissions.length === 0 && (
+            <p className="text-sm text-gray-500 col-span-2">
+              لم يتم إضافة أي صلاحيات بعد
+            </p>
+          )}
+          {permissions.map((perm) => (
+            <label key={perm} className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={selectedPermissions.includes(perm.value)}
-                onChange={() => handlePermissionChange(perm.value)}
+                checked={selectedPermissions.includes(perm)}
+                onChange={() => handlePermissionChange(perm)}
               />
-              {perm.label}
+              {perm}
             </label>
           ))}
         </div>
 
         <Button
           onClick={handleSaveGroup}
-          disabled={!groupName.trim()}
-          className={`grid  w-20 items-center gap-2 text-white  ${
-            groupName.trim()
+          disabled={!groupName.trim() || selectedPermissions.length === 0}
+          className={`grid w-20 items-center gap-2 text-white ${
+            groupName.trim() && selectedPermissions.length > 0
               ? "bg-green-700 hover:bg-green-600"
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-       
           {editId !== null ? "تحديث" : "إضافة"}
         </Button>
       </div>
-     
 
       {/* Groups list */}
       <div className="space-y-3">
@@ -142,10 +139,7 @@ export default function PermissionGroupsTab() {
               <h3 className="font-semibold text-gray-800">{group.name}</h3>
               <ul className="text-sm flex md:flex-row md:gap-6 text-gray-600 mt-1 list-disc pr-4">
                 {group.permissions.map((perm) => (
-                  <li key={perm}>
-                    {permissionsList.find((p) => p.value === perm)?.label ||
-                      perm}
-                  </li>
+                  <li key={perm}>{perm}</li>
                 ))}
               </ul>
             </div>
@@ -171,7 +165,7 @@ export default function PermissionGroupsTab() {
         ))}
       </div>
 
-      {/* 🗑️ Global Delete Modal */}
+      {/* Delete Modal */}
       <DeleteModal
         open={openDeleteModal}
         setOpen={setOpenDeleteModal}

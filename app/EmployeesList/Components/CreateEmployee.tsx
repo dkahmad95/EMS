@@ -1,212 +1,372 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import {
-  PhoneIcon,
-  UserCircleIcon,
-  BriefcaseIcon,
-  EnvelopeIcon,
-  CurrencyDollarIcon,
-  BuildingOfficeIcon,
-} from "@heroicons/react/24/outline";
-
-import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { TextField, MenuItem } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useRouter } from "next/navigation";
-import { Input } from "@/app/Components/Input";
-import { Select } from "@/app/Components/Select";
 
-type EmployeeFormInputs = {
+interface EmployeeFormInputs {
+  id?: number;
+  fileNumber?: string;
+  startDate?: string;
   name: string;
-  phoneNumber: string;
   email: string;
-  jobTitle: string;
+  insuranceStatus?: string;
+  insuranceNumber?: string;
   salary: number;
+  jobTitle: string;
   officeLocation: string;
-};
+  contractType?: string;
+  birthDate?: string;
+  birthPlace?: string;
+  age?: number;
+  educationLevel: string;
+  bloodType?: string;
+  phoneNumbers: string;
+  familyStatus?: string;
+  childrenCount?: number;
+  address?: string;
+  gender?: string;
+  notes?: string;
+  permissionGroup: string;
+}
 
 export default function CreateEmployeeForm() {
-  const router = useRouter();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<EmployeeFormInputs>();
+  const { control, handleSubmit, reset } = useForm<EmployeeFormInputs>({
+    defaultValues: {
+      fileNumber: "",
+      startDate: "",
+      name: "",
+      email: "",
+      insuranceStatus: "",
+      insuranceNumber: "",
+      salary: 0,
+      jobTitle: "",
+      officeLocation: "",
+      contractType: "",
+      birthDate: "",
+      birthPlace: "",
+      age: 0,
+      educationLevel: "",
+      bloodType: "",
+      phoneNumbers: "",
+      familyStatus: "",
+      childrenCount: 0,
+      address: "",
+      gender: "",
+      notes: "",
+      permissionGroup: "",
+    },
+  });
 
-  const onSubmit = async (data: EmployeeFormInputs) => {
-    try {
-      console.log("✅ بيانات الموظف:", data);
-      alert("تم إنشاء الموظف بنجاح!");
-      reset();
-      router.push("/EmployeesList");
-    } catch (error) {
-      console.error("❌ خطأ:", error);
-      alert("حدث خطأ أثناء إنشاء الموظف. حاول مرة أخرى.");
-    }
-  };
+  const [cities, setCities] = useState<{ name: string; id: number }[]>([]);
+  const [offices, setOffices] = useState<{ name: string; city: string }[]>([]);
+  const [jobTitles, setJobTitles] = useState<string[]>([]);
+  const [educationLevels, setEducationLevels] = useState<string[]>([]);
+  const [permissionGroups, setPermissionGroups] = useState<{ name: string; id: number }[]>([]);
 
-  const officeLocations = [
-    { value: "beirut", label: "بيروت" },
-    { value: "tripoli", label: "طرابلس" },
-    { value: "saida", label: "صيدا" },
-    { value: "tyre", label: "صور" },
-    { value: "baalbek", label: "بعلبك" },
+   const route = useRouter();
+  const contractOptions = [
+    { value: "متفرغ", label: "متفرغ" },
+    { value: "متعاقد", label: "متعاقد" },
   ];
 
+  const insuranceOptions = [
+    { value: "نعم", label: "نعم" },
+    { value: "لا", label: "لا" },
+  ];
+
+  const genderOptions = [
+    { value: "ذكر", label: "ذكر" },
+    { value: "أنثى", label: "أنثى" },
+  ];
+
+  const familyStatusOptions = [
+    { value: "أعزب", label: "أعزب" },
+    { value: "متزوج", label: "متزوج" },
+    { value: "مطلق", label: "مطلق" },
+    { value: "أرمل", label: "أرمل" },
+  ];
+
+  // Load dynamic selects from localStorage
+  useEffect(() => {
+    const citiesLS = JSON.parse(localStorage.getItem("cities") || "[]");
+    const officesLS = JSON.parse(localStorage.getItem("offices") || "[]");
+    const jobTitlesLS = JSON.parse(localStorage.getItem("jobTitles") || "[]");
+    const educationLS = JSON.parse(localStorage.getItem("educationLevels") || "[]");
+    const permissionGroupsLS = JSON.parse(localStorage.getItem("permissionGroups") || "[]");
+
+    setCities(citiesLS);
+    setOffices(officesLS);
+    setJobTitles(jobTitlesLS);
+    setEducationLevels(educationLS);
+    setPermissionGroups(permissionGroupsLS);
+  }, []);
+
+  const onSubmit = (data: EmployeeFormInputs) => {
+    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
+    localStorage.setItem(
+      "employees",
+      JSON.stringify([...employees, { ...data, id: Date.now() }])
+    );
+    alert(" تم إنشاء الموظف بنجاح!");
+    route.push("/EmployeesList");
+    reset();
+  };
+  // Hard-coded Blood Types
+const bloodTypeOptions = [
+  "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
+];
+
   return (
-    <div dir="rtl" className="font-[Tajawal] text-right">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="rounded-md bg-white shadow p-6"
-      >
-        {/* اسم الموظف */}
-        <div className="mb-4">
-          <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-700">
-            اسم الموظف
-          </label>
-          <div className="relative">
-            <Input
-              id="name"
-              placeholder="أدخل اسم الموظف"
-              {...register("name", { required: "الاسم مطلوب" })}
-              className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm placeholder:text-gray-400"
-            />
-            <UserCircleIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-        </div>
-
-        {/* رقم الهاتف */}
-        <div className="mb-4">
-          <label htmlFor="phoneNumber" className="mb-2 block text-sm font-medium text-gray-700">
-            رقم الهاتف
-          </label>
-          <div className="relative">
-            <Input
-              id="phoneNumber"
-              placeholder="أدخل رقم الهاتف"
-              {...register("phoneNumber", {
-                required: "رقم الهاتف مطلوب",
-                pattern: {
-                  value: /^[0-9]{8,15}$/,
-                  message: "أدخل رقم هاتف صالح",
-                },
-              })}
-              className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm placeholder:text-gray-400"
-            />
-            <PhoneIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.phoneNumber && (
-            <p className="text-red-500 text-xs mt-1">{errors.phoneNumber.message}</p>
+    <div dir="rtl" className="font-[Tajawal] text-right p-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="rounded-md bg-white shadow p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        
+        {/* File Number */}
+        <Controller
+          name="fileNumber"
+          control={control}
+          render={({ field }) => (
+            <TextField label="رقم الملف" {...field} fullWidth value={field.value ?? ""} />
           )}
-        </div>
+        />
 
-        {/* البريد الإلكتروني */}
-        <div className="mb-4">
-          <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
-            البريد الإلكتروني
-          </label>
-          <div className="relative">
-            <Input
-              id="email"
-              placeholder="example@email.com"
-              {...register("email", {
-                required: "البريد الإلكتروني مطلوب",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "أدخل بريد إلكتروني صالح",
-                },
-              })}
-              className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm placeholder:text-gray-400"
-            />
-            <EnvelopeIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+        {/* Start Date */}
+        <Controller
+          name="startDate"
+          control={control}
+          render={({ field }) => (
+            <TextField label="تاريخ بدء العمل" type="date"  slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} />
           )}
-        </div>
+        />
 
-        {/* المسمى الوظيفي */}
-        <div className="mb-4">
-          <label htmlFor="jobTitle" className="mb-2 block text-sm font-medium text-gray-700">
-            المسمى الوظيفي
-          </label>
-          <div className="relative">
-            <Input
-              id="jobTitle"
-              placeholder="مثال: محاسب، مدير، مبرمج"
-              {...register("jobTitle", { required: "المسمى الوظيفي مطلوب" })}
-              className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm placeholder:text-gray-400"
-            />
-            <BriefcaseIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.jobTitle && (
-            <p className="text-red-500 text-xs mt-1">{errors.jobTitle.message}</p>
+        {/* Name */}
+        <Controller
+          name="name"
+          control={control}
+          rules={{ required: "الاسم مطلوب" }}
+          render={({ field, fieldState }) => (
+            <TextField label="اسم الموظف" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
-        </div>
+        />
 
-        {/* موقع المكتب */}
-        <div className="mb-4">
-          <label htmlFor="officeLocation" className="mb-2 block text-sm font-medium text-gray-700">
-            موقع المكتب
-          </label>
-          <div className="relative">
-            <Select
-      id="officeLocation"
-      label=""
-      {...register("officeLocation", { required: "يرجى اختيار موقع المكتب" })}
-      options={officeLocations}
-      className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm text-gray-700 bg-white"
-    />
-            <BuildingOfficeIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.officeLocation && (
-            <p className="text-red-500 text-xs mt-1">{errors.officeLocation.message}</p>
+        {/* Phone Numbers */}
+        <Controller
+          name="phoneNumbers"
+          control={control}
+          rules={{
+            required: "رقم الهاتف مطلوب",
+            pattern: { value: /^[0-9]{8,15}$/, message: "أدخل رقم هاتف صالح" },
+          }}
+          render={({ field, fieldState }) => (
+            <TextField label="رقم الهاتف" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
-        </div>
+        />
 
-        {/* الراتب */}
-        <div className="mb-4">
-          <label htmlFor="salary" className="mb-2 block text-sm font-medium text-gray-700">
-            الراتب الشهري
-          </label>
-          <div className="relative">
-            <Input
-              id="salary"
-              type="number"
-              placeholder="أدخل الراتب"
-              {...register("salary", {
-                required: "الراتب مطلوب",
-                min: { value: 0, message: "يجب أن يكون الراتب موجبًا" },
-              })}
-              className="peer block w-full rounded-md border border-gray-300 py-2 pr-10 text-sm placeholder:text-gray-400"
-            />
-            <CurrencyDollarIcon className="pointer-events-none absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
-          </div>
-          {errors.salary && (
-            <p className="text-red-500 text-xs mt-1">{errors.salary.message}</p>
+        {/* Email */}
+        <Controller
+          name="email"
+          control={control}
+          rules={{
+            required: "البريد الإلكتروني مطلوب",
+            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "أدخل بريد إلكتروني صالح" },
+          }}
+          render={({ field, fieldState }) => (
+            <TextField label="البريد الإلكتروني" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
+        />
+
+        {/* Job Title */}
+        <Controller
+          name="jobTitle"
+          control={control}
+          rules={{ required: "المسمى الوظيفي مطلوب" }}
+          render={({ field, fieldState }) => (
+            <TextField select label="المسمى الوظيفي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
+              {jobTitles.map((jt) => <MenuItem key={jt} value={jt}>{jt}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Office */}
+        <Controller
+          name="officeLocation"
+          control={control}
+          rules={{ required: "يرجى اختيار المكتب" }}
+          render={({ field, fieldState }) => (
+            <TextField select label="مكتب العمل" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
+              {offices.map((o) => <MenuItem key={o.name} value={o.name}>{o.name} ({o.city})</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Education Level */}
+        <Controller
+          name="educationLevel"
+          control={control}
+          rules={{ required: "المستوى العلمي مطلوب" }}
+          render={({ field, fieldState }) => (
+            <TextField select label="المستوى العلمي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
+              {educationLevels.map((ed) => <MenuItem key={ed} value={ed}>{ed}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Permission Group */}
+        <Controller
+          name="permissionGroup"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="مجموعة الصلاحيات" {...field} fullWidth value={field.value ?? ""}>
+              {permissionGroups.map((pg) => <MenuItem key={pg.id} value={pg.name}>{pg.name}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Salary */}
+        <Controller
+          name="salary"
+          control={control}
+          rules={{ required: "الراتب مطلوب", min: { value: 0, message: "الراتب يجب أن يكون موجباً" } }}
+          render={({ field, fieldState }) => (
+            <TextField label="الراتب الشهري" type="number" {...field} fullWidth value={field.value ?? 0} error={!!fieldState.error} helperText={fieldState.error?.message} />
+          )}
+        />
+
+        {/* Contract Type */}
+        <Controller
+          name="contractType"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="متفرغ / متعاقد" {...field} fullWidth value={field.value ?? ""}>
+              {contractOptions.map((opt) => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Insurance Status */}
+        <Controller
+          name="insuranceStatus"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="التأمين" {...field} fullWidth value={field.value ?? ""}>
+              {insuranceOptions.map((opt) => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Insurance Number */}
+        <Controller
+          name="insuranceNumber"
+          control={control}
+          render={({ field }) => <TextField label="رقم التأمين" {...field} fullWidth value={field.value ?? ""} />}
+        />
+
+        {/* Gender */}
+        <Controller
+          name="gender"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="الجنس" {...field} fullWidth value={field.value ?? ""}>
+              {genderOptions.map((opt) => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Family Status */}
+        <Controller
+          name="familyStatus"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="الوضع العائلي" {...field} fullWidth value={field.value ?? ""}>
+              {familyStatusOptions.map((opt) => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+            </TextField>
+          )}
+        />
+
+        {/* Children Count */}
+        <Controller
+          name="childrenCount"
+          control={control}
+          render={({ field }) => <TextField label="عدد الأولاد" type="number" {...field} fullWidth value={field.value ?? 0} />}
+        />
+
+        {/* Birth Date */}
+        <Controller
+          name="birthDate"
+          control={control}
+          render={({ field }) => <TextField label="تاريخ الولادة" type="date"  slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} />}
+        />
+
+     {/* // Birth Place (select from cities) */}
+<Controller
+  name="birthPlace"
+  control={control}
+  render={({ field }) => (
+    <TextField
+      select
+      label="مكان الولادة"
+      {...field}
+      fullWidth
+      value={field.value ?? ""}
+    >
+      {cities.map((c) => (
+        <MenuItem key={c.id} value={c.name}>
+          {c.name}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+
+
+        {/* Age */}
+        <Controller
+          name="age"
+          control={control}
+          render={({ field }) => <TextField label="العمر" type="number" {...field} fullWidth value={field.value ?? 0} />}
+        />
+
+     {/* Blood Type (hard-coded select) */}
+<Controller
+  name="bloodType"
+  control={control}
+  render={({ field }) => (
+    <TextField
+      select
+      label="فصيلة الدم"
+      {...field}
+      fullWidth
+      value={field.value ?? ""}
+    >
+      {bloodTypeOptions.map((bt) => (
+        <MenuItem key={bt} value={bt}>
+          {bt}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+        {/* Address */}
+        <Controller
+          name="address"
+          control={control}
+          render={({ field }) => <TextField label="عنوان السكن" {...field} fullWidth value={field.value ?? ""} />}
+        />
+
+        {/* Notes */}
+        <Controller
+          name="notes"
+          control={control}
+          render={({ field }) => <TextField label="ملاحظات" {...field} fullWidth multiline rows={3} value={field.value ?? ""} />}
+        />
+
+        {/* Submit Button */}
+        <div className="col-span-1 md:col-span-4 flex justify-end mt-4">
+          <Button type="submit" className="bg-green-700 hover:bg-green-600 text-white">إنشاء الموظف</Button>
         </div>
 
-        {/* الأزرار */}
-        <div className="mt-6 flex justify-end gap-4">
-          <Link
-            href="/employeesList"
-            className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-          >
-            إلغاء
-          </Link>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className={`text-white bg-green-800 hover:bg-green-600 ${
-              isSubmitting && "opacity-60 cursor-not-allowed"
-            }`}
-          >
-            إنشاء الموظف
-          </Button>
-        </div>
       </form>
     </div>
   );

@@ -5,26 +5,32 @@ import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
+
 
 export default function EducationLevelsTab() {
+  const [educationLevels, setEducationLevels] = useLocalStorage<string[]>(
+    "educationLevels",
+    []
+  );
   const [educationName, setEducationName] = useState("");
-  const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   const handleAddOrUpdate = () => {
-    if (educationName.trim() === "") return;
+    if (!educationName.trim()) return;
 
+    let updated;
     if (editingIndex !== null) {
-      const updated = [...educationLevels];
+      updated = [...educationLevels];
       updated[editingIndex] = educationName.trim();
-      setEducationLevels(updated);
       setEditingIndex(null);
     } else {
-      setEducationLevels([...educationLevels, educationName.trim()]);
+      updated = [...educationLevels, educationName.trim()];
     }
 
+    setEducationLevels(updated);
     setEducationName("");
   };
 
@@ -35,14 +41,18 @@ export default function EducationLevelsTab() {
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-      setEducationLevels(educationLevels.filter((_, i) => i !== deleteIndex));
+      const updated = educationLevels.filter((_, i) => i !== deleteIndex);
+      setEducationLevels(updated);
       setDeleteIndex(null);
+      setOpenDelete(false);
     }
   };
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">المستويات التعليمية</h2>
+      <h2 className="text-xl font-semibold mb-4 text-gray-700">
+        المستويات التعليمية
+      </h2>
 
       {/* Input Section */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 bg-white p-4 rounded shadow">
@@ -60,7 +70,6 @@ export default function EducationLevelsTab() {
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-       
           {editingIndex !== null ? "تحديث" : "إضافة"}
         </Button>
       </div>

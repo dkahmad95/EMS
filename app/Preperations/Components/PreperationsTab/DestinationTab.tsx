@@ -5,12 +5,20 @@ import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
+
+
+interface Destination {
+  id: number;
+  name: string;
+}
 
 export default function DestinationsTab() {
+  const [destinations, setDestinations] = useLocalStorage<Destination[]>(
+    "destinations",
+    []
+  );
   const [destinationName, setDestinationName] = useState("");
-  const [destinations, setDestinations] = useState<
-    { id: number; name: string }[]
-  >([]);
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -18,28 +26,24 @@ export default function DestinationsTab() {
   const handleSaveDestination = () => {
     if (!destinationName.trim()) return;
 
+    let updated;
     if (editId !== null) {
-      setDestinations((prev) =>
-        prev.map((dest) =>
-          dest.id === editId
-            ? { ...dest, name: destinationName.trim() }
-            : dest
-        )
+      updated = destinations.map((dest) =>
+        dest.id === editId ? { ...dest, name: destinationName.trim() } : dest
       );
       setEditId(null);
     } else {
-      setDestinations((prev) => [
-        ...prev,
-        { id: Date.now(), name: destinationName.trim() },
-      ]);
+      updated = [...destinations, { id: Date.now(), name: destinationName.trim() }];
     }
 
+    setDestinations(updated);
     setDestinationName("");
   };
 
   const handleDelete = () => {
     if (deleteId !== null) {
-      setDestinations((prev) => prev.filter((d) => d.id !== deleteId));
+      const updated = destinations.filter((d) => d.id !== deleteId);
+      setDestinations(updated);
       setDeleteId(null);
       setOpen(false);
     }

@@ -5,12 +5,17 @@ import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
+
+
+interface Currency {
+  id: number;
+  name: string;
+}
 
 export default function CurrenciesTab() {
+  const [currencies, setCurrencies] = useLocalStorage<Currency[]>("currencies", []);
   const [currencyName, setCurrencyName] = useState("");
-  const [currencies, setCurrencies] = useState<{ id: number; name: string }[]>(
-    []
-  );
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -18,28 +23,26 @@ export default function CurrenciesTab() {
   const handleSaveCurrency = () => {
     if (!currencyName.trim()) return;
 
+    let updated;
     if (editId !== null) {
-      setCurrencies((prev) =>
-        prev.map((currency) =>
-          currency.id === editId
-            ? { ...currency, name: currencyName.trim() }
-            : currency
-        )
+      updated = currencies.map((currency) =>
+        currency.id === editId
+          ? { ...currency, name: currencyName.trim() }
+          : currency
       );
       setEditId(null);
     } else {
-      setCurrencies((prev) => [
-        ...prev,
-        { id: Date.now(), name: currencyName.trim() },
-      ]);
+      updated = [...currencies, { id: Date.now(), name: currencyName.trim() }];
     }
 
+    setCurrencies(updated);
     setCurrencyName("");
   };
 
   const handleDelete = () => {
     if (deleteId !== null) {
-      setCurrencies((prev) => prev.filter((c) => c.id !== deleteId));
+      const updated = currencies.filter((c) => c.id !== deleteId);
+      setCurrencies(updated);
       setDeleteId(null);
       setOpen(false);
     }

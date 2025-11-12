@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
+
 
 export default function JobTitlesTab() {
+  const [jobTitles, setJobTitles] = useLocalStorage<string[]>("jobTitles", []);
   const [jobTitle, setJobTitle] = useState("");
-  const [jobTitles, setJobTitles] = useState<string[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -16,16 +18,17 @@ export default function JobTitlesTab() {
   const handleAddOrUpdate = () => {
     if (!jobTitle.trim()) return;
 
+    let updated;
     if (editingIndex !== null) {
-      const updated = [...jobTitles];
+      updated = [...jobTitles];
       updated[editingIndex] = jobTitle.trim();
-      setJobTitles(updated);
       setEditingIndex(null);
     } else {
-      if (jobTitles.includes(jobTitle.trim())) return;
-      setJobTitles([...jobTitles, jobTitle.trim()]);
+      if (jobTitles.includes(jobTitle.trim())) return; // prevent duplicates
+      updated = [...jobTitles, jobTitle.trim()];
     }
 
+    setJobTitles(updated);
     setJobTitle("");
   };
 
@@ -36,7 +39,8 @@ export default function JobTitlesTab() {
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-      setJobTitles(jobTitles.filter((_, i) => i !== deleteIndex));
+      const updated = jobTitles.filter((_, i) => i !== deleteIndex);
+      setJobTitles(updated);
       setDeleteIndex(null);
       setOpenDelete(false);
     }
@@ -62,7 +66,6 @@ export default function JobTitlesTab() {
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-       
           {editingIndex !== null ? "تحديث" : "إضافة"}
         </Button>
       </div>
@@ -77,6 +80,7 @@ export default function JobTitlesTab() {
             <span className="font-medium">{title}</span>
 
             <div className="flex gap-2">
+              {/* Edit Button */}
               <button
                 onClick={() => handleEdit(index)}
                 className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -85,6 +89,7 @@ export default function JobTitlesTab() {
                 <PencilIcon className="w-5 h-5 text-gray-700" />
               </button>
 
+              {/* Delete Button */}
               <button
                 onClick={() => {
                   setDeleteIndex(index);

@@ -4,74 +4,52 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
-
 import EmployeeDetailsModal from "./EmployeeDetailsModal";
 import { Button } from "@/app/Components/Button";
 
+interface Employee {
+  id: number;
+  name: string;
+  phoneNumbers: string;
+  officeLocation: string;
+  jobTitle: string;
+}
+interface EmployeesTableProps {
+  employees: Employee[];
+}
 
-const dummyEmployees = [
-  {
-    id: 1,
-    name: "أحمد دقماك",
-    insuranceStatus: "مشترك",
-    insuranceNumber: "123456",
-    salary: 1200,
-    jobTitle: "محاسب",
-    officeLocation: "بيروت",
-    contractType: "متفرغ",
-    birthDate: "1990-05-15",
-    birthPlace: "بيروت",
-    age: 35,
-    educationLevel: "جامعي",
-    bloodType: "O+",
-    phoneNumbers: "9617000001",
-    familyStatus: "متزوج",
-    childrenCount: 2,
-    address: "بيروت - الحمرا",
-    notes: "موظف مميز",
-    gender: "ذكر",
-  },
-];
-
-const EmployeesTable = () => {
+const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees }) => {
   const [openDelete, setOpenDelete] = useState(false);
- const [detailsOpen, setDetailsOpen] = useState(false);
-const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
- 
+  const handleDelete = (id: number) => {
+    const updatedEmployees = employees.filter((emp) => emp.id !== id);
+    localStorage.setItem("employees", JSON.stringify(updatedEmployees));
+    setOpenDelete(false);
+    window.location.reload(); // optional quick refresh to reflect changes
+  };
 
   const columns = [
-    { field: "id", headerName: "الرقم", width: 80 },
-    { field: "name", headerName: "الاسم", width: 150 },
-    { field: "phoneNumbers", headerName: "رقم الهاتف", width: 180 },
+    { field: "name", headerName: "الاسم", width: 200 },
+    { field: "phoneNumbers", headerName: "رقم الهاتف", width: 150 },
     { field: "officeLocation", headerName: "المكتب", width: 150 },
-    {
-      field: "salary",
-      headerName: "الراتب",
-      width: 130,
-      renderCell: (params: any) => <div>$ {params.value}</div>,
-    },
+    { field: "jobTitle", headerName: "المسمى الوظيفي", width: 150 },
     {
       field: "actions",
       headerName: "العمليات",
-      width: 180,
+      width: 150,
       renderCell: (params: any) => (
         <div className="flex flex-row gap-3 mt-4" dir="rtl">
-         <Button
-  onClick={() => {
-    setSelectedEmployee(params.row);
-    setDetailsOpen(true);
-  }}
-  className="text-white h-6"
->
-  عرض
-</Button>
+          <Button
+            onClick={() => {
+              setSelectedEmployee(params.row);
+              setDetailsOpen(true);
+            }}
+            className="text-white h-6 px-2 bg-blue-600 hover:bg-blue-500"
+          >
+            عرض
+          </Button>
           <TrashIcon
             className="w-5 text-red-600 cursor-pointer"
             onClick={() => {
@@ -86,26 +64,26 @@ const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
   return (
     <div dir="rtl">
-      {isLoading ? (
-        <DataTableSkeleton />
-      ) : (
-        <DataTable columns={columns} rows={dummyEmployees} />
-      )}
+      <DataTable columns={columns} rows={employees} />
 
       <DeleteModal
         open={openDelete}
         setOpen={setOpenDelete}
         Title="حذف الموظف"
         Body="هل أنت متأكد أنك تريد حذف هذا الموظف؟"
-        handleClick={() => console.log("تم حذف الموظف")}
+        handleClick={() => selectedEmployee && handleDelete(selectedEmployee.id)}
       />
 
       <EmployeeDetailsModal
-  open={detailsOpen}
-  onClose={() => setDetailsOpen(false)}
-  employee={selectedEmployee}
-  onUpdate={(data) => console.log("Updated employee:", data)}
-/>
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        employee={selectedEmployee}
+        onUpdate={(data) => {
+          const updated = employees.map((emp) => (emp.id === data.id ? data : emp));
+          localStorage.setItem("employees", JSON.stringify(updated));
+          window.location.reload(); // refresh to reflect update
+        }}
+      />
     </div>
   );
 };

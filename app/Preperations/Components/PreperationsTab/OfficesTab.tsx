@@ -6,11 +6,17 @@ import { Input } from "@/app/Components/Input";
 import { Select } from "@/app/Components/Select";
 import DeleteModal from "@/app/Components/DeleteModal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/app/Storage/Hooks/useLocalStorage";
+
+interface Office {
+  name: string;
+  city: string;
+}
 
 export default function OfficesTab() {
+  const [offices, setOffices] = useLocalStorage<Office[]>("offices", []);
   const [officeName, setOfficeName] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [offices, setOffices] = useState<{ name: string; city: string }[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -24,17 +30,18 @@ export default function OfficesTab() {
   ];
 
   const handleAddOrUpdate = () => {
-    if (!officeName || !selectedCity) return;
+    if (!officeName.trim() || !selectedCity.trim()) return;
 
+    let updated;
     if (editingIndex !== null) {
-      const updated = [...offices];
-      updated[editingIndex] = { name: officeName, city: selectedCity };
-      setOffices(updated);
+      updated = [...offices];
+      updated[editingIndex] = { name: officeName.trim(), city: selectedCity };
       setEditingIndex(null);
     } else {
-      setOffices([...offices, { name: officeName, city: selectedCity }]);
+      updated = [...offices, { name: officeName.trim(), city: selectedCity }];
     }
 
+    setOffices(updated);
     setOfficeName("");
     setSelectedCity("");
   };
@@ -48,8 +55,10 @@ export default function OfficesTab() {
 
   const handleDelete = () => {
     if (deleteIndex !== null) {
-      setOffices(offices.filter((_, i) => i !== deleteIndex));
+      const updated = offices.filter((_, i) => i !== deleteIndex);
+      setOffices(updated);
       setDeleteIndex(null);
+      setOpenDelete(false);
     }
   };
 
@@ -57,7 +66,7 @@ export default function OfficesTab() {
     <div>
       <h2 className="text-xl font-semibold mb-4 text-gray-700">المكاتب</h2>
 
-      {/* Input and Select section */}
+      {/* Input + Select + Button */}
       <div className="flex flex-col md:flex-row gap-2 mb-4">
         <Input
           placeholder="أدخل اسم المكتب"
@@ -70,16 +79,15 @@ export default function OfficesTab() {
           value={selectedCity}
           onChange={(e: any) => setSelectedCity(e.target.value)}
         />
-       <Button
+        <Button
           onClick={handleAddOrUpdate}
-          disabled={!selectedCity.trim()}
+          disabled={!officeName.trim() || !selectedCity.trim()}
           className={`flex items-center gap-2 text-white ${
-            selectedCity.trim()
+            officeName.trim() && selectedCity.trim()
               ? "bg-green-700 hover:bg-green-600"
               : "bg-gray-400 cursor-not-allowed"
           }`}
         >
-       
           {editingIndex !== null ? "تحديث" : "إضافة"}
         </Button>
       </div>
@@ -92,7 +100,7 @@ export default function OfficesTab() {
             className="p-3 bg-white shadow rounded text-gray-700 flex justify-between items-center"
           >
             <div>
-              <span className="font-medium">{office.name} </span>
+              <span className="font-medium">{office.name}</span>
               <span className="ml-2 text-sm text-gray-500">
                 ({cities.find((c) => c.value === office.city)?.label})
               </span>
@@ -122,7 +130,7 @@ export default function OfficesTab() {
         ))}
       </ul>
 
-      {/* Delete confirmation modal */}
+      {/* Delete Confirmation Modal */}
       <DeleteModal
         open={openDelete}
         setOpen={setOpenDelete}
