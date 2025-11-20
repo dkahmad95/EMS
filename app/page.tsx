@@ -1,16 +1,16 @@
-
-
 import { Construction } from "lucide-react";
+import SeedButton from "./Seeds/SeedButton";
 
 
 export default function Home() {
   return (
     <div
       dir="rtl"
-      className="flex flex-col items-center justify-center h-full  text-center px-6"
+      className="flex flex-col items-center justify-center h-full  text-center px-6 "
     >
+      <SeedButton/>
 
-        <Construction className="w-16 h-16 text-yellow-500 mb-4 animate-bounce" />
+        <Construction className="w-16 h-16 text-yellow-500 mt-6 animate-bounce  " />
         <h1 className="text-2xl font-bold text-gray-800 mb-3">
           🚧 هذا التطبيق قيد التطوير 🚧
         </h1>

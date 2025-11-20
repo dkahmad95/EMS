@@ -15,8 +15,8 @@ const PowerButton = () => {
             }
         >
             <PowerIcon className="w-6" />
-            <div className="hidden md:block">
-                Sign Out
+            <div className="hidden md:block text-lg">
+                خروج
             </div>
         </button>
 

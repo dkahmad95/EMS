@@ -21,14 +21,14 @@ const links = [
     icon: HomeIcon, // 🏠 Home page
   },
   {
-    name: "قائمة الموظفين",
-    href: "/EmployeesList",
-    icon: UserGroupIcon, // 👥 Employees list
-  },
-  {
     name: "قائمة المستخدمين",
     href: "/UsersList",
     icon: UsersIcon, // 👤 Users list
+  },
+  {
+    name: "قائمة الموظفين",
+    href: "/EmployeesList",
+    icon: UserGroupIcon, // 👥 Employees list
   },
   {
     name: "الإيرادات",
