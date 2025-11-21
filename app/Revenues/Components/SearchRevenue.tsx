@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Autocomplete, TextField } from "@mui/material";
-import { Input } from "@/app/Components/Input";
 import { Button } from "@/app/Components/Button";
 
 interface SearchRevenueProps {
@@ -61,25 +60,35 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
         />
 
         {/* START DATE */}
-        <Input
+        <TextField
           type="date"
           label="من تاريخ"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
+          slotProps={{
+            inputLabel: {
+              shrink: true,   // the new recommended API
+            },
+          }}
         />
 
         {/* END DATE */}
-        <Input
+        <TextField
           type="date"
           label="إلى تاريخ"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
+          slotProps={{
+            inputLabel: {
+              shrink: true,   // the new recommended API
+            },
+          }}
         />
 
         {/* SEARCH */}
         <Button
           onClick={() => onSearch({ employee, office, startDate, endDate })}
-          className="bg-green-600 text-white hover:bg-green-700"
+          className="disabled:cursor-not-allowed cursor-pointer"
         >
           بحث
         </Button>

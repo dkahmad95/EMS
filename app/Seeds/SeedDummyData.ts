@@ -19,9 +19,9 @@ export const seedDummyData = () => {
 
   // ----- Destinations -----
   const destinations = [
-    { id: 1763620360966, name: "تكافل" },
+    { id: 1763620360966, name: "تكفل" },
     { id: 1763620366742, name: "صدقة" },
-    { id: 1763620371725, name: "حسالة" },
+    { id: 1763620371725, name: "حصالة" },
   ];
   localStorage.setItem("destinations", JSON.stringify(destinations));
 

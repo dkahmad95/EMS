@@ -96,7 +96,7 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
       </h2>
 
       <div className="flex flex-wrap items-end gap-2 md:gap-4">
-        
+
         {/* EMPLOYEE */}
         <Autocomplete
           options={employeeList.map((e) => e.name)}
@@ -137,6 +137,12 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
           label="التاريخ"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          slotProps={{
+            inputLabel: {
+              shrink: true,   // the new recommended API
+            },
+          }}
+
         />
 
         {/* REVENUE AMOUNT */}
@@ -176,7 +182,7 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
         <Button
           onClick={handleAdd}
           disabled={!employeeName || !office || !date || !revenueAmount || !currency || !destination}
-          className="bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed cursor-pointer"
+          className="disabled:cursor-not-allowed cursor-pointer"
         >
           إضافة الإيراد
         </Button>

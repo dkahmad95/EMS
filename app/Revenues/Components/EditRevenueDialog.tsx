@@ -83,61 +83,61 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} dir="rtl">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" dir="rtl">
       <DialogTitle>تعديل الإيراد</DialogTitle>
+      <div className=" mt-2"
+      >
+        <DialogContent className="grid grid-cols-1 gap-4 ">
 
-      <DialogContent>
-        <div className="flex flex-col gap-2 mt-2"
->
-        {/* Employee */}
-        <Autocomplete
-          options={employees.map((e) => e.name)}
-          value={employeeName}
-          onChange={(_, val) => setEmployeeName(val || "")}
-          renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
-        />
+          {/* Employee */}
+          <Autocomplete
+            options={employees.map((e) => e.name)}
+            value={employeeName}
+            onChange={(_, val) => setEmployeeName(val || "")}
+            renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
+          />
 
-        {/* Office */}
-        <Autocomplete
-          options={offices.map((o) => o.name)}
-          value={office}
-          onChange={(_, val) => setOffice(val || "")}
-          renderInput={(params) => <TextField {...params} label="المكتب" />}
-        />
+          {/* Office */}
+          <Autocomplete
+            options={offices.map((o) => o.name)}
+            value={office}
+            onChange={(_, val) => setOffice(val || "")}
+            renderInput={(params) => <TextField {...params} label="المكتب" />}
+          />
 
-        {/* Destination */}
-        <Autocomplete
-          options={destinations.map((d) => d.name)}
-          value={destination}
-          onChange={(_, val) => setDestination(val || "")}
-          renderInput={(params) => <TextField {...params} label="الوجهة" />}
-        />
+          {/* Destination */}
+          <Autocomplete
+            options={destinations.map((d) => d.name)}
+            value={destination}
+            onChange={(_, val) => setDestination(val || "")}
+            renderInput={(params) => <TextField {...params} label="الوجهة" />}
+          />
 
-        <Input
-          type="date"
-          label="التاريخ"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+          <Input
+            type="date"
+            label="التاريخ"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
 
-        <Input
-          type="number"
-          label="قيمة الإيراد"
-          value={revenueAmount}
-          onChange={(e) => setRevenueAmount(e.target.value)}
-        />
+          <Input
+            type="number"
+            label="قيمة الإيراد"
+            value={revenueAmount}
+            onChange={(e) => setRevenueAmount(e.target.value)}
+          />
 
-        <Input
-          label="ملاحظات"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-</div>
-      </DialogContent>
+          <Input
+            label="ملاحظات"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
 
-      <DialogActions sx={{ flexDirection: "row-reverse", mb: 2, mr: 2 }}>
+        </DialogContent>
+      </div>
+      <DialogActions className="flex justify-end gap-3 p-4">
         <Button onClick={onClose}>إلغاء</Button>
-        <Button onClick={handleSave} className="bg-blue-600 text-white hover:bg-blue-700">
+        <Button onClick={handleSave}>
           حفظ التعديلات
         </Button>
       </DialogActions>

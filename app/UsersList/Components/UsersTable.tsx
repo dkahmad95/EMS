@@ -1,10 +1,12 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import { Button } from "@/app/Components/Button";
+import UserDetailsModal from "./UserDetailsModal";
 
 interface User {
   id: number;
@@ -12,65 +14,25 @@ interface User {
   email: string;
   phoneNumber: string;
   city: string;
-  joinDate: string;
-  status: string;
+  joinDate?: string;
+  status?: string;
 }
 
-const dummyUsers: User[] = [
-  {
-    id: 1,
-    name: "أحمد دكماك",
-    email: "ahmad@example.com",
-    phoneNumber: "9617000001",
-    city: "بيروت",
-    joinDate: "2025-10-01",
-    status: "نشط",
-  },
-  {
-    id: 2,
-    name: "سارة خليل",
-    email: "sara@example.com",
-    phoneNumber: "9617000002",
-    city: "طرابلس",
-    joinDate: "2025-09-21",
-    status: "غير نشط",
-  },
-  {
-    id: 3,
-    name: "علي منصور",
-    email: "ali@example.com",
-    phoneNumber: "9617000003",
-    city: "صيدا",
-    joinDate: "2025-08-15",
-    status: "نشط",
-  },
-  {
-    id: 4,
-    name: "لينا فارس",
-    email: "lina@example.com",
-    phoneNumber: "9617000004",
-    city: "زحلة",
-    joinDate: "2025-10-10",
-    status: "نشط",
-  },
-];
+interface UsersTableProps {
+  users: User[];
+}
 
-const UsersTable = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
+  const [openDelete, setOpenDelete] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const handleDelete = () => {
-    if (selectedId !== null) {
-      console.log("تم حذف المستخدم برقم ID:", selectedId);
-      setOpen(false);
-    }
+  const handleDelete = (id: number) => {
+    const updatedUsers = users.filter((u) => u.id !== id);
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    setOpenDelete(false);
+    window.location.reload(); // refresh
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const columns = [
     { field: "id", headerName: "الرقم", width: 80 },
@@ -79,44 +41,25 @@ const UsersTable = () => {
     { field: "phoneNumber", headerName: "رقم الهاتف", width: 150 },
     { field: "city", headerName: "المدينة", width: 120 },
     {
-      field: "joinDate",
-      headerName: "تاريخ الانضمام",
-      width: 130,
-      renderCell: (params: any) => <div>{params.value}</div>,
-    },
-    {
-      field: "status",
-      headerName: "الحالة",
-      width: 100,
-      renderCell: (params: any) => (
-        <span
-          className={`px-2 py-1 rounded-full text-sm ${
-            params.value === "نشط"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {params.value}
-        </span>
-      ),
-    },
-    {
       field: "actions",
       headerName: "العمليات",
       width: 180,
       renderCell: (params: any) => (
         <div className="flex flex-row gap-3 mt-3" dir="rtl">
           <Button
-            onClick={() => alert(`عرض تفاصيل المستخدم: ${params.row.name}`)}
-            className="text-white h-6"
+            onClick={() => {
+              setSelectedUser(params.row);
+              setDetailsOpen(true);
+            }}
+            className="text-white h-6 px-2 bg-blue-600 hover:bg-blue-500"
           >
             عرض
           </Button>
           <TrashIcon
             className="w-5 text-red-600 cursor-pointer"
             onClick={() => {
-              setSelectedId(params.row.id);
-              setOpen(true);
+              setSelectedUser(params.row);
+              setOpenDelete(true);
             }}
           />
         </div>
@@ -126,18 +69,31 @@ const UsersTable = () => {
 
   return (
     <div dir="rtl">
-      {isLoading ? (
+      {users.length === 0 ? (
         <DataTableSkeleton />
       ) : (
-        <DataTable columns={columns} rows={dummyUsers} />
+        <DataTable columns={columns} rows={users} />
       )}
 
       <DeleteModal
-        open={open}
-        setOpen={setOpen}
+        open={openDelete}
+        setOpen={setOpenDelete}
         Title="حذف المستخدم"
         Body="هل أنت متأكد أنك تريد حذف هذا المستخدم؟"
-        handleClick={handleDelete}
+        handleClick={() => selectedUser && handleDelete(selectedUser.id)}
+      />
+
+      <UserDetailsModal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        user={selectedUser}
+        onUpdate={(data: User) => {
+          const updatedUsers = users.map((u) =>
+            u.id === data.id ? data : u
+          );
+          localStorage.setItem("users", JSON.stringify(updatedUsers));
+          window.location.reload(); // refresh
+        }}
       />
     </div>
   );
