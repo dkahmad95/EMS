@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
-import { PencilIcon, TrashIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export default function CitiesTab() {
   const [cityName, setCityName] = useState("");
@@ -13,15 +13,19 @@ export default function CitiesTab() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-
+ const isFirstLoad = useRef(true);
   // ✅ Load from localStorage when mounted
   useEffect(() => {
     const stored = localStorage.getItem("cities");
     if (stored) setCities(JSON.parse(stored));
   }, []);
 
-  // ✅ Save to localStorage whenever cities change
+  // Save to localStorage whenever cities change (skip first load)
   useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
     localStorage.setItem("cities", JSON.stringify(cities));
   }, [cities]);
 

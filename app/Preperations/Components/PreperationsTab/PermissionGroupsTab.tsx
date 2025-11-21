@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
@@ -22,6 +22,23 @@ export default function PermissionGroupsTab() {
   // Load permissions from localStorage
   const [permissions] = useLocalStorage<string[]>("permissions", []);
 
+  const isFirstLoad = useRef(true);
+
+  // ✅ Load permission groups from localStorage on mount
+  useEffect(() => {
+    const storedGroups = localStorage.getItem("permissionGroups");
+    if (storedGroups) setGroups(JSON.parse(storedGroups));
+  }, []);
+
+  // ✅ Save permission groups to localStorage whenever they change (skip first render)
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+    localStorage.setItem("permissionGroups", JSON.stringify(groups));
+  }, [groups]);
+
   // Handle permission checkbox toggle
   const handlePermissionChange = (permValue: string) => {
     setSelectedPermissions((prev) =>
@@ -39,7 +56,7 @@ export default function PermissionGroupsTab() {
       setGroups((prev) =>
         prev.map((g) =>
           g.id === editId
-            ? { ...g, name: groupName, permissions: selectedPermissions }
+            ? { ...g, name: groupName.trim(), permissions: selectedPermissions }
             : g
         )
       );

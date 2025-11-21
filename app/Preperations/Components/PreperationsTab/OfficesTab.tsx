@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import { Select } from "@/app/Components/Select";
@@ -13,6 +13,11 @@ interface Office {
   city: string;
 }
 
+interface City {
+  id: number;
+  name: string;
+}
+
 export default function OfficesTab() {
   const [offices, setOffices] = useLocalStorage<Office[]>("offices", []);
   const [officeName, setOfficeName] = useState("");
@@ -20,14 +25,18 @@ export default function OfficesTab() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [cities, setCities] = useState<City[]>([]);
 
-  const cities = [
-    { value: "beirut", label: "بيروت" },
-    { value: "tripoli", label: "طرابلس" },
-    { value: "saida", label: "صيدا" },
-    { value: "tyre", label: "صور" },
-    { value: "baalbek", label: "بعلبك" },
-  ];
+  // Load cities from localStorage on mount
+  useEffect(() => {
+    const storedCities = JSON.parse(localStorage.getItem("cities") || "[]");
+    setCities(storedCities);
+
+    // Set first city as default if available
+    if (storedCities.length > 0) {
+      setSelectedCity(storedCities[0].name);
+    }
+  }, []);
 
   const handleAddOrUpdate = () => {
     if (!officeName.trim() || !selectedCity.trim()) return;
@@ -43,7 +52,7 @@ export default function OfficesTab() {
 
     setOffices(updated);
     setOfficeName("");
-    setSelectedCity("");
+    setSelectedCity(cities.length > 0 ? cities[0].name : "");
   };
 
   const handleEdit = (index: number) => {
@@ -75,7 +84,7 @@ export default function OfficesTab() {
         />
         <Select
           label=""
-          options={cities}
+          options={cities.map((c) => ({ value: c.name, label: c.name }))}
           value={selectedCity}
           onChange={(e: any) => setSelectedCity(e.target.value)}
         />
@@ -101,9 +110,7 @@ export default function OfficesTab() {
           >
             <div>
               <span className="font-medium">{office.name}</span>
-              <span className="ml-2 text-sm text-gray-500">
-                ({cities.find((c) => c.value === office.city)?.label})
-              </span>
+              <span className="ml-2 text-sm text-gray-500">({office.city})</span>
             </div>
 
             <div className="flex gap-2">
