@@ -12,6 +12,7 @@ import {
   UsersIcon,
   Cog6ToothIcon,
   BanknotesIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 const links = [
@@ -19,6 +20,11 @@ const links = [
     name: "الواجهة",
     href: "/",
     icon: HomeIcon, // 🏠 Home page
+  },
+   {
+    name: "لوحة التحكم",
+    href: "/Dashboard",
+    icon: ChartBarIcon, // 📊 Dashboard
   },
   {
     name: "قائمة المستخدمين",
