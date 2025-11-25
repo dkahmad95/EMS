@@ -29,7 +29,6 @@ export default function RevenueChart({ data, groupBy }: Props) {
           type="number"
           direction={'ltr'}
           orientation="right"   // <-- moves labels to the right
-          
           width={60}
           tickFormatter={(val) => val.toLocaleString()}
         />

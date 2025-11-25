@@ -1,12 +1,13 @@
 // page.tsx
 "use client";
 import { useEffect, useState } from "react";
-import RevenueSummary from "./Components/RevenueSummary";   
+import RevenueSummary from "./Components/RevenueSummary";
 import { filterRevenues } from "./utils/filterRevenues";
 import { Employee, RevenueRecord } from "./utils/types";
 import RevenueChart from "./Components/RevenueChart";
 import Filters from "./Components/Filters";
 import RevenueTable from "./Components/RevenueTable";
+import RevenueTimeChart from "./Components/RevenueTimeChart";
 
 export default function DashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -16,30 +17,37 @@ export default function DashboardPage() {
     office: "",
     employeeName: "",
     startDate: "",
-    endDate: ""
+    endDate: "",
   });
 
-useEffect(() => {
-  const storedEmployees = JSON.parse(localStorage.getItem("employees") || "[]");
-  const storedRevenues = JSON.parse(localStorage.getItem("revenues") || "[]");
-  const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
+  useEffect(() => {
+    const storedEmployees = JSON.parse(
+      localStorage.getItem("employees") || "[]"
+    );
+    const storedRevenues = JSON.parse(localStorage.getItem("revenues") || "[]");
+    const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
 
-  setEmployees(storedEmployees);
-  setRevenues(storedRevenues);
-  setOffices(storedOffices);
-}, []);
+    setEmployees(storedEmployees);
+    setRevenues(storedRevenues);
+    setOffices(storedOffices);
+  }, []);
 
   const filtered = filterRevenues(revenues, filters);
-console.log("Filtered Revenues:", filtered);
+  console.log("Filtered Revenues:", filtered);
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">لوحة التحكم</h1>
-      
-      <Filters employees={employees} filters={filters} setFilters={setFilters} offices={offices.map(o => o.name)} />
-      
+
+      <Filters
+        employees={employees}
+        filters={filters}
+        setFilters={setFilters}
+        offices={offices.map((o) => o.name)}
+      />
+
       <RevenueSummary revenues={filtered} />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <RevenueChart data={filtered} groupBy="employeeName" />
         <RevenueChart data={filtered} groupBy="office" />
@@ -47,9 +55,11 @@ console.log("Filtered Revenues:", filtered);
         <RevenueChart data={filtered} groupBy="destination" />
       </div>
 
+      <div className="mb-6 p-4 rounded-2xl shadow bg-white">
+        <h2 className="font-bold mb-2">الإيرادات مع مرور الوقت</h2>
+        <RevenueTimeChart data={filtered} />
+      </div>
       <RevenueTable data={filtered} />
-
-
     </div>
   );
 }
