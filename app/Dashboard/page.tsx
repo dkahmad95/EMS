@@ -1,4 +1,3 @@
-// page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import RevenueSummary from "./Components/RevenueSummary";
@@ -13,27 +12,28 @@ export default function DashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [revenues, setRevenues] = useState<RevenueRecord[]>([]);
   const [offices, setOffices] = useState<{ name: string; city: string }[]>([]);
+  const [currencies, setCurrencies] = useState<{ id: number; name: string }[]>([]);
   const [filters, setFilters] = useState({
     office: "",
     employeeName: "",
+    currency: "",
     startDate: "",
     endDate: "",
   });
 
   useEffect(() => {
-    const storedEmployees = JSON.parse(
-      localStorage.getItem("employees") || "[]"
-    );
+    const storedEmployees = JSON.parse(localStorage.getItem("employees") || "[]");
     const storedRevenues = JSON.parse(localStorage.getItem("revenues") || "[]");
     const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
+    const storedCurrencies = JSON.parse(localStorage.getItem("currencies") || "[]");
 
     setEmployees(storedEmployees);
     setRevenues(storedRevenues);
     setOffices(storedOffices);
+    setCurrencies(storedCurrencies);
   }, []);
 
   const filtered = filterRevenues(revenues, filters);
-  console.log("Filtered Revenues:", filtered);
 
   return (
     <div className="p-6">
@@ -44,6 +44,7 @@ export default function DashboardPage() {
         filters={filters}
         setFilters={setFilters}
         offices={offices.map((o) => o.name)}
+        currencies={currencies} // Pass currencies from local storage
       />
 
       <RevenueSummary revenues={filtered} />
@@ -59,6 +60,7 @@ export default function DashboardPage() {
         <h2 className="font-bold mb-2">الإيرادات مع مرور الوقت</h2>
         <RevenueTimeChart data={filtered} />
       </div>
+
       <RevenueTable data={filtered} />
     </div>
   );
