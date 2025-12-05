@@ -26,11 +26,7 @@ const links = [
     href: "/Dashboard",
     icon: ChartBarIcon, // 📊 Dashboard
   },
-  {
-    name: "قائمة المستخدمين",
-    href: "/UsersList",
-    icon: UsersIcon, // 👤 Users list
-  },
+
   {
     name: "قائمة الموظفين",
     href: "/EmployeesList",

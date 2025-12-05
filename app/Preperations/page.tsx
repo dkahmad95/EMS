@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import CurrenciesTab from "./Components/PreperationsTab/CurrencyTab";
 import DestinationsTab from "./Components/PreperationsTab/DestinationTab";
+import UsersList from "../UsersList/page";
 
 
 export const tabs = [
@@ -29,8 +30,8 @@ export const tabs = [
   { id: "jobTitles", label: "المسميات الوظيفية", icon: <BriefcaseIcon className="h-5 w-5" /> },
   { id: "currencies", label: "العملات", icon: <CurrencyDollarIcon className="h-5 w-5" /> },
   { id: "destinations", label: "الوجهات", icon: <GlobeAltIcon className="h-5 w-5" /> },
-  { id: "permissions", label: "الصلاحيات", icon: <LockClosedIcon className="h-5 w-5" /> },
-  { id: "groups", label: "مجموعات الصلاحيات", icon: <UserGroupIcon className="h-5 w-5" /> },
+  { id: "groups", label: "مجموعات الصلاحيات", icon: <LockClosedIcon className="h-5 w-5" /> },
+  { id: "usersList", label: " قائمة المستخدمين", icon: <UserGroupIcon className="h-5 w-5" /> },
 ];
 export default function PreperationsPage() {
   const [activeTab, setActiveTab] = useState<string>("");
@@ -49,10 +50,10 @@ export default function PreperationsPage() {
         return <CurrenciesTab />;
       case "destinations":
         return <DestinationsTab />;
-      case "permissions":
-        return <PermissionsTab />;
       case "groups":
         return <PermissionGroupsTab />;
+      case "usersList":
+        return <UsersList />;
       default:
         return (
           <div className="text-gray-500 text-center mt-10 font-semibold">
@@ -67,7 +68,7 @@ export default function PreperationsPage() {
     <div dir="rtl" className="font-[Tajawal] flex flex-col md:flex-row h-[calc(100vh-100px)] bg-gray-50">
       {/* Sidebar / Top Tabs */}
       <div className="w-full md:w-1/4 border-b md:border-b-0 md:border-l border-gray-200 bg-white shadow-md p-3 md:p-4">
-        <h2 className="text-lg font-semibold mb-3 md:mb-4 text-gray-700 text-center md:text-right">
+        <h2 className="text-lg md:text-2xl underline font-semibold mb-3 md:mb-4 text-gray-700 text-center md:text-right">
           الإعدادات
         </h2>
 
@@ -84,7 +85,7 @@ export default function PreperationsPage() {
                   }`}
               >
                 {tab.icon}
-                <span className="text-[15px]">{tab.label}</span>
+                <span className="text-[15px] font-semibold">{tab.label}</span>
               </button>
             </li>
           ))}
@@ -92,7 +93,7 @@ export default function PreperationsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1  md:p-6 overflow-y-auto">{renderTabContent()}</div>
+      <div className="flex-1  md:p-6 overflow-y-auto mt-8">{renderTabContent()}</div>
     </div>
   );
 }

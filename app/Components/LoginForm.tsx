@@ -14,8 +14,11 @@ type LoginFormData = {
     username: string;
     password: string;
 };
+interface LoginFormProps {
+  handleUserChange: () => void;
+}
 
-export default function LoginForm() {
+export default function LoginForm ({ handleUserChange }: LoginFormProps) {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
 
@@ -38,7 +41,7 @@ export default function LoginForm() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             alert(`مرحباً ${data.username}! تم تسجيل الدخول بنجاح ✅`);
-            router.push("/");
+            handleUserChange(); // call the function to update user state
         } catch (error) {
             console.error("Error:", error);
             alert(`فشل تسجيل الدخول: ${error}`);
@@ -48,9 +51,9 @@ export default function LoginForm() {
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex justify-center rounded-lg px-6 space-y-3 pb-4 pt-8"
+            className="flex justify-center h-screen items-center rounded-lg px-6 space-y-3 pb-4 pt-8"
         >
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-1/4">
                 <h1 className="mb-3 text-2xl font-semibold text-gray-900 text-center">
                     الرجاء تسجيل الدخول للمتابعة
                 </h1>

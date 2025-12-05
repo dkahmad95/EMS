@@ -6,9 +6,11 @@ import Logo from "./Logo";
 
 import PowerButton from "./PowerButton";
 
+interface SideNavProps {
+  handleUserChange: () => void;
+}
 
-
-export default function SideNav() {
+export default function SideNav({ handleUserChange }: SideNavProps) {
 
 
 
@@ -26,7 +28,7 @@ export default function SideNav() {
 
                 <NavLinks />
                 <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
-                <PowerButton />
+                <PowerButton handleUserChange={handleUserChange} />
             </div>
         </div>
     );

@@ -17,10 +17,10 @@ import { Button } from "@/app/Components/Button";
 type UserFormInputs = {
   name: string;
   phoneNumber: string;
-  email?: string;
-  city: string;
+
+  office: string;
   role: string;
-  permissions: string[];
+
   password: string;
   confirmPassword: string;
 };
@@ -28,20 +28,20 @@ type UserFormInputs = {
 export default function CreateUserForm() {
   const router = useRouter();
 
-  const [cities, setCities] = useState<any[]>([]);
+  const [offices, setOffices] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
-  const [permissionsList, setPermissionsList] = useState<any[]>([]);
+ 
 
  
 
   useEffect(() => {
-    const savedCities = JSON.parse(localStorage.getItem("cities") || "[]");
+    const savedOffices= JSON.parse(localStorage.getItem("offices") || "[]");
     const savedPermissionGroups = JSON.parse(localStorage.getItem("permissionGroups") || "[]");
-    const savedPermissions = JSON.parse(localStorage.getItem("permissions") || "[]");
+    
 
-    setCities(savedCities.map((c: any) => ({ value: c.name, label: c.name })));
+    setOffices(savedOffices.map((c: any) => ({ value: c.name, label: c.name })));
     setRoles(savedPermissionGroups.map((g: any) => ({ value: g.name, label: g.name })));
-    setPermissionsList(savedPermissions.map((p: string) => ({ value: p, label: p })));
+  
   }, []);
 
   const {
@@ -55,10 +55,10 @@ export default function CreateUserForm() {
     defaultValues: {
       name: "",
       phoneNumber: "",
-      email: "",
-      city: "",
+   
+      office: "",
       role: "",
-      permissions: [],
+   
       password: "",
       confirmPassword: "",
     },
@@ -106,38 +106,26 @@ export default function CreateUserForm() {
           helperText={errors.phoneNumber?.message}
         />
 
-        {/* البريد الإلكتروني */}
-        <TextField
-          fullWidth
-          label="البريد الإلكتروني"
-          variant="outlined"
-          margin="normal"
-          {...register("email", {
-            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "أدخل بريد إلكتروني صالح" },
-          })}
-          error={!!errors.email}
-          helperText={errors.email?.message}
-        />
-
-        {/* المدينة */}
+     
+        {/* المكتب */}
         <Controller
-          name="city"
+          name="office"
           control={control}
-          rules={{ required: "يرجى اختيار المدينة" }}
+          rules={{ required: "يرجى اختيار المكتب" }}
           render={({ field }) => (
             <TextField
               select
               fullWidth
-              label="المدينة"
+              label="المكتب"
               margin="normal"
               value={field.value}
               onChange={field.onChange}
-              error={!!errors.city}
-              helperText={errors.city?.message}
+              error={!!errors.office}
+              helperText={errors.office?.message}
             >
-              {cities.map((city) => (
-                <MenuItem key={city.value} value={city.value}>
-                  {city.label}
+              {offices.map((office) => (
+                <MenuItem key={office.value} value={office.value}>
+                  {office.label}
                 </MenuItem>
               ))}
             </TextField>
@@ -199,19 +187,7 @@ export default function CreateUserForm() {
           
         />
 
-        {/* الصلاحيات */}
-        <Box mt={2}>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">الصلاحيات الإضافية</label>
-          <FormGroup row>
-            {permissionsList.map((perm) => (
-              <FormControlLabel
-                key={perm.value}
-                control={<Checkbox {...register("permissions")} value={perm.value} />}
-                label={perm.label}
-              />
-            ))}
-          </FormGroup>
-        </Box>
+     
 
         {/* الأزرار */}
         <Box mt={4} display="flex" justifyContent="flex-end" gap={2}>

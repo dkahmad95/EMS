@@ -15,9 +15,8 @@ import { useForm, Controller } from "react-hook-form";
 interface User {
   id: number;
   name: string;
-  email: string;
   phoneNumber: string;
-  city: string;
+  office: string;
   joinDate?: string;
 }
 
@@ -38,12 +37,12 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     defaultValues: user || {},
   });
 
-  const [cities, setCities] = useState<string[]>([]);
+  const [offices, setOffices] = useState<string[]>([]);
 
-  // Load cities from localStorage
+  // Load offices from localStorage
   useEffect(() => {
-    const storedCities = JSON.parse(localStorage.getItem("cities") || "[]");
-    setCities(storedCities.map((c: any) => c.name || c)); // support array of strings or objects
+    const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
+    setOffices(storedOffices.map((c: any) => c.name || c)); // support array of strings or objects
   }, []);
 
   useEffect(() => {
@@ -65,22 +64,18 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           control={control}
           render={({ field }) => <TextField label="الاسم" {...field} fullWidth />}
         />
-        <Controller
-          name="email"
-          control={control}
-          render={({ field }) => <TextField label="البريد الإلكتروني" {...field} fullWidth />}
-        />
+        
         <Controller
           name="phoneNumber"
           control={control}
           render={({ field }) => <TextField label="رقم الهاتف" {...field} fullWidth />}
         />
         <Controller
-          name="city"
+          name="office"
           control={control}
           render={({ field }) => (
-            <TextField select label="المدينة" {...field} fullWidth>
-              {cities.map((c) => (
+            <TextField select label="المكتب" {...field} fullWidth>
+              {offices.map((c) => (
                 <MenuItem key={c} value={c}>
                   {c}
                 </MenuItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
@@ -11,9 +11,8 @@ import UserDetailsModal from "./UserDetailsModal";
 interface User {
   id: number;
   name: string;
-  email: string;
   phoneNumber: string;
-  city: string;
+  office: string;
   joinDate?: string;
   status?: string;
 }
@@ -35,11 +34,11 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
   };
 
   const columns = [
-    { field: "id", headerName: "الرقم", width: 80 },
+    { field: "id", headerName: "الرقم", width: 200 },
     { field: "name", headerName: "الاسم الكامل", width: 150 },
-    { field: "email", headerName: "البريد الإلكتروني", width: 200 },
+    
     { field: "phoneNumber", headerName: "رقم الهاتف", width: 150 },
-    { field: "city", headerName: "المدينة", width: 120 },
+    { field: "office", headerName: "المكتب", width: 120 },
     {
       field: "actions",
       headerName: "العمليات",
@@ -51,7 +50,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
               setSelectedUser(params.row);
               setDetailsOpen(true);
             }}
-            className="text-white h-6 px-2 bg-blue-600 hover:bg-blue-500"
+            className="h-6 px-2"
           >
             عرض
           </Button>
