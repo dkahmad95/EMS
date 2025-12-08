@@ -27,6 +27,7 @@ interface EmployeeFormInputs {
   familyStatus?: string;
   childrenCount?: number;
   address?: string;
+  detailedAddress?: string;
   gender?: string;
   notes?: string;
   permissionGroup: string;
@@ -54,6 +55,7 @@ export default function CreateEmployeeForm() {
       familyStatus: "",
       childrenCount: 0,
       address: "",
+      detailedAddress: "",
       gender: "",
       notes: "",
       permissionGroup: "",
@@ -123,14 +125,14 @@ const bloodTypeOptions = [
     <div dir="rtl" className="font-[Tajawal] text-right p-6">
       <form onSubmit={handleSubmit(onSubmit)} className="rounded-md bg-white shadow p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         
-        {/* File Number */}
+        {/* File Number
         <Controller
           name="fileNumber"
           control={control}
           render={({ field }) => (
             <TextField label="رقم الملف" {...field} fullWidth value={field.value ?? ""} />
           )}
-        />
+        /> */}
 
         {/* Start Date */}
         <Controller
@@ -348,12 +350,33 @@ const bloodTypeOptions = [
     </TextField>
   )}
 />
-        {/* Address */}
+   {/* // Birth Place (select from cities) */}
+<Controller
+  name="address"
+  control={control}
+  render={({ field }) => (
+    <TextField
+      select
+      label="مكان السكن"
+      {...field}
+      fullWidth
+      value={field.value ?? ""}
+    >
+      {cities.map((c) => (
+        <MenuItem key={c.id} value={c.name}>
+          {c.name}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+        {/* Detailed Address */}
         <Controller
-          name="address"
+          name="detailedAddress"
           control={control}
-          render={({ field }) => <TextField label="عنوان السكن" {...field} fullWidth value={field.value ?? ""} />}
+          render={({ field }) => <TextField label="عنوان السكن التفصيلي" {...field} fullWidth value={field.value ?? ""} />}
         />
+
 
         {/* Notes */}
         <Controller

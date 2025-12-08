@@ -1,12 +1,65 @@
 "use client";
 
 export const seedDummyData = () => {
+  // ----- Governorates -----
+  const governorates = [
+    { id: 1765178613266, name: "جبل لبنان" },
+    { id: 1765178614000, name: "بيروت" },
+    { id: 1765178615000, name: "الشمال" },
+    { id: 1765178616000, name: "الجنوب" },
+  ];
+
+  localStorage.setItem("governorates", JSON.stringify(governorates));
+  // ----- Districts -----
+  const districts = [
+    {
+      id: 1765179248637,
+      name: "بعبدا",
+      parentId: 1765178613266, // جبل لبنان
+    },
+    {
+      id: 1765179249000,
+      name: "بيروت",
+      parentId: 1765178614000, // بيروت
+    },
+    {
+      id: 1765179249100,
+      name: "طرابلس",
+      parentId: 1765178615000, // الشمال
+    },
+    {
+      id: 1765179249200,
+      name: "صيدا",
+      parentId: 1765178616000, // الجنوب
+    },
+  ];
+
+  localStorage.setItem("districts", JSON.stringify(districts));
+
   // ----- Cities -----
   const cities = [
-    { id: 1762929247910, name: "بيروت" },
-    { id: 1762929247911, name: "طرابلس" },
-    { id: 1762929247912, name: "صيدا" },
+    {
+      id: 1762929247910,
+      name: "بيروت",
+      parentId: 1765179249000, // بيروت district
+    },
+    {
+      id: 1762929247911,
+      name: "طرابلس",
+      parentId: 1765179249100, // طرابلس district
+    },
+    {
+      id: 1762929247912,
+      name: "صيدا",
+      parentId: 1765179249200, // صيدا district
+    },
+    {
+      id: 1765183727192,
+      name: "boroj",
+      parentId: 1765179248637, // بعبدا district
+    },
   ];
+
   localStorage.setItem("cities", JSON.stringify(cities));
 
   // ----- Currencies -----
@@ -43,7 +96,11 @@ export const seedDummyData = () => {
 
   // ----- Permissions Groups -----
   const permissionGroups = [
-    { id: 1762928590386, name: "Admin", permissions: ["add_employee", "view_reports"] },
+    {
+      id: 1762928590386,
+      name: "Admin",
+      permissions: ["add_employee", "view_reports"],
+    },
     { id: 1762928590387, name: "User", permissions: ["read"] },
   ];
   localStorage.setItem("permissionGroups", JSON.stringify(permissionGroups));
@@ -74,7 +131,8 @@ export const seedDummyData = () => {
       birthPlace: "بيروت",
       age: "35",
       bloodType: "A+",
-      address: "بيروت وسط المدينة",
+      address: "بيروت",
+      detailedAddress: "بناية الهدى، الطابق الثالث، قرب مسجد الغفران",
       childrenCount: "2",
     },
     {
@@ -97,7 +155,8 @@ export const seedDummyData = () => {
       birthPlace: "طرابلس",
       age: "28",
       bloodType: "O+",
-      address: "طرابلس وسط المدينة",
+      address: "صيدا",
+      detailedAddress: "بناية الريحان، الطابق الأول، مقابل مركز البريد",
       childrenCount: "0",
     },
     {
@@ -120,7 +179,8 @@ export const seedDummyData = () => {
       birthPlace: "صيدا",
       age: "40",
       bloodType: "B+",
-      address: "صيدا وسط المدينة",
+      address: "الدكوانة",
+      detailedAddress: "عمارة الزهراء، الطابق الثالث، بجانب سوبرماركت الريف",
       childrenCount: "3",
     },
   ];
@@ -149,49 +209,51 @@ export const seedDummyData = () => {
     });
   }
   localStorage.setItem("revenues", JSON.stringify(revenues));
-   // ----- Users (New) -----
+  // ----- Users (New) -----
   const users = [
     {
       id: 1,
       name: "أحمد دقماق",
-      email: "ahmad.user@example.com",
       phoneNumber: "78940697",
       city: "بيروت",
+      office: "بيروت",
+      permissionGroup: "Admin",
       joinDate: "2025-01-10",
     },
     {
       id: 2,
       name: "سارة علي",
-      email: "sarah.user@example.com",
       phoneNumber: "71234567",
-      city: "طرابلس",
+      office: "طرابلس",
+      permissionGroup: "User",
       joinDate: "2025-02-15",
     },
     {
       id: 3,
       name: "محمد حسن",
-      email: "mohamed.user@example.com",
       phoneNumber: "71234568",
-      city: "صيدا",
+      office: "صيدا",
+      permissionGroup: "Admin",
       joinDate: "2025-03-20",
     },
     {
       id: 4,
       name: "ليلى خوري",
-      email: "layla.user@example.com",
       phoneNumber: "71234569",
-      city: "بيروت",
+      office: "بيروت",
+      permissionGroup: "User",
       joinDate: "2025-04-10",
     },
     {
       id: 5,
       name: "جورج نصر",
-      email: "george.user@example.com",
       phoneNumber: "71234570",
-      city: "طرابلس",
+      office: "طرابلس",
+      permissionGroup: "User",
       joinDate: "2025-05-05",
     },
   ];
+
   localStorage.setItem("users", JSON.stringify(users));
 
   alert("تم إدخال جميع البيانات التجريبية في localStorage بنجاح!");

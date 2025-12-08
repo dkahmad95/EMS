@@ -20,7 +20,7 @@ type Period = "daily" | "monthly" | "yearly";
 
 type ChartDataItem = {
   period: string;
-  [currency: string]: string | number; // period is string, currencies are numbers
+  [currency: string]: number | string; // each currency value is a number, period is string
 };
 
 export default function RevenueTimeChart({ data }: Props) {
@@ -36,44 +36,29 @@ export default function RevenueTimeChart({ data }: Props) {
     return date.toISOString().split("T")[0]; // YYYY-MM-DD for daily
   };
 
-  // Last 30 days array
-  const getLast30Days = () => {
-    const days: string[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push(formatDate(d));
-    }
-    return days;
-  };
-
-  // Get all currencies dynamically
-  const currencies = Array.from(new Set(data.map((r) => r.currency)));
-
-  let chartData: ChartDataItem[] = [];
-
-  if (period === "daily") {
-    const last30Days = getLast30Days();
-    chartData = last30Days.map((day) => ({ period: day }));
-
-    data.forEach((r) => {
-      const day = formatDate(new Date(r.date));
-      const index = chartData.findIndex((d) => d.period === day);
-      if (index >= 0) {
-        chartData[index][r.currency] =
-          (chartData[index][r.currency] as number || 0) + r.revenueAmount;
-      }
-    });
-  } else {
+  // Aggregate data per period and currency
+  const getChartData = (): ChartDataItem[] => {
     const aggregated: Record<string, ChartDataItem> = {};
+
+    // Collect all periods
     data.forEach((r) => {
       const key = formatDate(new Date(r.date));
       if (!aggregated[key]) aggregated[key] = { period: key };
       aggregated[key][r.currency] =
-        (aggregated[key][r.currency] as number || 0) + r.revenueAmount;
+        ((aggregated[key][r.currency] as number) || 0) + r.revenueAmount;
     });
-    chartData = Object.values(aggregated);
-  }
+
+    return Object.values(aggregated).sort(
+      (a, b) => new Date(a.period).getTime() - new Date(b.period).getTime()
+    );
+  };
+
+  const chartData = getChartData();
+
+  // All currencies
+  const currencies = Array.from(new Set(data.map((r) => r.currency)));
+
+  const colors = ["#166534", "#f59e0b", "#b91c1c", "#2563eb", "#9333ea"];
 
   return (
     <div>
@@ -106,12 +91,15 @@ export default function RevenueTimeChart({ data }: Props) {
       </div>
 
       <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={chartData}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+        >
           <XAxis dataKey="period" />
           <YAxis
             type="number"
             direction={"ltr"}
-            orientation="right"
+            orientation="right" // <-- moves labels to the right
             width={60}
             tickFormatter={(val) => val.toLocaleString()}
           />
@@ -125,10 +113,9 @@ export default function RevenueTimeChart({ data }: Props) {
             <Bar
               key={currency}
               dataKey={currency}
-              stackId="a"
-              fill={
-                ["#166534", "#f59e0b", "#b91c1c", "#2563eb", "#9333ea"][i % 5]
-              }
+              fill={colors[i % colors.length]}
+              barSize={20}
+              stackId={undefined} // separate bars instead of stacked
             />
           ))}
         </BarChart>

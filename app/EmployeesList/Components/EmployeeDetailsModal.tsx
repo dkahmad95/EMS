@@ -286,12 +286,25 @@ export default function EmployeeDetailsModal({
             control={control}
             render={({ field }) => <TextField label="عدد الأولاد" type="number" {...field} fullWidth />}
           />
-
-          {/* Address */}
+{/* Address*/}
           <Controller
             name="address"
             control={control}
-            render={({ field }) => <TextField label="عنوان السكن" {...field} fullWidth />}
+            render={({ field }) => (
+              <TextField select label="السكن" {...field} fullWidth>
+                {cities.map((city) => (
+                  <MenuItem key={city.id} value={city.name}>
+                    {city.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+          {/* Address */}
+          <Controller
+            name="detailedAddress"
+            control={control}
+            render={({ field }) => <TextField label="عنوان السكن التفصيلي" {...field} fullWidth />}
           />
 
           {/* Gender */}

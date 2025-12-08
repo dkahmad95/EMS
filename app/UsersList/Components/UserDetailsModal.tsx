@@ -16,7 +16,10 @@ interface User {
   id: number;
   name: string;
   phoneNumber: string;
+  
   office: string;
+ 
+  permissionGroup?: string;
   joinDate?: string;
 }
 
@@ -38,11 +41,15 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   });
 
   const [offices, setOffices] = useState<string[]>([]);
+  const [permissionGroups, setPermissionGroups] = useState<string[]>([]);
 
-  // Load offices from localStorage
+  // Load offices and permission groups from localStorage
   useEffect(() => {
     const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
     setOffices(storedOffices.map((c: any) => c.name || c)); // support array of strings or objects
+
+    const storedGroups = JSON.parse(localStorage.getItem("permissionGroups") || "[]");
+    setPermissionGroups(storedGroups.map((g: any) => g.name));
   }, []);
 
   useEffect(() => {
@@ -57,19 +64,25 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" dir="rtl">
       <DialogTitle className="font-bold text-lg">تفاصيل المستخدم</DialogTitle>
-      <div className="mt-2 ">
-      <DialogContent className="grid grid-cols-1 gap-4 ">
+      <DialogContent >
+        <div className="grid grid-cols-1 gap-4 mt-2">
+        {/* Name */}
         <Controller
           name="name"
           control={control}
           render={({ field }) => <TextField label="الاسم" {...field} fullWidth />}
         />
         
+        {/* Phone Number */}
         <Controller
           name="phoneNumber"
           control={control}
           render={({ field }) => <TextField label="رقم الهاتف" {...field} fullWidth />}
         />
+
+      
+
+        {/* Office */}
         <Controller
           name="office"
           control={control}
@@ -83,15 +96,49 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </TextField>
           )}
         />
+
+      
+
+        {/* Permission Group */}
+        <Controller
+          name="permissionGroup"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="مجموعة الصلاحيات" {...field} fullWidth>
+              {permissionGroups.map((g) => (
+                <MenuItem key={g} value={g}>
+                  {g}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        />
+
+        {/* Join Date */}
+        <Controller
+          name="joinDate"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="تاريخ الانضمام"
+              type="date"
+              {...field}
+              fullWidth
+               slotProps={{
+            inputLabel: {
+              shrink: true,   // the new recommended API
+            },
+          }}
+            />
+          )}
+        />
+        </div>
       </DialogContent>
-      </div>
       <DialogActions className="flex justify-end gap-3 p-4">
         <Button onClick={onClose} className="bg-gray-400 text-white">
           إلغاء
         </Button>
-        <Button onClick={handleSubmit(onSubmit)} >
-          تحديث
-        </Button>
+        <Button onClick={handleSubmit(onSubmit)}>تحديث</Button>
       </DialogActions>
     </Dialog>
   );
