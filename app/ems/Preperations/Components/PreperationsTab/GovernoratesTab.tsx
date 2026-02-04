@@ -9,13 +9,17 @@ import { useGovernorates } from "@/server/store/governorates";
 import * as api from "../../../../../server/services/api/governorates/governorates";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
+import TabsSkeleton from "./SkeletonTabs";
+import Loader from "@/app/Components/Loader";
 
 export default function GovernoratesTab() {
   const queryClient = useQueryClient();
-  const { data } = useGovernorates();
+  const { data, isLoading: governoratesLoading } = useGovernorates();
+
   const [deleteId, setDeleteID] = useState<number | undefined>(undefined);
-  
-  // Form state management
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formState, setFormState] = useState<Governorate>({
     name: "",
     id: undefined,
@@ -28,10 +32,11 @@ export default function GovernoratesTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["governorates"] });
       handleResetForm();
+      message.success("تم إنشاء المحافظة بنجاح");
     },
-    onError: (error) => {
+    onError: () => {
       message.error("حدث خطأ أثناء إنشاء المحافظة.");
-    }
+    },
   });
 
   // Update mutation
@@ -41,10 +46,11 @@ export default function GovernoratesTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["governorates"] });
       handleResetForm();
+      message.success("تم تحديث المحافظة بنجاح");
     },
-    onError: (error) => {
+    onError: () => {
       message.error("حدث خطأ أثناء تحديث المحافظة.");
-    }
+    },
   });
 
   // Delete mutation
@@ -54,43 +60,52 @@ export default function GovernoratesTab() {
       queryClient.invalidateQueries({ queryKey: ["governorates"] });
       setDeleteID(undefined);
       setOpenDeleteDS(false);
+      message.success("تم حذف المحافظة بنجاح");
     },
-    onError: (error) => {
+    onError: () => {
       message.error("حدث خطأ أثناء حذف المحافظة.");
-    }
+    },
   });
 
   const handleSaveGovernorate = async () => {
-    if (!formState.name.trim()) return;
+    setError(null);
+
+    if (!formState.name.trim()) {
+      setError("يرجى إدخال اسم المحافظة");
+      return;
+    }
+
+    setLoading(true);
 
     const governorateData: Governorate = {
       name: formState.name.trim(),
     };
 
-    if (formState.id !== undefined && formState.id !== null) {
-      // Update existing governorate
-      await updateGovernorate({
-        id: formState.id,
-        data: governorateData,
-      });
-    } else {
-      // Create new governorate
-      await createGovernorate(governorateData);
+    try {
+      if (formState.id !== undefined && formState.id !== null) {
+        await updateGovernorate({ id: formState.id, data: governorateData });
+      } else {
+        await createGovernorate(governorateData);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("حدث خطأ أثناء الحفظ، حاول مرة أخرى");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const setFormData = (governorate: Governorate) => {
+  const setFormData = (gov: Governorate) => {
     setFormState({
-      name: governorate.name,
-      id: governorate.id,
+      name: gov.name,
+      id: gov.id,
     });
+    setError(null);
   };
 
   const handleResetForm = () => {
-    setFormState({
-      name: "",
-      id: undefined,
-    });
+    setFormState({ name: "", id: undefined });
+    setError(null);
   };
 
   const isEditing = formState.id !== null && formState.id !== undefined;
@@ -100,55 +115,65 @@ export default function GovernoratesTab() {
     <div>
       <h2 className="text-xl font-semibold mb-4 text-gray-700">المحافظات</h2>
 
-      <div className="flex flex-col md:flex-row gap-2 mb-4 bg-white p-4 rounded shadow">
-        <Input
-          placeholder="أدخل اسم المحافظة"
-          value={formState.name}
-          onChange={(e) =>
-            setFormState((prev) => ({ ...prev, name: e.target.value }))
-          }
-        />
+      <div className="flex flex-col md:flex-row gap-2 mb-2 bg-white p-4 rounded shadow">
+        <div className="flex-1">
+          <Input
+            placeholder="أدخل اسم المحافظة"
+            value={formState.name}
+            onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
+          />
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+        </div>
+
         <Button
           onClick={handleSaveGovernorate}
-          disabled={!isFormValid}
+          disabled={!isFormValid || loading}
           className={`flex items-center gap-2 text-white ${
             isFormValid
               ? isEditing
-                ? "bg-blue-700 hover:bg-blue-600"
-                : "bg-green-700 hover:bg-green-600"
+                ? "bg-secondary-700 hover:bg-secondary-600"
+                : "bg-primary-700 hover:bg-primary-600"
               : "bg-gray-400 cursor-not-allowed"
-          }`}>
-          {isEditing ? "تحديث" : "إضافة"}
+          }`}
+        >
+          {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>
       </div>
 
-      <ul className="space-y-2">
-        {data?.map((governorate) => (
-          <li
-            key={governorate.id}
-            className="p-3 bg-white shadow rounded text-gray-700 flex justify-between items-center">
-            <span className="font-medium">{governorate.name}</span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFormData(governorate)}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                title="تعديل">
-                <PencilIcon className="w-5 h-5 text-gray-700" />
-              </button>
+      {governoratesLoading ? (
+        <TabsSkeleton count={3} />
+      ) : (
+        <ul className="space-y-2 mt-4">
+          {data?.map((gov) => (
+            <li
+              key={gov.id}
+              className="p-3 bg-white shadow rounded text-gray-700 flex justify-between items-center"
+            >
+              <span className="font-medium">{gov.name}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFormData(gov)}
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  title="تعديل"
+                >
+                  <PencilIcon className="w-5 h-5 text-gray-700" />
+                </button>
 
-              <button
-                onClick={() => {
-                  setDeleteID(governorate.id);
-                  setOpenDeleteDS(true);
-                }}
-                className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-colors"
-                title="حذف">
-                <TrashIcon className="w-5 h-5 text-red-600" />
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+                <button
+                  onClick={() => {
+                    setDeleteID(gov.id);
+                    setOpenDeleteDS(true);
+                  }}
+                  className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-colors"
+                  title="حذف"
+                >
+                  <TrashIcon className="w-5 h-5 text-red-600" />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {deleteId !== undefined && deleteId !== null && (
         <DeleteModal
