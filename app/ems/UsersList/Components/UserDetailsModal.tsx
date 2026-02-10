@@ -1,144 +1,126 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  MenuItem,
 } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useForm, Controller } from "react-hook-form";
-
-interface User {
-  id: number;
-  name: string;
-  phoneNumber: string;
-  
-  office: string;
- 
-  permissionGroup?: string;
-  joinDate?: string;
-}
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUser } from "@/server/services/api/users/users";
 
 interface UserDetailsModalProps {
   open: boolean;
   onClose: () => void;
-  user?: User | null;
-  onUpdate: (data: User) => void;
+  userId: number | null;
+  users: User[];
 }
 
 const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   open,
   onClose,
-  user,
-  onUpdate,
+  userId,
+  users,
 }) => {
-  const { control, handleSubmit, reset } = useForm<User>({
-    defaultValues: user || {},
+  const user = users.find((u) => u.id === userId);
+  const queryClient = useQueryClient();
+  const { control, handleSubmit, reset } = useForm<UpdateUserRequest>({
+    defaultValues: {
+      username: "",
+    },
   });
 
-  const [offices, setOffices] = useState<string[]>([]);
-  const [permissionGroups, setPermissionGroups] = useState<string[]>([]);
-
-  // Load offices and permission groups from localStorage
-  useEffect(() => {
-    const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
-    setOffices(storedOffices.map((c: any) => c.name || c)); // support array of strings or objects
-
-    const storedGroups = JSON.parse(localStorage.getItem("permissionGroups") || "[]");
-    setPermissionGroups(storedGroups.map((g: any) => g.name));
-  }, []);
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserRequest }) =>
+      updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      onClose();
+    },
+  });
 
   useEffect(() => {
-    if (user) reset(user);
-  }, [user, reset]);
+    if (user && open) {
+      reset({
+        username: user.username,
+      });
+    }
+  }, [user, open, reset]);
 
-  const onSubmit = (data: User) => {
-    onUpdate(data);
-    onClose();
+  const onSubmit = (data: UpdateUserRequest) => {
+    if (user?.id) {
+      updateMutation.mutate({ id: user.id, data });
+    }
   };
+
+  if (!user) return null;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" dir="rtl">
       <DialogTitle className="font-bold text-lg">تفاصيل المستخدم</DialogTitle>
-      <DialogContent >
+      <DialogContent>
         <div className="grid grid-cols-1 gap-4 mt-2">
-        {/* Name */}
-        <Controller
-          name="name"
-          control={control}
-          render={({ field }) => <TextField label="الاسم" {...field} fullWidth />}
-        />
-        
-        {/* Phone Number */}
-        <Controller
-          name="phoneNumber"
-          control={control}
-          render={({ field }) => <TextField label="رقم الهاتف" {...field} fullWidth />}
-        />
+          <TextField
+            label="رقم المستخدم"
+            value={user.id}
+            fullWidth
+            disabled
+          />
 
-      
+          {/* Username */}
+          <Controller
+            name="username"
+            control={control}
+            rules={{ required: "اسم المستخدم مطلوب" }}
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                label="اسم المستخدم"
+                {...field}
+                fullWidth
+                error={!!error}
+                helperText={error?.message}
+              />
+            )}
+          />
 
-        {/* Office */}
-        <Controller
-          name="office"
-          control={control}
-          render={({ field }) => (
-            <TextField select label="المكتب" {...field} fullWidth>
-              {offices.map((c) => (
-                <MenuItem key={c} value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
-
-      
-
-        {/* Permission Group */}
-        <Controller
-          name="permissionGroup"
-          control={control}
-          render={({ field }) => (
-            <TextField select label="مجموعة الصلاحيات" {...field} fullWidth>
-              {permissionGroups.map((g) => (
-                <MenuItem key={g} value={g}>
-                  {g}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
-
-        {/* Join Date */}
-        <Controller
-          name="joinDate"
-          control={control}
-          render={({ field }) => (
+          {user.created_at && (
             <TextField
-              label="تاريخ الانضمام"
-              type="date"
-              {...field}
+              label="تاريخ الإنشاء"
+              value={new Date(user.created_at).toLocaleDateString("ar-EG")}
               fullWidth
-               slotProps={{
-            inputLabel: {
-              shrink: true,   // the new recommended API
-            },
-          }}
+              disabled
             />
           )}
-        />
+
+          {user.updated_at && (
+            <TextField
+              label="تاريخ آخر تحديث"
+              value={new Date(user.updated_at).toLocaleDateString("ar-EG")}
+              fullWidth
+              disabled
+            />
+          )}
+
         </div>
       </DialogContent>
       <DialogActions className="flex justify-end gap-3 p-4">
-        <Button onClick={onClose} className="bg-gray-400 text-white">
+        <Button
+          onClick={onClose}
+          className="bg-gray-400 text-white"
+          disabled={updateMutation.isPending}
+        >
           إلغاء
         </Button>
-        <Button onClick={handleSubmit(onSubmit)}>تحديث</Button>
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          disabled={updateMutation.isPending}
+        >
+          {updateMutation.isPending ? "جاري التحديث..." : "تحديث"}
+        </Button>
       </DialogActions>
     </Dialog>
   );
