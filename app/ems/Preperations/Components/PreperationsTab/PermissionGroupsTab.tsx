@@ -153,19 +153,7 @@ export default function PermissionGroupsTab() {
 
         <div className="space-y-4 text-gray-700">
 
-          <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">لوحة التحكم</h3>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={permissions.control_panel.access}
-                onChange={(e) =>
-                  handlePermissionChange("control_panel", "access", e.target.checked)
-                }
-              />
-              الوصول
-            </label>
-          </div>
+
 
           <div className="border-b pb-3">
             <h3 className="font-semibold mb-2">لوحة التحليل</h3>
@@ -182,7 +170,7 @@ export default function PermissionGroupsTab() {
           </div>
 
           <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">الموظفين</h3>
+            <h3 className="font-semibold mb-2">قائمة الموظفين</h3>
             <div className="grid grid-cols-2 gap-2">
               <label className="flex items-center gap-2">
                 <input
@@ -273,8 +261,8 @@ export default function PermissionGroupsTab() {
             </div>
           </div>
 
-          <div className="pb-3">
-            <h3 className="font-semibold mb-2">المستخدمين</h3>
+          <div className="pb-3 border-b">
+            <h3 className="font-semibold mb-2">إدارة المستخدمين</h3>
             <div className="grid grid-cols-2 gap-2">
               <label className="flex items-center gap-2">
                 <input
@@ -318,6 +306,19 @@ export default function PermissionGroupsTab() {
               </label>
             </div>
           </div>
+          <div className="border-b pb-3">
+            <h3 className="font-semibold mb-2">إدارة النظام</h3>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={permissions.control_panel.access}
+                onChange={(e) =>
+                  handlePermissionChange("control_panel", "access", e.target.checked)
+                }
+              />
+              الوصول
+            </label>
+          </div>
         </div>
 
         <Button
@@ -342,11 +343,11 @@ export default function PermissionGroupsTab() {
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-2">{group.name}</h3>
                 <div className="text-sm text-gray-600 space-y-1">
-                  {group.permissions.control_panel.access && (
-                    <div>✓ لوحة التحكم</div>
-                  )}
                   {group.permissions.dashboard.access && (
                     <div>✓ لوحة التحليل</div>
+                  )}
+                  {group.permissions.control_panel.access && (
+                    <div>✓ إدارة النظام</div>
                   )}
                   {(group.permissions.employees.create ||
                     group.permissions.employees.read ||

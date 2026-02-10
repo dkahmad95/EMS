@@ -15,7 +15,7 @@ import {
 
 const links = [
   {
-    name: "لوحة التحكم",
+    name: "لوحة التحليل",
     href: "/ems/Dashboard",
     icon: ChartBarIcon,
     checkAccess: (permissions: ReturnType<typeof usePermissions>) =>

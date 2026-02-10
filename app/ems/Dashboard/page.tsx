@@ -40,7 +40,7 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">لوحة التحكم</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">لوحة التحليل</h1>
           <p className="text-slate-600">نظرة عامة على الإيرادات والأداء</p>
         </div>
         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg border border-primary-200/50">

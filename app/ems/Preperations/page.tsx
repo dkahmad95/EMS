@@ -50,7 +50,7 @@ export default function PreperationsPage() {
         <ShieldExclamationIcon className="w-24 h-24 text-red-500 mb-4" />
         <h1 className="text-3xl font-bold text-gray-800 mb-2">غير مصرح</h1>
         <p className="text-gray-600 mb-6 text-center max-w-md">
-          ليس لديك صلاحية للوصول إلى لوحة التحكم. يرجى الاتصال بالمسؤول إذا كنت تعتقد أن هذا خطأ.
+          ليس لديك صلاحية للوصول إلى إدارة النظام. يرجى الاتصال بالمسؤول إذا كنت تعتقد أن هذا خطأ.
         </p>
         <button
           onClick={() => router.push("/ems")}
