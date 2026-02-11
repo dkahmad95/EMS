@@ -38,7 +38,7 @@ export const usePermissions = () => {
     };
 
     decodeToken();
-  }, []);
+  }, [decodedToken]);
 
   const currentOffice = decodedToken?.offices.find(
     o => o.office_id === currentOfficeId
