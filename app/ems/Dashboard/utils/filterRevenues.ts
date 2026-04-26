@@ -17,7 +17,7 @@ export const filterRevenues = (data: RevenueRecord[], filters: Filters) => {
     return (
       (!filters.office || r.office === filters.office) &&
       (!filters.employeeName || r.employeeName === filters.employeeName) &&
-      (!filters.currency || r.currency === filters.currency) && // <-- filter by currency
+      (!filters.currency || r.currency === filters.currency) && 
       date >= start &&
       date <= end
     );

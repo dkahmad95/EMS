@@ -22,9 +22,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   bulkAssignOffices,
 } from "@/server/services/api/officeUsers/officeUsers";
-import { usePermissions } from "@/app/hooks/usePermissions";
 import { useOffices } from "@/server/store/offices";
-import { usePermissionGroups } from "@/server/store/permissionGroups";
 import { useOfficeUsersById } from "@/server/store/officeUsers";
 
 interface AttachOfficesModalProps {
@@ -42,7 +40,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const [selectedOfficeIds, setSelectedOfficeIds] = useState<number[]>([]);
-  const [selectedPermissionGroupId, setSelectedPermissionGroupId] = useState<number | "">("");
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error"; }>({
     open: false,
     message: "",
@@ -50,7 +47,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
   });
 
   const { data: allOffices } = useOffices();
-  const { data: permissionGroups } = usePermissionGroups();
   const { data: currentAssignments, isLoading: loadingAssignments } = useOfficeUsersById(userId, { enabled: open && !!userId });
 
   const assignMutation = useMutation({
@@ -59,10 +55,9 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["officeUserById", userId] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setSelectedOfficeIds([]);
-      setSelectedPermissionGroupId("");
       setSnackbar({
         open: true,
-        message: "تم ربط المكاتب بنجاح ✔",
+        message: "تم ربط المكاتب بنجاح",
         severity: "success",
       });
       setTimeout(() => {
@@ -82,7 +77,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
   useEffect(() => {
     if (!open) {
       setSelectedOfficeIds([]);
-      setSelectedPermissionGroupId("");
       setSnackbar({ ...snackbar, open: false });
     }
   }, [open]);
@@ -90,7 +84,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
   useEffect(() => {
     if (open && currentAssignments) {
       setSelectedOfficeIds(currentAssignments.offices_Ids);
-      setSelectedPermissionGroupId(currentAssignments.permission_group_id);
     }
   }, [open, currentAssignments]);
 
@@ -99,11 +92,7 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
     setSelectedOfficeIds(typeof value === "string" ? [] : value);
   };
 
-  const handlePermissionGroupChange = (event: SelectChangeEvent<number | "">) => {
-    setSelectedPermissionGroupId(event.target.value as number | "");
-  };
-
-  const isFormValid = selectedOfficeIds.length > 0 && selectedPermissionGroupId !== "";
+  const isFormValid = selectedOfficeIds.length > 0;
 
   const handleSubmit = () => {
     if (!isFormValid) return;
@@ -111,7 +100,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
     const data: AssignOfficesRequest = {
       user_id: userId,
       office_ids: selectedOfficeIds,
-      permission_group_id: selectedPermissionGroupId as number,
     };
 
     assignMutation.mutate(data);
@@ -152,22 +140,6 @@ const AttachOfficesModal: React.FC<AttachOfficesModalProps> = ({
                   <MenuItem key={office.id} value={office.id}>
                     <Checkbox checked={selectedOfficeIds.includes(office.id!)} />
                     <ListItemText primary={office.name} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel id="permission-group-label">مجموعة الصلاحيات</InputLabel>
-              <Select
-                labelId="permission-group-label"
-                value={selectedPermissionGroupId}
-                onChange={handlePermissionGroupChange}
-                label="مجموعة الصلاحيات"
-              >
-                {(permissionGroups || []).map((group) => (
-                  <MenuItem key={group.id} value={group.id}>
-                    {group.name}
                   </MenuItem>
                 ))}
               </Select>

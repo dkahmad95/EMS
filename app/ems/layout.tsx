@@ -3,6 +3,8 @@ import { PermissionsProvider } from "../contexts/PermissionsContext";
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
 
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: Readonly<{

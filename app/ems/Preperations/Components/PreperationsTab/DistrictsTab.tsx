@@ -29,7 +29,7 @@ export default function DistrictsTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createDistrict } = useMutation({
     mutationFn: (data: District) => api.createDistrict(data),
     onSuccess: () => {
@@ -42,7 +42,7 @@ export default function DistrictsTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateDistrict } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: District }) =>
       api.updateDistrict(id, data),
@@ -56,7 +56,7 @@ export default function DistrictsTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteDistrict } = useMutation({
     mutationFn: (id: number) => api.deleteDistrict(id),
     onSuccess: () => {
@@ -73,7 +73,6 @@ export default function DistrictsTab() {
   const handleSaveDistrict = async () => {
     setError(null);
 
-    // Validation
     if (!formState.name.trim() || !formState.governorate_id) {
       setError("يرجى إدخال اسم القضاء واختيار المحافظة");
       return;
@@ -161,13 +160,12 @@ export default function DistrictsTab() {
         <Button
           onClick={handleSaveDistrict}
           disabled={!isFormValid || loading}
-          className={`flex items-center gap-2 text-white ${
-            isFormValid
-              ? isEditing
-                ? "bg-secondary-700 hover:bg-secondary-600"
-                : "bg-primary-700 hover:bg-primary-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`flex items-center gap-2 text-white ${isFormValid
+            ? isEditing
+              ? "bg-secondary-700 hover:bg-secondary-600"
+              : "bg-primary-700 hover:bg-primary-600"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>

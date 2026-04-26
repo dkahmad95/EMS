@@ -47,7 +47,6 @@ export const Logout = async () => {
       });
     }
   } catch (error) {
-    // console.error("Logout failed:", error);
     throw new Error(`Logout failed: ${error}`);
   }
 };

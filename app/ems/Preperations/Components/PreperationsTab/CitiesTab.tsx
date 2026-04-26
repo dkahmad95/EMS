@@ -29,7 +29,7 @@ export default function CitiesTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createCity } = useMutation({
     mutationFn: (data: City) => api.createCity(data),
     onSuccess: () => {
@@ -42,7 +42,7 @@ export default function CitiesTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateCity } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: City }) =>
       api.updateCity(id, data),
@@ -56,7 +56,7 @@ export default function CitiesTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteCity } = useMutation({
     mutationFn: (id: number) => api.deleteCity(id),
     onSuccess: () => {
@@ -71,9 +71,8 @@ export default function CitiesTab() {
   });
 
   const handleSaveCity = async () => {
-    setErrors({}); // reset errors
+    setErrors({}); 
 
-    // Validation
     if (!formState.name.trim()) {
       setErrors((prev) => ({ ...prev, name: "يرجى إدخال اسم المدينة" }));
       return;
@@ -170,13 +169,12 @@ export default function CitiesTab() {
         <Button
           onClick={handleSaveCity}
           disabled={!isFormValid || loading}
-          className={`flex items-center gap-2 text-white ${
-            isFormValid
-              ? isEditing
-                ? "bg-secondary-700 hover:bg-secondary-600"
-                : "bg-primary-700 hover:bg-primary-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`flex items-center gap-2 text-white ${isFormValid
+            ? isEditing
+              ? "bg-secondary-700 hover:bg-secondary-600"
+              : "bg-primary-700 hover:bg-primary-600"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>

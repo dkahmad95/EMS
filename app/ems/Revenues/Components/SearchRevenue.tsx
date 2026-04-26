@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { Button } from "@/app/Components/Button";
+import { useEmployees } from "@/server/store/employees";
+import { useOffices } from "@/server/store/offices";
 
 interface SearchRevenueProps {
   onSearch: (filters: {
@@ -14,22 +16,21 @@ interface SearchRevenueProps {
 }
 
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
-  const [employeeList, setEmployeeList] = useState<string[]>([]);
-  const [officeList, setOfficeList] = useState<string[]>([]);
+  const { data: employeeList } = useEmployees();
+  const { data: officeList } = useOffices();
 
   const [employee, setEmployee] = useState<string | null>(null);
   const [office, setOffice] = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Load employees and offices from localStorage
-  useEffect(() => {
-    const employeesLS = JSON.parse(localStorage.getItem("employees") || "[]");
-    const officesLS = JSON.parse(localStorage.getItem("offices") || "[]");
-
-    setEmployeeList(employeesLS.map((e: any) => e.name));
-    setOfficeList(officesLS.map((o: any) => o.name));
-  }, []);
+  const handleReset = () => {
+    setEmployee(null);
+    setOffice(null);
+    setStartDate("");
+    setEndDate("");
+    onSearch({});
+  };
 
   return (
     <div className="bg-white p-4 rounded-lg shadow space-y-3">
@@ -39,7 +40,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
 
         {/* EMPLOYEE */}
         <Autocomplete
-          options={employeeList}
+          options={employeeList?.map((e) => e.name) ?? []}
           value={employee}
           onChange={(_, newValue) => setEmployee(newValue)}
           renderInput={(params) => (
@@ -50,7 +51,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
 
         {/* OFFICE */}
         <Autocomplete
-          options={officeList}
+          options={officeList?.map((o) => o.name) ?? []}
           value={office}
           onChange={(_, newValue) => setOffice(newValue)}
           renderInput={(params) => (
@@ -65,11 +66,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           label="من تاريخ"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          slotProps={{
-            inputLabel: {
-              shrink: true,   // the new recommended API
-            },
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
         />
 
         {/* END DATE */}
@@ -78,19 +75,23 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           label="إلى تاريخ"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          slotProps={{
-            inputLabel: {
-              shrink: true,   // the new recommended API
-            },
-          }}
+          slotProps={{ inputLabel: { shrink: true } }}
         />
 
         {/* SEARCH */}
         <Button
           onClick={() => onSearch({ employee, office, startDate, endDate })}
-          className="disabled:cursor-not-allowed cursor-pointer"
+          className="cursor-pointer"
         >
           بحث
+        </Button>
+
+        {/* RESET */}
+        <Button
+          onClick={handleReset}
+          className="cursor-pointer bg-gray-400 hover:bg-gray-300 text-white"
+        >
+          إعادة تعيين
         </Button>
 
       </div>

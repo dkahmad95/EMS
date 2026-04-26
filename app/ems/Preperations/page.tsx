@@ -17,7 +17,6 @@ import {
   ShieldExclamationIcon,
 } from "@heroicons/react/24/outline";
 
-// Tabs for preparation section
 const preparationTabs = [
   { id: "governorates", label: "المحافظات" },
   { id: "districts", label: "الأقضية" },
@@ -34,7 +33,7 @@ export default function PreperationsPage() {
   const router = useRouter();
   const { canAccessControlPanel, isLoading } = usePermissions();
 
-  const [activeTab, setActiveTab] = useState<string>(""); // for preparation tabs
+  const [activeTab, setActiveTab] = useState<string>(""); 
 
   if (isLoading) {
     return (
@@ -96,7 +95,6 @@ export default function PreperationsPage() {
       dir="rtl"
       className="font-[Tajawal] flex flex-col md:flex-row h-[calc(100vh-100px)] bg-gray-50"
     >
-      {/* Sidebar / Section Toggle */}
       <div className="w-full md:w-[200px] border-b md:border-b-0 md:border-l border-gray-200 bg-white shadow-md p-3 md:p-4">
         <h2 className="text-lg md:text-2xl underline font-semibold mb-3 md:mb-4 text-gray-700 text-center md:text-right">
           الإعدادات
@@ -120,7 +118,6 @@ export default function PreperationsPage() {
         </ul>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 md:p-6 overflow-y-auto mt-8">
         {renderPreparationContent()}
       </div>

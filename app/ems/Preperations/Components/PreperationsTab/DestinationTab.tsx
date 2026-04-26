@@ -26,7 +26,7 @@ export default function DestinationsTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createDestination } = useMutation({
     mutationFn: (data: Destination) => api.createDestination(data),
     onSuccess: () => {
@@ -39,7 +39,7 @@ export default function DestinationsTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateDestination } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Destination }) =>
       api.updateDestination(id, data),
@@ -53,7 +53,7 @@ export default function DestinationsTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteDestination } = useMutation({
     mutationFn: (id: number) => api.deleteDestination(id),
     onSuccess: () => {
@@ -68,9 +68,8 @@ export default function DestinationsTab() {
   });
 
   const handleSaveDestination = async () => {
-    setError(null); // reset previous errors
+    setError(null); 
 
-    // Validation
     if (!formState.name.trim()) {
       setError("يرجى إدخال اسم الوجهة");
       return;
@@ -134,13 +133,12 @@ export default function DestinationsTab() {
         <Button
           onClick={handleSaveDestination}
           disabled={!isFormValid || loading}
-          className={`flex items-center gap-2 text-white ${
-            isFormValid
-              ? isEditing
-                ? "bg-secondary-700 hover:bg-secondary-600"
-                : "bg-primary-700 hover:bg-primary-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`flex items-center gap-2 text-white ${isFormValid
+            ? isEditing
+              ? "bg-secondary-700 hover:bg-secondary-600"
+              : "bg-primary-700 hover:bg-primary-600"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>

@@ -13,14 +13,13 @@ export const withToken = async <T>(
   const token = (await cookies()).get("access_token")?.value;
 
   if (!token) {
-    // return early if no token exists
     return null;
   }
 
   try {
     const { payload } = (await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET))) as {
       payload: DecodedToken;
-    }; // use secret key from env
+    }; 
     const decodedToken = payload as DecodedToken;
 
     const authHeader = {
@@ -28,7 +27,6 @@ export const withToken = async <T>(
     };
     return (await callback(decodedToken, authHeader)).data;
   } catch (error: any) {
-    // console.error('Token verification failed:', error);
     throw new Error("Invalid or expired token");
   }
 };

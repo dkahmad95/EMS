@@ -26,7 +26,7 @@ export default function GovernoratesTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createGovernorate } = useMutation({
     mutationFn: (data: Governorate) => api.createGovernorate(data),
     onSuccess: () => {
@@ -39,7 +39,7 @@ export default function GovernoratesTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateGovernorate } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Governorate }) =>
       api.updateGovernorate(id, data),
@@ -53,7 +53,7 @@ export default function GovernoratesTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteGovernorate } = useMutation({
     mutationFn: (id: number) => api.deleteGovernorate(id),
     onSuccess: () => {
@@ -128,13 +128,12 @@ export default function GovernoratesTab() {
         <Button
           onClick={handleSaveGovernorate}
           disabled={!isFormValid || loading}
-          className={`flex items-center gap-2 text-white ${
-            isFormValid
-              ? isEditing
-                ? "bg-secondary-700 hover:bg-secondary-600"
-                : "bg-primary-700 hover:bg-primary-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`flex items-center gap-2 text-white ${isFormValid
+            ? isEditing
+              ? "bg-secondary-700 hover:bg-secondary-600"
+              : "bg-primary-700 hover:bg-primary-600"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>

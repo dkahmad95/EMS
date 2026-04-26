@@ -7,14 +7,12 @@ interface Props {
 }
 
 export default function RevenueSummary({ revenues }: Props) {
-  // Calculate total revenues per currency
   const totalsByCurrency = revenues.reduce<Record<string, number>>((acc, r) => {
     if (!acc[r.currency]) acc[r.currency] = 0;
     acc[r.currency] += r.revenueAmount;
     return acc;
   }, {});
 
-  // Count revenues per destination
   const destinationsCount = revenues.reduce<Record<string, number>>((acc, r) => {
     if (!acc[r.destination]) acc[r.destination] = 0;
     acc[r.destination] += 1;

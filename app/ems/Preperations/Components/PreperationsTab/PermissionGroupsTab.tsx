@@ -16,7 +16,7 @@ import { usePermissionGroups } from "@/server/store/permissionGroups";
 export default function PermissionGroupsTab() {
   const queryClient = useQueryClient();
   const [groupName, setGroupName] = useState("");
-  const [permissions, setPermissions] = useState<OfficePermissions>({
+  const [permissions, setPermissions] = useState<any>({
     employees: { create: false, read: false, update: false, delete: false },
     revenues: { create: false, read: false, update: false, delete: false },
     users: { create: false, read: false, update: false, delete: false },
@@ -69,11 +69,11 @@ export default function PermissionGroupsTab() {
   };
 
   const handlePermissionChange = (
-    resource: keyof OfficePermissions,
+    resource: keyof Permissions,
     action: string,
     value: boolean
   ) => {
-    setPermissions((prev) => ({
+    setPermissions((prev: any) => ({
       ...prev,
       [resource]: {
         ...prev[resource],

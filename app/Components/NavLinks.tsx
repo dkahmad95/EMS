@@ -55,7 +55,6 @@ export default function NavLinks() {
   const pathname = usePathname();
   const permissions = usePermissions();
 
-  // Show loading state while permissions are being loaded
   if (permissions.isLoading) {
     return (
       <div className="flex justify-center items-center py-4">
@@ -67,10 +66,8 @@ export default function NavLinks() {
   return (
     <>
       {links.map((link) => {
-        // Check if user has access to this link
         const hasAccess = link.checkAccess(permissions);
 
-        // Don't render the link if user doesn't have access
         if (!hasAccess) {
           return null;
         }

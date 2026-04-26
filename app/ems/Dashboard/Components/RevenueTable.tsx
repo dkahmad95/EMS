@@ -42,10 +42,7 @@ interface Props {
 
 export default function RevenueTable({ data }: Props) {
     const [isLoading, setIsLoading] = useState(true);
-     // ✅ Load revenues from localStorage
       useEffect(() => {
-      
-    
         const timer = setTimeout(() => setIsLoading(false), 700);
         return () => clearTimeout(timer);
       }, []);

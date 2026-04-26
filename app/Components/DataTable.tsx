@@ -17,10 +17,10 @@ type DataTableProps = {
   handleEvent?: any;
 };
 
-// Create rtl cache
 const cacheRtl = createCache({
   key: 'data-grid-rtl-demo',
   stylisPlugins: [prefixer, rtlPlugin],
+  prepend: true,
 });
 
 export default function DataTable({
@@ -29,7 +29,7 @@ export default function DataTable({
   handleEvent,
 }: DataTableProps) {
   const getRowClassName = (params: GridRowParams) => {
-    return "cursor-pointer hover:bg-primary-50 transition-colors";
+    return " hover:bg-primary-50 transition-colors";
   };
 
   const existingTheme = useTheme();
@@ -140,6 +140,7 @@ export default function DataTable({
             }}
             pageSizeOptions={[5, 10]}
             checkboxSelection
+            disableRowSelectionOnClick
             onRowDoubleClick={handleEvent}
             getRowClassName={getRowClassName}
           />

@@ -20,6 +20,7 @@ interface CreateUserModalProps {
 }
 
 type UserFormInputs = {
+  name: string;
   username: string;
   password: string;
   confirmPassword: string;
@@ -36,6 +37,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose }) => {
     reset,
   } = useForm<UserFormInputs>({
     defaultValues: {
+      name: "",
       username: "",
       password: "",
       confirmPassword: "",
@@ -44,12 +46,11 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose }) => {
 
   const watchedPassword = watch("password");
 
-  // Create mutation
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      alert("تم إنشاء المستخدم بنجاح ✔");
+      alert("تم إنشاء المستخدم بنجاح ");
       reset();
       onClose();
     },
@@ -77,6 +78,22 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ open, onClose }) => {
       <DialogTitle className="font-bold text-lg">إنشاء مستخدم جديد</DialogTitle>
       <DialogContent>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
+          <TextField
+            fullWidth
+            label="الاسم"
+            variant="outlined"
+            margin="normal"
+            {...register("name", {
+              required: "الاسم مطلوب",
+              minLength: {
+                value: 3,
+                message: "الاسم يجب أن يكون 3 أحرف على الأقل",
+              },
+            })}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+            disabled={createMutation.isPending}
+          />
           {/* اسم المستخدم */}
           <TextField
             fullWidth

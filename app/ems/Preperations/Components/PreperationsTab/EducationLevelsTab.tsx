@@ -26,7 +26,7 @@ export default function EducationLevelsTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createEducationLevel } = useMutation({
     mutationFn: (data: EducationLevel) => api.createEducationLevel(data),
     onSuccess: () => {
@@ -39,7 +39,7 @@ export default function EducationLevelsTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateEducationLevel } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: EducationLevel }) =>
       api.updateEducationLevel(id, data),
@@ -53,7 +53,7 @@ export default function EducationLevelsTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteEducationLevel } = useMutation({
     mutationFn: (id: number) => api.deleteEducationLevel(id),
     onSuccess: () => {
@@ -127,13 +127,12 @@ export default function EducationLevelsTab() {
         <Button
           onClick={handleSaveEducationLevel}
           disabled={!isFormValid || loading}
-          className={`flex items-center gap-2 text-white ${
-            isFormValid
-              ? isEditing
-                ? "bg-secondary-700 hover:bg-secondary-600"
-                : "bg-primary-700 hover:bg-primary-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`flex items-center gap-2 text-white ${isFormValid
+            ? isEditing
+              ? "bg-secondary-700 hover:bg-secondary-600"
+              : "bg-primary-700 hover:bg-primary-600"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
         </Button>

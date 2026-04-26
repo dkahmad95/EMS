@@ -17,9 +17,8 @@ export default function CurrenciesTab() {
   const { data, isLoading: currenciesLoading } = useCurrencies();
   const [deleteId, setDeleteID] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ code?: string }>({}); // <-- error state
+  const [errors, setErrors] = useState<{ code?: string }>({}); 
 
-  // Form state
   const [formState, setFormState] = useState<Currency>({
     name: "",
     code: "",
@@ -27,7 +26,7 @@ export default function CurrenciesTab() {
   });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
 
-  // Create mutation
+
   const { mutateAsync: createCurrency } = useMutation({
     mutationFn: (data: Currency) => api.createCurrency(data),
     onSuccess: () => {
@@ -40,7 +39,7 @@ export default function CurrenciesTab() {
     },
   });
 
-  // Update mutation
+
   const { mutateAsync: updateCurrency } = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Currency }) =>
       api.updateCurrency(id, data),
@@ -54,7 +53,7 @@ export default function CurrenciesTab() {
     },
   });
 
-  // Delete mutation
+
   const { mutateAsync: deleteCurrency } = useMutation({
     mutationFn: (id: number) => api.deleteCurrency(id),
     onSuccess: () => {
@@ -69,10 +68,8 @@ export default function CurrenciesTab() {
   });
 
   const handleSaveCurrency = async () => {
-    // Clear previous errors
     setErrors({});
 
-    // Frontend validation
     if (!formState.name.trim()) {
       message.error("يرجى إدخال اسم العملة");
       return;
@@ -111,7 +108,7 @@ export default function CurrenciesTab() {
       code: currency.code,
       id: currency.id,
     });
-    setErrors({}); // clear errors when editing
+    setErrors({});
   };
 
   const handleResetForm = () => {
@@ -155,13 +152,12 @@ export default function CurrenciesTab() {
       <Button
         onClick={handleSaveCurrency}
         disabled={!isFormValid || loading}
-        className={`flex items-center gap-2 text-white ${
-          isFormValid
-            ? isEditing
-              ? "bg-secondary-700 hover:bg-secondary-600"
-              : "bg-primary-700 hover:bg-primary-600"
-            : "bg-gray-400 cursor-not-allowed"
-        }`}
+        className={`flex items-center gap-2 text-white ${isFormValid
+          ? isEditing
+            ? "bg-secondary-700 hover:bg-secondary-600"
+            : "bg-primary-700 hover:bg-primary-600"
+          : "bg-gray-400 cursor-not-allowed"
+          }`}
       >
         {loading ? <Loader borderColor="white" /> : isEditing ? "تحديث" : "إضافة"}
       </Button>

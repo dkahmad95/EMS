@@ -1,40 +1,56 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import EmployeeDetailsModal from "./EmployeeDetailsModal";
 import { Button } from "@/app/Components/Button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as api from "@/server/services/api/employees/employees";
+import { message } from "antd";
 
-interface Employee {
-  id: number;
-  name: string;
-  phoneNumbers: string;
-  officeLocation: string;
-  jobTitle: string;
-}
 interface EmployeesTableProps {
   employees: Employee[];
+  isLoading?: boolean;
+  onSuccess?: () => void;
 }
 
-const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees }) => {
+const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees, isLoading, onSuccess }) => {
+  const queryClient = useQueryClient();
   const [openDelete, setOpenDelete] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  const handleDelete = (id: number) => {
-    const updatedEmployees = employees.filter((emp) => emp.id !== id);
-    localStorage.setItem("employees", JSON.stringify(updatedEmployees));
-    setOpenDelete(false);
-    window.location.reload(); // optional quick refresh to reflect changes
-  };
+  const { mutateAsync: deleteEmployee } = useMutation({
+    mutationFn: (id: number) => api.deleteEmployee(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      setOpenDelete(false);
+      setSelectedEmployee(null);
+      message.success("تم حذف الموظف بنجاح");
+      onSuccess?.();
+    },
+    onError: () => {
+      message.error("حدث خطأ أثناء حذف الموظف.");
+    },
+  });
 
   const columns = [
     { field: "name", headerName: "الاسم", width: 200 },
-    { field: "phoneNumbers", headerName: "رقم الهاتف", width: 150 },
-    { field: "officeLocation", headerName: "المكتب", width: 150 },
-    { field: "jobTitle", headerName: "المسمى الوظيفي", width: 150 },
+    { field: "phone", headerName: "رقم الهاتف", width: 150 },
+    {
+      field: "office",
+      headerName: "المكتب",
+      width: 150,
+      valueGetter: (params: any) => params?.row?.office?.name ?? "",
+    },
+    {
+      field: "job_title",
+      headerName: "المسمى الوظيفي",
+      width: 150,
+      valueGetter: (params: any) => params?.row?.job_title?.name ?? "",
+    },
     {
       field: "actions",
       headerName: "العمليات",
@@ -62,6 +78,8 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees }) => {
     },
   ];
 
+  if (isLoading) return <DataTableSkeleton />;
+
   return (
     <div dir="rtl">
       <DataTable columns={columns} rows={employees} />
@@ -71,17 +89,17 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees }) => {
         setOpen={setOpenDelete}
         Title="حذف الموظف"
         Body="هل أنت متأكد أنك تريد حذف هذا الموظف؟"
-        handleClick={() => selectedEmployee && handleDelete(selectedEmployee.id)}
+        handleClick={() => selectedEmployee?.id && deleteEmployee(selectedEmployee?.id)}
       />
 
       <EmployeeDetailsModal
         open={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         employee={selectedEmployee}
-        onUpdate={(data) => {
-          const updated = employees.map((emp) => (emp.id === data.id ? data : emp));
-          localStorage.setItem("employees", JSON.stringify(updated));
-          window.location.reload(); // refresh to reflect update
+        onSuccess={() => {
+          setDetailsOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["employees"] });
+          onSuccess?.();
         }}
       />
     </div>

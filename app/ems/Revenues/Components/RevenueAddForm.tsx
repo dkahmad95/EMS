@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Autocomplete,
   TextField,
@@ -9,84 +9,70 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-
-import { Input } from "@/app/Components/Input";
 import { Button } from "@/app/Components/Button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as api from "@/server/services/api/revenues/revenues";
+import { useEmployees } from "@/server/store/employees";
+import { useOffices } from "@/server/store/offices";
+import { useDestinations } from "@/server/store/destinations";
+import { useCurrencies } from "@/server/store/currencies";
+import { message } from "antd";
+import Loader from "@/app/Components/Loader";
 
-interface Destination {
-  id: number;
-  name: string;
-}
+const AddRevenueForm: React.FC = () => {
+  const queryClient = useQueryClient();
 
-interface RevenueEntry {
-  id: number;
-  employeeName: string;
-  office: string;
-  destination: string;
-  currency: string;
-  date: string;
-  revenueAmount: number;
-  notes?: string;
-}
+  const { data: employeeList } = useEmployees();
+  const { data: officeList } = useOffices();
+  const { data: currenciesList } = useCurrencies();
+  const { data: destinationsList } = useDestinations();
 
-interface AddRevenueFormProps {
-  onAdd: (entry: RevenueEntry) => void;
-}
-
-const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
-  const [employeeList, setEmployeeList] = useState<any[]>([]);
-  const [officeList, setOfficeList] = useState<any[]>([]);
-  const [currenciesList, setCurrenciesList] = useState<any[]>([]);
-  const [destinationsList, setDestinationsList] = useState<Destination[]>([]);
-
-  const [employeeName, setEmployeeName] = useState("");
-  const [office, setOffice] = useState("");
-  const [destination, setDestination] = useState<Destination | null>(null);
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
+  const [officeId, setOfficeId] = useState<number | null>(null);
+  const [destinationId, setDestinationId] = useState<number | null>(null);
+  const [currencyId, setCurrencyId] = useState<number | null>(null);
   const [date, setDate] = useState("");
-  const [revenueAmount, setRevenueAmount] = useState<number | string>("");
-  const [currency, setCurrency] = useState("");
+  const [revenueAmount, setRevenueAmount] = useState<string>("");
   const [notes, setNotes] = useState("");
 
-  // LOAD DATA FROM LOCAL STORAGE
-  useEffect(() => {
-    setEmployeeList(JSON.parse(localStorage.getItem("employees") || "[]"));
-    setOfficeList(JSON.parse(localStorage.getItem("offices") || "[]"));
-    setCurrenciesList(JSON.parse(localStorage.getItem("currencies") || "[]"));
-    setDestinationsList(JSON.parse(localStorage.getItem("destinations") || "[]"));
-  }, []);
+  const { mutateAsync: createRevenue, isPending } = useMutation({
+    mutationFn: (data: Revenue) => api.createRevenue(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["revenues"] });
+      message.success("تم إضافة الإيراد بنجاح");
+      setEmployeeId(null);
+      setOfficeId(null);
+      setDestinationId(null);
+      setCurrencyId(null);
+      setDate("");
+      setRevenueAmount("");
+      setNotes("");
+    },
+    onError: () => {
+      message.error("حدث خطأ أثناء إضافة الإيراد.");
+    },
+  });
 
-  const handleAdd = () => {
-    if (!employeeName || !office || !date || !revenueAmount || !currency || !destination) {
-      alert("يرجى إدخال جميع البيانات المطلوبة");
-      return;
-    }
+  const isFormValid =
+    employeeId !== null &&
+    officeId !== null &&
+    destinationId !== null &&
+    currencyId !== null &&
+    date !== "" &&
+    revenueAmount !== "";
 
-    const newEntry: RevenueEntry = {
-      id: Date.now(),
-      employeeName,
-      office,
-      destination: destination.name, // Save NAME only
-      currency,
+  const handleAdd = async () => {
+    if (!isFormValid) return;
+
+    await createRevenue({
+      employee_id: employeeId!,
+      office_id: officeId!,
+      destination_id: destinationId!,
+      currency_id: currencyId!,
       date,
-      revenueAmount: Number(revenueAmount),
-      notes,
-    };
-
-    // Save to localStorage
-    const stored = JSON.parse(localStorage.getItem("revenues") || "[]");
-    stored.push(newEntry);
-    localStorage.setItem("revenues", JSON.stringify(stored));
-
-    onAdd(newEntry);
-
-    // Reset fields
-    setEmployeeName("");
-    setOffice("");
-    setDestination(null);
-    setDate("");
-    setRevenueAmount("");
-    setCurrency("");
-    setNotes("");
+      revenue_amount: Number(revenueAmount),
+      notes: notes || undefined,
+    });
   };
 
   return (
@@ -99,9 +85,10 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
 
         {/* EMPLOYEE */}
         <Autocomplete
-          options={employeeList.map((e) => e.name)}
-          value={employeeName}
-          onChange={(_, newValue) => setEmployeeName(newValue || "")}
+          options={employeeList ?? []}
+          getOptionLabel={(option) => option.name}
+          value={employeeList?.find((e) => e.id === employeeId) ?? null}
+          onChange={(_, newValue) => setEmployeeId(newValue?.id ?? null)}
           renderInput={(params) => (
             <TextField {...params} label="اسم الموظف" variant="outlined" />
           )}
@@ -110,9 +97,10 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
 
         {/* OFFICE */}
         <Autocomplete
-          options={officeList.map((o) => o.name)}
-          value={office}
-          onChange={(_, newValue) => setOffice(newValue || "")}
+          options={officeList ?? []}
+          getOptionLabel={(option) => option.name}
+          value={officeList?.find((o) => o.id === officeId) ?? null}
+          onChange={(_, newValue) => setOfficeId(newValue?.id ?? null)}
           renderInput={(params) => (
             <TextField {...params} label="المكتب" variant="outlined" />
           )}
@@ -121,10 +109,10 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
 
         {/* DESTINATION */}
         <Autocomplete
-          options={destinationsList}
-          value={destination}
-          onChange={(_, newValue) => setDestination(newValue)}
+          options={destinationsList ?? []}
           getOptionLabel={(option) => option.name}
+          value={destinationsList?.find((d) => d.id === destinationId) ?? null}
+          onChange={(_, newValue) => setDestinationId(newValue?.id ?? null)}
           renderInput={(params) => (
             <TextField {...params} label="الوجهة" variant="outlined" />
           )}
@@ -137,17 +125,12 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
           label="التاريخ"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          slotProps={{
-            inputLabel: {
-              shrink: true,   // the new recommended API
-            },
-          }}
-
+          slotProps={{ inputLabel: { shrink: true } }}
         />
 
         {/* REVENUE AMOUNT */}
         <TextField
-          type="text"
+          type="number"
           label="قيمة الإيراد"
           value={revenueAmount}
           onChange={(e) => setRevenueAmount(e.target.value)}
@@ -158,13 +141,13 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
           <InputLabel id="currency-label">العملة</InputLabel>
           <Select
             labelId="currency-label"
-            value={currency}
+            value={currencyId ?? ""}
             label="العملة"
-            onChange={(e) => setCurrency(e.target.value)}
+            onChange={(e) => setCurrencyId(Number(e.target.value))}
           >
-            {currenciesList.map((c: any) => (
-              <MenuItem key={c.id} value={c.name}>
-                {c.name}
+            {currenciesList?.map((c) => (
+              <MenuItem key={c.id} value={c.id}>
+                {c.name} ({c.code})
               </MenuItem>
             ))}
           </Select>
@@ -181,10 +164,10 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ onAdd }) => {
         {/* ADD BUTTON */}
         <Button
           onClick={handleAdd}
-          disabled={!employeeName || !office || !date || !revenueAmount || !currency || !destination}
-          className="disabled:cursor-not-allowed cursor-pointer"
+          disabled={!isFormValid || isPending}
+          className="disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
         >
-          إضافة الإيراد
+          {isPending ? <Loader borderColor="white" /> : "إضافة الإيراد"}
         </Button>
       </div>
     </div>

@@ -8,137 +8,179 @@ import {
   DialogActions,
   TextField,
   Autocomplete,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { Input } from "@/app/Components/Input";
 import { Button } from "@/app/Components/Button";
-import { RevenueEntry } from "./data";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as api from "@/server/services/api/revenues/revenues";
+import { useEmployees } from "@/server/store/employees";
+import { useOffices } from "@/server/store/offices";
+import { useDestinations } from "@/server/store/destinations";
+import { useCurrencies } from "@/server/store/currencies";
+import { message } from "antd";
+import Loader from "@/app/Components/Loader";
 
 interface EditRevenueDialogProps {
   open: boolean;
   onClose: () => void;
-  entry: RevenueEntry | null;
-  onSave: (updated: RevenueEntry) => void;
+  entry: Revenue | null;
+  onSuccess: () => void;
 }
 
 const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
   open,
   onClose,
   entry,
-  onSave,
+  onSuccess,
 }) => {
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [offices, setOffices] = useState<any[]>([]);
-  const [destinations, setDestinations] = useState<any[]>([]);
+  const queryClient = useQueryClient();
 
-  const [employeeName, setEmployeeName] = useState("");
-  const [office, setOffice] = useState("");
-  const [destination, setDestination] = useState<string>("");
+  const { data: employeeList } = useEmployees();
+  const { data: officeList } = useOffices();
+  const { data: destinationsList } = useDestinations();
+  const { data: currenciesList } = useCurrencies();
+
+  const [employeeId, setEmployeeId] = useState<number | null>(null);
+  const [officeId, setOfficeId] = useState<number | null>(null);
+  const [destinationId, setDestinationId] = useState<number | null>(null);
+  const [currencyId, setCurrencyId] = useState<number | null>(null);
   const [date, setDate] = useState("");
-  const [revenueAmount, setRevenueAmount] = useState<number | string>("");
+  const [revenueAmount, setRevenueAmount] = useState<string>("");
   const [notes, setNotes] = useState("");
-
-  // Load local storage data
-  useEffect(() => {
-    setEmployees(JSON.parse(localStorage.getItem("employees") || "[]"));
-    setOffices(JSON.parse(localStorage.getItem("offices") || "[]"));
-    setDestinations(JSON.parse(localStorage.getItem("destinations") || "[]"));
-  }, []);
-
-  // Set initial form data when entry changes
 
   useEffect(() => {
     if (entry) {
-      setEmployeeName(entry.employeeName || "");
-      setOffice(entry.office || "");
-      setDestination(entry.destination || "");  // FIX
-      setDate(entry.date || "");
-      setRevenueAmount(entry.revenueAmount || "");
-      setNotes(entry.notes || "");
+      setEmployeeId(entry.employee_id);
+      setOfficeId(entry.office_id);
+      setDestinationId(entry.destination_id);
+      setCurrencyId(entry.currency_id);
+      setDate(entry.date?.split("T")[0] ?? entry.date ?? "");
+      setRevenueAmount(String(entry.revenue_amount));
+      setNotes(entry.notes ?? "");
     }
   }, [entry]);
 
-  // Save update
-  const handleSave = () => {
-    if (!entry) return;
+  const { mutateAsync: updateRevenue, isPending } = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Revenue> }) =>
+      api.updateRevenue(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["revenues"] });
+      message.success("تم تحديث الإيراد بنجاح");
+      onSuccess();
+    },
+    onError: () => {
+      message.error("حدث خطأ أثناء تحديث الإيراد.");
+    },
+  });
 
-    const updatedItem: RevenueEntry = {
-      ...entry,
-      employeeName,
-      office,
-      destination,
-      date,
-      revenueAmount: Number(revenueAmount),
-      notes,
-    };
+  const handleSave = async () => {
+    if (!entry?.id) return;
 
-    // Update Local Storage
-    const stored = JSON.parse(localStorage.getItem("revenues") || "[]");
-    const updatedList = stored.map((item: RevenueEntry) =>
-      item.id === updatedItem.id ? updatedItem : item
-    );
-
-    localStorage.setItem("revenues", JSON.stringify(updatedList));
-
-    onSave(updatedItem);
+    await updateRevenue({
+      id: entry.id,
+      data: {
+        employee_id: employeeId ?? undefined,
+        office_id: officeId ?? undefined,
+        destination_id: destinationId ?? undefined,
+        currency_id: currencyId ?? undefined,
+        date: date || undefined,
+        revenue_amount: revenueAmount ? Number(revenueAmount) : undefined,
+        notes: notes || undefined,
+      },
+    });
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" dir="rtl">
       <DialogTitle>تعديل الإيراد</DialogTitle>
-      <div className=" mt-2"
-      >
-        <DialogContent className="grid grid-cols-1 gap-4 ">
+      <div className="mt-2">
+        <DialogContent className="grid grid-cols-1 gap-4">
 
           {/* Employee */}
           <Autocomplete
-            options={employees.map((e) => e.name)}
-            value={employeeName}
-            onChange={(_, val) => setEmployeeName(val || "")}
+            options={employeeList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={employeeList?.find((e) => e.id === employeeId) ?? null}
+            onChange={(_, val) => setEmployeeId(val?.id ?? null)}
             renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
           />
 
           {/* Office */}
           <Autocomplete
-            options={offices.map((o) => o.name)}
-            value={office}
-            onChange={(_, val) => setOffice(val || "")}
+            options={officeList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={officeList?.find((o) => o.id === officeId) ?? null}
+            onChange={(_, val) => setOfficeId(val?.id ?? null)}
             renderInput={(params) => <TextField {...params} label="المكتب" />}
           />
 
           {/* Destination */}
           <Autocomplete
-            options={destinations.map((d) => d.name)}
-            value={destination}
-            onChange={(_, val) => setDestination(val || "")}
+            options={destinationsList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={destinationsList?.find((d) => d.id === destinationId) ?? null}
+            onChange={(_, val) => setDestinationId(val?.id ?? null)}
             renderInput={(params) => <TextField {...params} label="الوجهة" />}
           />
 
-          <Input
+          {/* Date */}
+          <TextField
             type="date"
             label="التاريخ"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+            fullWidth
           />
 
-          <Input
+          {/* Revenue Amount */}
+          <TextField
             type="number"
             label="قيمة الإيراد"
             value={revenueAmount}
             onChange={(e) => setRevenueAmount(e.target.value)}
+            fullWidth
           />
 
-          <Input
+          {/* Currency */}
+          <FormControl fullWidth>
+            <InputLabel id="edit-currency-label">العملة</InputLabel>
+            <Select
+              labelId="edit-currency-label"
+              value={currencyId ?? ""}
+              label="العملة"
+              onChange={(e) => setCurrencyId(Number(e.target.value))}
+            >
+              {currenciesList?.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name} ({c.code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Notes */}
+          <TextField
             label="ملاحظات"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
+            fullWidth
           />
-
         </DialogContent>
       </div>
       <DialogActions className="flex justify-end gap-3 p-4">
-        <Button onClick={onClose}>إلغاء</Button>
-        <Button onClick={handleSave}>
-          حفظ التعديلات
+        <Button onClick={onClose} className="bg-gray-400 text-white">
+          إلغاء
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={isPending}
+          className="bg-blue-600 text-white flex items-center gap-2"
+        >
+          {isPending ? <Loader borderColor="white" /> : "حفظ التعديلات"}
         </Button>
       </DialogActions>
     </Dialog>

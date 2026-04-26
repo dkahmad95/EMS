@@ -1,149 +1,165 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useForm, Controller } from "react-hook-form";
-import { TextField, MenuItem } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+} from "@mui/material";
 import { Button } from "@/app/Components/Button";
-import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as api from "@/server/services/api/employees/employees";
+import { useJobTitles } from "@/server/store/jobTitles";
+import { useOffices } from "@/server/store/offices";
+import { useEducationLevels } from "@/server/store/educationLevels";
+import { useCities } from "@/server/store/cities";
+import { message } from "antd";
+import Loader from "@/app/Components/Loader";
 
-interface EmployeeFormInputs {
-  id?: number;
-  fileNumber?: string;
-  startDate?: string;
-  name: string;
-  email: string;
-  insuranceStatus?: string;
-  insuranceNumber?: string;
-  salary: number;
-  jobTitle: string;
-  officeLocation: string;
-  contractType?: string;
-  birthDate?: string;
-  birthPlace?: string;
-  age?: number;
-  educationLevel: string;
-  bloodType?: string;
-  phoneNumbers: string;
-  familyStatus?: string;
-  childrenCount?: number;
-  address?: string;
-  detailedAddress?: string;
-  gender?: string;
-  notes?: string;
-  permissionGroup: string;
+
+interface CreateEmployeeModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
-export default function CreateEmployeeForm() {
-  const { control, handleSubmit, reset } = useForm<EmployeeFormInputs>({
+const genderMap: Record<string, string> = { ذكر: "MALE", أنثى: "FEMALE" };
+const contractMap: Record<string, string> = { متفرغ: "FULL_TIME", متعاقد: "CONTRACT" };
+const familyStatusMap: Record<string, string> = {
+  أعزب: "SINGLE",
+  متزوج: "MARRIED",
+  مطلق: "DIVORCED",
+  أرمل: "WIDOWED",
+};
+const bloodTypeMap: Record<string, string> = {
+  "A+": "A_POSITIVE",
+  "A-": "A_NEGATIVE",
+  "B+": "B_POSITIVE",
+  "B-": "B_NEGATIVE",
+  "AB+": "AB_POSITIVE",
+  "AB-": "AB_NEGATIVE",
+  "O+": "O_POSITIVE",
+  "O-": "O_NEGATIVE",
+};
+
+const contractOptions = [
+  { value: "متفرغ", label: "متفرغ" },
+  { value: "متعاقد", label: "متعاقد" },
+];
+const insuranceOptions = [
+  { value: "نعم", label: "نعم" },
+  { value: "لا", label: "لا" },
+];
+const genderOptions = [
+  { value: "ذكر", label: "ذكر" },
+  { value: "أنثى", label: "أنثى" },
+];
+const familyStatusOptions = [
+  { value: "أعزب", label: "أعزب" },
+  { value: "متزوج", label: "متزوج" },
+  { value: "مطلق", label: "مطلق" },
+  { value: "أرمل", label: "أرمل" },
+];
+const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+export default function CreateEmployeeModal({
+  open,
+  onClose,
+  onSuccess,
+}: CreateEmployeeModalProps) {
+  const queryClient = useQueryClient();
+  const { control, handleSubmit, reset } = useForm<Employee>({
     defaultValues: {
-      fileNumber: "",
-      startDate: "",
+      first_employment_date: "",
       name: "",
       email: "",
-      insuranceStatus: "",
-      insuranceNumber: "",
+      insurance: false,
+      insurance_number: "",
       salary: 0,
-      jobTitle: "",
-      officeLocation: "",
-      contractType: "",
-      birthDate: "",
-      birthPlace: "",
-      age: 0,
-      educationLevel: "",
-      bloodType: "",
-      phoneNumbers: "",
-      familyStatus: "",
-      childrenCount: 0,
+      job_title_id: 0,
+      office_id: 0,
+      contract_type: "",
+      date_of_birth: "",
+      born_in: "",
+      number_of_children: 0,
+      lives_in: "",
       address: "",
-      detailedAddress: "",
       gender: "",
+      family_status: "",
+      blood_type: "",
+      phone: "",
+      education_level_id: 0,
       notes: "",
-      permissionGroup: "",
     },
   });
 
-  const [cities, setCities] = useState<{ name: string; id: number }[]>([]);
-  const [offices, setOffices] = useState<{ name: string; city: string }[]>([]);
-  const [jobTitles, setJobTitles] = useState<string[]>([]);
-  const [educationLevels, setEducationLevels] = useState<string[]>([]);
-  const [permissionGroups, setPermissionGroups] = useState<{ name: string; id: number }[]>([]);
+  const { data: jobTitles } = useJobTitles();
+  const { data: offices } = useOffices();
+  const { data: educationLevels } = useEducationLevels();
+  const { data: cities } = useCities();
 
-   const route = useRouter();
-  const contractOptions = [
-    { value: "متفرغ", label: "متفرغ" },
-    { value: "متعاقد", label: "متعاقد" },
-  ];
+  const { mutateAsync: createEmployee, isPending } = useMutation({
+    mutationFn: (data: Employee) => api.createEmployee(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      message.success("تم إنشاء الموظف بنجاح");
+      reset();
+      onSuccess();
+    },
+    onError: () => {
+      message.error("حدث خطأ أثناء إنشاء الموظف.");
+    },
+  });
 
-  const insuranceOptions = [
-    { value: "نعم", label: "نعم" },
-    { value: "لا", label: "لا" },
-  ];
-
-  const genderOptions = [
-    { value: "ذكر", label: "ذكر" },
-    { value: "أنثى", label: "أنثى" },
-  ];
-
-  const familyStatusOptions = [
-    { value: "أعزب", label: "أعزب" },
-    { value: "متزوج", label: "متزوج" },
-    { value: "مطلق", label: "مطلق" },
-    { value: "أرمل", label: "أرمل" },
-  ];
-
-  // Load dynamic selects from localStorage
-  useEffect(() => {
-    const citiesLS = JSON.parse(localStorage.getItem("cities") || "[]");
-    const officesLS = JSON.parse(localStorage.getItem("offices") || "[]");
-    const jobTitlesLS = JSON.parse(localStorage.getItem("jobTitles") || "[]");
-    const educationLS = JSON.parse(localStorage.getItem("educationLevels") || "[]");
-    const permissionGroupsLS = JSON.parse(localStorage.getItem("permissionGroups") || "[]");
-
-    setCities(citiesLS);
-    setOffices(officesLS);
-    setJobTitles(jobTitlesLS);
-    setEducationLevels(educationLS);
-    setPermissionGroups(permissionGroupsLS);
-  }, []);
-
-  const onSubmit = (data: EmployeeFormInputs) => {
-    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
-    localStorage.setItem(
-      "employees",
-      JSON.stringify([...employees, { ...data, id: Date.now() }])
-    );
-    alert(" تم إنشاء الموظف بنجاح!");
-    route.push("/EmployeesList");
-    reset();
+  const onSubmit = async (data: any) => {
+    const payload: Employee = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      gender: genderMap[data.gender] ?? data.gender,
+      contract_type: contractMap[data.contract_type] ?? data.contract_type,
+      family_status: familyStatusMap[data.family_status] ?? data.family_status,
+      blood_type: bloodTypeMap[data.blood_type] ?? data.blood_type,
+      insurance: data.insurance === "نعم" ? true : false,
+      insurance_number: data.insurance_number,
+      date_of_birth: data.date_of_birth,
+      born_in: data.born_in,
+      first_employment_date: data.first_employment_date,
+      number_of_children: Number(data.number_of_children),
+      lives_in: data.lives_in,
+      address: data.address,
+      salary: Number(data.salary),
+      job_title_id: Number(data.job_title_id),
+      office_id: Number(data.office_id),
+      education_level_id: Number(data.education_level_id),
+      notes: data.notes,
+    };
+    await createEmployee(payload);
   };
-  // Hard-coded Blood Types
-const bloodTypeOptions = [
-  "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
-];
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
 
   return (
-    <div dir="rtl" className="font-[Tajawal] text-right p-6">
-      <form onSubmit={handleSubmit(onSubmit)} className="rounded-md bg-white shadow p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        
-        {/* File Number
-        <Controller
-          name="fileNumber"
-          control={control}
-          render={({ field }) => (
-            <TextField label="رقم الملف" {...field} fullWidth value={field.value ?? ""} />
-          )}
-        /> */}
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" dir="rtl">
+      <DialogTitle className="font-bold text-lg">إنشاء موظف جديد</DialogTitle>
+      <DialogContent className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
 
-        {/* Start Date */}
         <Controller
-          name="startDate"
+          name="first_employment_date"
           control={control}
-          render={({ field }) => (
-            <TextField label="تاريخ بدء العمل" type="date"  slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} />
+          rules={{ required: "تاريخ بدء العمل مطلوب" }}
+          render={({ field, fieldState }) => (
+            <TextField label="تاريخ بدء العمل" type="date" slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
         />
 
-        {/* Name */}
         <Controller
           name="name"
           control={control}
@@ -153,92 +169,74 @@ const bloodTypeOptions = [
           )}
         />
 
-        {/* Phone Numbers */}
         <Controller
-          name="phoneNumbers"
+          name="phone"
           control={control}
-          rules={{
-            required: "رقم الهاتف مطلوب",
-            pattern: { value: /^[0-9]{8,15}$/, message: "أدخل رقم هاتف صالح" },
-          }}
+          rules={{ required: "رقم الهاتف مطلوب" }}
           render={({ field, fieldState }) => (
             <TextField label="رقم الهاتف" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
         />
 
-        {/* Email */}
         <Controller
           name="email"
           control={control}
-          rules={{
-            required: "البريد الإلكتروني مطلوب",
-            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "أدخل بريد إلكتروني صالح" },
-          }}
+          rules={{ required: "البريد الإلكتروني مطلوب" }}
           render={({ field, fieldState }) => (
             <TextField label="البريد الإلكتروني" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
         />
 
-        {/* Job Title */}
         <Controller
-          name="jobTitle"
+          name="job_title_id"
           control={control}
           rules={{ required: "المسمى الوظيفي مطلوب" }}
           render={({ field, fieldState }) => (
             <TextField select label="المسمى الوظيفي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {jobTitles.map((jt) => <MenuItem key={jt} value={jt}>{jt}</MenuItem>)}
+              {jobTitles?.map((jt) => (
+                <MenuItem key={jt.id} value={jt.id}>{jt.name}</MenuItem>
+              ))}
             </TextField>
           )}
         />
 
-        {/* Office */}
         <Controller
-          name="officeLocation"
+          name="office_id"
           control={control}
           rules={{ required: "يرجى اختيار المكتب" }}
           render={({ field, fieldState }) => (
             <TextField select label="مكتب العمل" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {offices.map((o) => <MenuItem key={o.name} value={o.name}>{o.name} ({o.city})</MenuItem>)}
+              {offices?.map((o) => (
+                <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>
+              ))}
             </TextField>
           )}
         />
 
-        {/* Education Level */}
         <Controller
-          name="educationLevel"
+          name="education_level_id"
           control={control}
           rules={{ required: "المستوى العلمي مطلوب" }}
           render={({ field, fieldState }) => (
             <TextField select label="المستوى العلمي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {educationLevels.map((ed) => <MenuItem key={ed} value={ed}>{ed}</MenuItem>)}
+              {educationLevels?.map((ed) => (
+                <MenuItem key={ed.id} value={ed.id}>{ed.name}</MenuItem>
+              ))}
             </TextField>
           )}
         />
 
-        {/* Permission Group */}
-        <Controller
-          name="permissionGroup"
-          control={control}
-          render={({ field }) => (
-            <TextField select label="مجموعة الصلاحيات" {...field} fullWidth value={field.value ?? ""}>
-              {permissionGroups.map((pg) => <MenuItem key={pg.id} value={pg.name}>{pg.name}</MenuItem>)}
-            </TextField>
-          )}
-        />
-
-        {/* Salary */}
         <Controller
           name="salary"
           control={control}
-          rules={{ required: "الراتب مطلوب", min: { value: 0, message: "الراتب يجب أن يكون موجباً" } }}
+          rules={{ required: "الراتب مطلوب" }}
           render={({ field, fieldState }) => (
             <TextField label="الراتب الشهري" type="number" {...field} fullWidth value={field.value ?? 0} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}
         />
 
-        {/* Contract Type */}
         <Controller
-          name="contractType"
+          name="contract_type"
           control={control}
           render={({ field }) => (
             <TextField select label="متفرغ / متعاقد" {...field} fullWidth value={field.value ?? ""}>
@@ -247,9 +245,8 @@ const bloodTypeOptions = [
           )}
         />
 
-        {/* Insurance Status */}
         <Controller
-          name="insuranceStatus"
+          name="insurance"
           control={control}
           render={({ field }) => (
             <TextField select label="التأمين" {...field} fullWidth value={field.value ?? ""}>
@@ -258,14 +255,12 @@ const bloodTypeOptions = [
           )}
         />
 
-        {/* Insurance Number */}
         <Controller
-          name="insuranceNumber"
+          name="insurance_number"
           control={control}
           render={({ field }) => <TextField label="رقم التأمين" {...field} fullWidth value={field.value ?? ""} />}
         />
 
-        {/* Gender */}
         <Controller
           name="gender"
           control={control}
@@ -276,9 +271,8 @@ const bloodTypeOptions = [
           )}
         />
 
-        {/* Family Status */}
         <Controller
-          name="familyStatus"
+          name="family_status"
           control={control}
           render={({ field }) => (
             <TextField select label="الوضع العائلي" {...field} fullWidth value={field.value ?? ""}>
@@ -287,110 +281,79 @@ const bloodTypeOptions = [
           )}
         />
 
-        {/* Children Count */}
         <Controller
-          name="childrenCount"
+          name="number_of_children"
           control={control}
           render={({ field }) => <TextField label="عدد الأولاد" type="number" {...field} fullWidth value={field.value ?? 0} />}
         />
 
-        {/* Birth Date */}
         <Controller
-          name="birthDate"
+          name="date_of_birth"
           control={control}
-          render={({ field }) => <TextField label="تاريخ الولادة" type="date"  slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} />}
+          render={({ field }) => <TextField label="تاريخ الولادة" type="date" slotProps={{ inputLabel: { shrink: true } }} {...field} fullWidth value={field.value ?? ""} />}
         />
 
-     {/* // Birth Place (select from cities) */}
-<Controller
-  name="birthPlace"
-  control={control}
-  render={({ field }) => (
-    <TextField
-      select
-      label="مكان الولادة"
-      {...field}
-      fullWidth
-      value={field.value ?? ""}
-    >
-      {cities.map((c) => (
-        <MenuItem key={c.id} value={c.name}>
-          {c.name}
-        </MenuItem>
-      ))}
-    </TextField>
-  )}
-/>
-
-
-        {/* Age */}
         <Controller
-          name="age"
+          name="born_in"
           control={control}
-          render={({ field }) => <TextField label="العمر" type="number" {...field} fullWidth value={field.value ?? 0} />}
+          render={({ field }) => (
+            <TextField select label="مكان الولادة" {...field} fullWidth value={field.value ?? ""}>
+              {cities?.map((c) => (
+                <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
+              ))}
+            </TextField>
+          )}
         />
 
-     {/* Blood Type (hard-coded select) */}
-<Controller
-  name="bloodType"
-  control={control}
-  render={({ field }) => (
-    <TextField
-      select
-      label="فصيلة الدم"
-      {...field}
-      fullWidth
-      value={field.value ?? ""}
-    >
-      {bloodTypeOptions.map((bt) => (
-        <MenuItem key={bt} value={bt}>
-          {bt}
-        </MenuItem>
-      ))}
-    </TextField>
-  )}
-/>
-   {/* // Birth Place (select from cities) */}
-<Controller
-  name="address"
-  control={control}
-  render={({ field }) => (
-    <TextField
-      select
-      label="مكان السكن"
-      {...field}
-      fullWidth
-      value={field.value ?? ""}
-    >
-      {cities.map((c) => (
-        <MenuItem key={c.id} value={c.name}>
-          {c.name}
-        </MenuItem>
-      ))}
-    </TextField>
-  )}
-/>
-        {/* Detailed Address */}
         <Controller
-          name="detailedAddress"
+          name="blood_type"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="فصيلة الدم" {...field} fullWidth value={field.value ?? ""}>
+              {bloodTypeOptions.map((bt) => (
+                <MenuItem key={bt} value={bt}>{bt}</MenuItem>
+              ))}
+            </TextField>
+          )}
+        />
+
+        <Controller
+          name="lives_in"
+          control={control}
+          render={({ field }) => (
+            <TextField select label="مكان السكن" {...field} fullWidth value={field.value ?? ""}>
+              {cities?.map((c) => (
+                <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
+              ))}
+            </TextField>
+          )}
+        />
+
+        <Controller
+          name="address"
           control={control}
           render={({ field }) => <TextField label="عنوان السكن التفصيلي" {...field} fullWidth value={field.value ?? ""} />}
         />
 
-
-        {/* Notes */}
         <Controller
           name="notes"
           control={control}
           render={({ field }) => <TextField label="ملاحظات" {...field} fullWidth multiline rows={3} value={field.value ?? ""} />}
         />
 
-        {/* Submit Button */}
-        <div className="col-span-1 md:col-span-4 flex justify-end mt-4">
-          <Button type="submit" className="bg-green-700 hover:bg-green-600 text-white">إنشاء الموظف</Button>
-        </div>
-
-      </form>
-    </div>
+      </DialogContent>
+      <DialogActions className="flex justify-end gap-3 p-4">
+        <Button onClick={handleClose} className="bg-gray-400 text-white">
+          إلغاء
+        </Button>
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          disabled={isPending}
+          className="bg-green-700 hover:bg-green-600 text-white flex items-center gap-2"
+        >
+          {isPending ? <Loader borderColor="white" /> : "إنشاء الموظف"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

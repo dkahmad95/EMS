@@ -1,36 +1,48 @@
 "use client";
 
-import {useState, useEffect} from "react";
-import {CreateButton} from "../../Components/CreateButton";
+import { useState, useMemo } from "react";
+import { Button } from "../../Components/Button";
 import EmployeesTable from "./Components/EmployeesTable";
 import SearchBar from "../../Components/SearchBar";
-import {Select, MenuItem} from "@mui/material";
+import { Select, MenuItem } from "@mui/material";
+import CreateEmployeeModal from "./Components/CreateEmployee";
+import { useEmployees } from "@/server/store/employees";
+import { useQueryClient } from "@tanstack/react-query";
 
 const EmployeesList = () => {
+  const queryClient = useQueryClient();
+  const { data: employees, isLoading } = useEmployees();
+
   const [officeFilter, setOfficeFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [officeOptions, setOfficeOptions] = useState<{value: string; label: string}[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
 
-  // Load employees from localStorage
-  useEffect(() => {
-    const storedEmployees = JSON.parse(localStorage.getItem("employees") || "[]");
-    setEmployees(storedEmployees);
+  const officeOptions = useMemo(() => {
+    if (!employees) return [{ value: "all", label: "جميع المكاتب" }];
+    const offices = Array.from(
+      new Set(employees.map((emp) => emp.office?.name).filter(Boolean))
+    ) as string[];
+    return [
+      { value: "all", label: "جميع المكاتب" },
+      ...offices.map((o) => ({ value: o, label: o })),
+    ];
+  }, [employees]);
 
-    // Get unique office locations from employees
-    const offices = Array.from(new Set(storedEmployees.map((emp: any) => emp.officeLocation))) as string[];
-    const officeList = [{value: "all", label: "جميع المكاتب"}, ...offices.map((o) => ({value: o, label: o}))];
-    setOfficeOptions(officeList);
-  }, []);
+  const filteredEmployees = useMemo(() => {
+    if (!employees) return [];
+    return employees.filter((emp) => {
+      const matchesOffice =
+        officeFilter === "all" || emp.office?.name === officeFilter;
+      const matchesSearch =
+        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.phone.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesOffice && matchesSearch;
+    });
+  }, [employees, officeFilter, searchTerm]);
 
-  // Filter employees based on office and search term
-  const filteredEmployees = employees.filter((emp) => {
-    const matchesOffice = officeFilter === "all" || emp.officeLocation === officeFilter;
-    const matchesSearch =
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.phoneNumbers.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesOffice && matchesSearch;
-  });
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["employees"] });
+  };
 
   return (
     <main className="w-full">
@@ -39,7 +51,11 @@ const EmployeesList = () => {
       </div>
 
       <div className="flex-col md:flex-row my-4 flex items-start md:items-center justify-between gap-2 md:mt-8">
-        <Select id="officeLocation" value={officeFilter} onChange={(event) => setOfficeFilter(event.target.value)}>
+        <Select
+          id="officeLocation"
+          value={officeFilter}
+          onChange={(event) => setOfficeFilter(event.target.value)}
+        >
           {officeOptions.map((location) => (
             <MenuItem key={location.value} value={location.value}>
               {location.label}
@@ -51,10 +67,24 @@ const EmployeesList = () => {
           <SearchBar value={searchTerm} onChange={(val: string) => setSearchTerm(val)} />
         </div>
 
-        <CreateButton label="ادراج موظف" path="/ems/EmployeesList/NewEmployee" />
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="bg-green-700 hover:bg-green-600 text-white"
+        >
+          ادراج موظف
+        </Button>
       </div>
 
-      <EmployeesTable employees={filteredEmployees} />
+      <EmployeesTable employees={filteredEmployees} isLoading={isLoading} onSuccess={handleSuccess} />
+
+      <CreateEmployeeModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSuccess={() => {
+          setCreateOpen(false);
+          handleSuccess();
+        }}
+      />
     </main>
   );
 };
