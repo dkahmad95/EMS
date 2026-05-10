@@ -2,8 +2,15 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { UserCircleIcon, EyeIcon, KeyIcon } from "@heroicons/react/24/outline";
-import { ArrowRightIcon } from "@heroicons/react/20/solid";
+import {
+  UserCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  KeyIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  BanknotesIcon,
+} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/Components/Button";
 import Loader from "@/app/Components/Loader";
@@ -11,54 +18,57 @@ import { Input } from "@/app/Components/Input";
 import { useMutation } from "@tanstack/react-query";
 import { message } from "antd";
 import * as authApi from "../server/services/api/auth/auth";
+import Image from "next/image";
 
-
+const features = [
+  {
+    icon: UserGroupIcon,
+    title: "إدارة الموظفين",
+    desc: "تتبع بيانات الموظفين والمسميات الوظيفية بكفاءة عالية",
+  },
+  {
+    icon: BanknotesIcon,
+    title: "تتبع الإيرادات",
+    desc: "رصد الإيرادات والمدفوعات في الوقت الفعلي",
+  },
+  {
+    icon: ChartBarIcon,
+    title: "لوحة تحليلات",
+    desc: "تقارير وتحليلات شاملة لدعم القرار",
+  },
+];
 
 export default function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-    
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+    defaultValues: { username: "", password: "" },
   });
 
   const { mutateAsync: login, isPending } = useMutation({
     mutationFn: (data: LoginFormData) => authApi.Login(data),
-
     onSuccess: (data) => {
       if (data) {
         router.push("/ems");
-
         message.open({
           content: "تم تسجيل الدخول بنجاح",
           type: "success",
-          style: {
-            fontSize: "18px",
-            fontFamily: "ar2",
-            color: "#052533",
-          },
+          style: { fontSize: "15px", fontFamily: "Cairo, sans-serif" },
         });
       }
     },
-
     onError: (error: any) => {
       message.open({
         content:
           error?.response?.data?.message ||
           "حدث خطأ ما، يرجى المحاولة مرة أخرى",
         type: "error",
-        style: {
-          fontSize: "18px",
-          fontFamily: "ar2",
-          color: "#052533",
-        },
+        style: { fontSize: "15px", fontFamily: "Cairo, sans-serif" },
       });
     },
   });
@@ -68,109 +78,155 @@ export default function LoginForm() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex justify-center h-screen items-center rounded-lg px-6 space-y-3 pb-4 pt-8"
-    >
-      <div className="w-full md:w-1/4">
-        <h1 className="mb-3 text-2xl font-semibold text-gray-900 text-center">
-          الرجاء تسجيل الدخول للمتابعة
-        </h1>
+    <div className="min-h-screen flex" dir="rtl">
 
-        {/* Username */}
-        <div>
-          <label
-            htmlFor="username"
-            className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-          >
-            اسم المستخدم
-          </label>
+      {/* ── Right: Login form ─────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center bg-white p-6 md:p-12">
+        <div className="w-full max-w-sm">
 
-          <div className="relative">
-            <Input
-              id="username"
-              type="text"
-              placeholder="أدخل اسم المستخدم"
-              autoComplete="username"
-              {...register("username", {
-                required: "اسم المستخدم مطلوب",
-              })}
-              className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-            />
-
-            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+          {/* Mobile-only logo */}
+          <div className="flex items-center gap-3 mb-8 md:hidden">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">م</span>
+            </div>
+            <span className="font-bold text-gray-900 text-lg">جمعية المبرات</span>
           </div>
 
-          {errors.username && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.username.message}
+          {/* Heading */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">مرحباً بك</h1>
+            <p className="text-sm text-gray-500">
+              الرجاء إدخال بيانات الدخول للمتابعة
             </p>
-          )}
-        </div>
-
-        {/* Password */}
-        <div className="mt-4">
-          <label
-            htmlFor="password"
-            className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-          >
-            كلمة المرور
-          </label>
-
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="أدخل كلمة المرور"
-              autoComplete="current-password"
-              {...register("password", {
-                required: "كلمة المرور مطلوبة",
-                minLength: {
-                  value: 6,
-                  message: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
-                },
-              })}
-              className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-            />
-
-            <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-
-            <EyeIcon
-              role="button"
-              aria-label="Toggle password visibility"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setShowPassword((prev) => !prev)}
-              className={`absolute left-10 top-1/2 h-[18px] w-[18px] -translate-y-1/2 cursor-pointer ${
-                showPassword ? "text-green-800" : "text-gray-500"
-              }`}
-            />
           </div>
 
-          {errors.password && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Username */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                اسم المستخدم
+              </label>
+              <div className="relative">
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="أدخل اسم المستخدم"
+                  autoComplete="username"
+                  {...register("username", {
+                    required: "اسم المستخدم مطلوب",
+                  })}
+                  error={errors.username?.message}
+                  className="pl-10"
+                />
+                <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              </div>
+            </div>
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isPending}
-          className={`mt-4 w-full text-white ${
-            isPending ? "cursor-not-allowed" : ""
-          }`}
-        >
-          <div className="flex items-center justify-center gap-4">
-            {isPending ? (
-              <Loader borderColor="white" />
-            ) : (
-              <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-            )}
-            تسجيل الدخول
-          </div>
-        </Button>
+            {/* Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                كلمة المرور
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="أدخل كلمة المرور"
+                  autoComplete="current-password"
+                  {...register("password", {
+                    required: "كلمة المرور مطلوبة",
+                    minLength: {
+                      value: 6,
+                      message: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+                    },
+                  })}
+                  error={errors.password?.message}
+                  className="pl-20"
+                />
+                <KeyIcon className="pointer-events-none absolute left-10 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPassword((p) => !p)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={isPending}
+              size="lg"
+              className="w-full mt-2"
+            >
+              {isPending ? (
+                <Loader borderColor="white" />
+              ) : null}
+              تسجيل الدخول
+            </Button>
+          </form>
+        </div>
       </div>
-    </form>
+
+      {/* ── Left: Branding panel (hidden on mobile) ───── */}
+      <div className="hidden md:flex w-2/5 bg-gradient-to-br from-gray-900 via-primary-950 to-secondary-950 flex-col items-center justify-center p-12 relative overflow-hidden">
+
+        {/* Decorative circles */}
+        <div className="absolute top-[-80px] right-[-80px] w-72 h-72 rounded-full bg-primary-600/20 blur-3xl" />
+        <div className="absolute bottom-[-60px] left-[-60px] w-56 h-56 rounded-full bg-secondary-600/20 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary-800/10 blur-3xl" />
+
+        <div className="relative z-10 text-center mb-10">
+          {/* Logo mark */}
+          <div className="mx-auto mb-5 w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+            <Image
+              src="/almabbaratLogo.webp"
+              alt="شعار جمعية المبرات"
+              className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-contain flex-shrink-0"
+              width={40}
+              height={40}
+              priority
+            />
+          </div>
+          <h2 className="text-white text-2xl font-bold mb-2">جمعية المبرات</h2>
+          <p className="text-white/60 text-sm">نظام إدارة الموظفين والإيرادات</p>
+        </div>
+
+        {/* Feature highlights */}
+        <div className="relative z-10 w-full max-w-xs space-y-4">
+          {features.map((f) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={f.title}
+                className="flex items-start gap-4 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+              >
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary-500/30 border border-primary-400/30 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-primary-300" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">{f.title}</p>
+                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

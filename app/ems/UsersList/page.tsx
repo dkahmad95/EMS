@@ -7,16 +7,16 @@ import PermissionGate from "@/app/Components/PermissionGate";
 import CreateUserModal from "./Components/CreateUserModal";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useUsers } from "@/server/store/users";
+import { Button } from "@/app/Components/Button";
 
 const UsersList = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm,        setSearchTerm]        = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: users, isLoading, error } = useUsers();
 
   const filteredUsers = (users || []).filter((user) => {
     if (!searchTerm) return true;
-
     const searchLower = searchTerm.toLowerCase();
     return (
       user.username?.toLowerCase().includes(searchLower) ||
@@ -26,61 +26,77 @@ const UsersList = () => {
 
   if (isLoading) {
     return (
-      <main className="w-full">
-        <div className="flex flex-col w-full items-center justify-between gap-y-2 md:flex-row">
-          <h1 className="text-2xl">قائمة المستخدمين</h1>
+      <div className="space-y-5 animate-fade-in">
+        <div className="page-header">
+          <h1 className="page-title">إدارة المستخدمين</h1>
+          <p className="page-subtitle">إدارة حسابات المستخدمين والصلاحيات</p>
         </div>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent border-primary-500" />
         </div>
-      </main>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <main className="w-full">
-        <div className="flex flex-col w-full items-center justify-between gap-y-2 md:flex-row">
-          <h1 className="text-2xl">قائمة المستخدمين</h1>
+      <div className="space-y-5 animate-fade-in">
+        <div className="page-header">
+          <h1 className="page-title">إدارة المستخدمين</h1>
         </div>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
-          حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.
+        <div className="card p-5 border-r-4 border-danger-400 flex items-start gap-3">
+          <svg className="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p className="text-sm text-danger-700">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="w-full">
-      <div className="flex flex-col w-full items-center justify-between gap-y-2 md:flex-row">
-        <h1 className="text-2xl">قائمة المستخدمين</h1>
+    <div className="space-y-5 animate-fade-in">
+
+      {/* Page header */}
+      <div className="page-header">
+        <h1 className="page-title">إدارة المستخدمين</h1>
+        <p className="page-subtitle">إدارة حسابات المستخدمين والصلاحيات</p>
       </div>
 
-      <div className="flex-col md:flex-row my-4 flex items-start md:items-center justify-between gap-2 md:mt-8">
+      {/* Toolbar */}
+      <div className="card p-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+          {/* Search */}
+          <div className="flex-1 w-full md:max-w-xs">
+            <SearchBar
+              value={searchTerm}
+              onChange={(val: string) => setSearchTerm(val)}
+              placeholder="ابحث باسم المستخدم..."
+            />
+          </div>
 
-        {/* Search Bar */}
-        <div className="flex md:justify-center flex-1">
-          <SearchBar value={searchTerm} onChange={(val: string) => setSearchTerm(val)} />
+          <div className="flex-1 hidden md:block" />
+
+          <PermissionGate resource="users" action="create">
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <PlusIcon className="w-4 h-4" />
+              إضافة مستخدم
+            </Button>
+          </PermissionGate>
         </div>
-
-        <PermissionGate resource="users" action="create">
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex h-10 items-center justify-center min-w-[180px] rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 px-6 text-sm font-medium text-white transition-all duration-200 hover:from-primary-700 hover:to-primary-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 active:scale-95 shadow-soft hover:shadow-soft-md gap-2"
-          >
-            <span>ادراج مستخدم</span>
-            <PlusIcon className="h-5 w-5" />
-          </button>
-        </PermissionGate>
       </div>
 
+      {/* Table */}
       <UsersTable users={filteredUsers} />
 
       <CreateUserModal
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
-    </main>
+    </div>
   );
 };
 

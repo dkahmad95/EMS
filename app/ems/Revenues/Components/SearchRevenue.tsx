@@ -5,6 +5,7 @@ import { Autocomplete, TextField } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useEmployees } from "@/server/store/employees";
 import { useOffices } from "@/server/store/offices";
+import { MagnifyingGlassIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 interface SearchRevenueProps {
   onSearch: (filters: {
@@ -15,14 +16,29 @@ interface SearchRevenueProps {
   }) => void;
 }
 
+const muiSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "8px",
+    fontSize: "14px",
+    fontFamily: "Cairo, sans-serif",
+    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#d1d5db" },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4f46e5", borderWidth: "2px" },
+  },
+  "& .MuiInputLabel-root": {
+    fontFamily: "Cairo, sans-serif",
+    fontSize: "14px",
+    "&.Mui-focused": { color: "#4f46e5" },
+  },
+};
+
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   const { data: employeeList } = useEmployees();
-  const { data: officeList } = useOffices();
+  const { data: officeList }   = useOffices();
 
-  const [employee, setEmployee] = useState<string | null>(null);
-  const [office, setOffice] = useState<string | null>(null);
+  const [employee,  setEmployee]  = useState<string | null>(null);
+  const [office,    setOffice]    = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [endDate,   setEndDate]   = useState("");
 
   const handleReset = () => {
     setEmployee(null);
@@ -33,67 +49,70 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow space-y-3">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">بحث الإيرادات</h2>
+    <div className="card p-5">
+      <p className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+        بحث الإيرادات
+      </p>
 
-      <div className="flex flex-wrap items-end gap-2 md:gap-4">
-
-        {/* EMPLOYEE */}
+      <div className="flex flex-wrap items-end gap-3">
+        {/* Employee */}
         <Autocomplete
           options={employeeList?.map((e) => e.name) ?? []}
           value={employee}
           onChange={(_, newValue) => setEmployee(newValue)}
           renderInput={(params) => (
-            <TextField {...params} label="اسم الموظف" variant="outlined" />
+            <TextField {...params} label="اسم الموظف" variant="outlined" size="small" />
           )}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 200, ...muiSx }}
         />
 
-        {/* OFFICE */}
+        {/* Office */}
         <Autocomplete
           options={officeList?.map((o) => o.name) ?? []}
           value={office}
           onChange={(_, newValue) => setOffice(newValue)}
           renderInput={(params) => (
-            <TextField {...params} label="المكتب" variant="outlined" />
+            <TextField {...params} label="المكتب" variant="outlined" size="small" />
           )}
-          sx={{ minWidth: 200 }}
+          sx={{ minWidth: 180, ...muiSx }}
         />
 
-        {/* START DATE */}
+        {/* Start date */}
         <TextField
           type="date"
           label="من تاريخ"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
+          sx={{ ...muiSx }}
+          size="small"
         />
 
-        {/* END DATE */}
+        {/* End date */}
         <TextField
           type="date"
           label="إلى تاريخ"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
+          sx={{ ...muiSx }}
+          size="small"
         />
 
-        {/* SEARCH */}
+        {/* Actions */}
         <Button
+          variant="primary"
           onClick={() => onSearch({ employee, office, startDate, endDate })}
-          className="cursor-pointer"
         >
+          <MagnifyingGlassIcon className="w-4 h-4" />
           بحث
         </Button>
 
-        {/* RESET */}
-        <Button
-          onClick={handleReset}
-          className="cursor-pointer bg-gray-400 hover:bg-gray-300 text-white"
-        >
+        <Button variant="outline" onClick={handleReset}>
+          <ArrowPathIcon className="w-4 h-4" />
           إعادة تعيين
         </Button>
-
       </div>
     </div>
   );

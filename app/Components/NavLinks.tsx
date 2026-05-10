@@ -2,15 +2,14 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation';
 import { usePermissions } from "../hooks/usePermissions";
-
 import {
   UserGroupIcon,
   Cog6ToothIcon,
   BanknotesIcon,
   ChartBarIcon,
-  UsersIcon
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 
 const links = [
@@ -51,14 +50,18 @@ const links = [
   },
 ];
 
-export default function NavLinks() {
+interface NavLinksProps {
+  collapsed?: boolean;
+}
+
+export default function NavLinks({ collapsed = false }: NavLinksProps) {
   const pathname = usePathname();
   const permissions = usePermissions();
 
   if (permissions.isLoading) {
     return (
       <div className="flex justify-center items-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-700"></div>
+        <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-primary-500" />
       </div>
     );
   }
@@ -67,25 +70,30 @@ export default function NavLinks() {
     <>
       {links.map((link) => {
         const hasAccess = link.checkAccess(permissions);
-
-        if (!hasAccess) {
-          return null;
-        }
+        if (!hasAccess) return null;
 
         const LinkIcon = link.icon;
+        const isActive = pathname === link.href;
+
         return (
           <Link
             key={link.name}
             href={link.href}
+            title={collapsed ? link.name : undefined}
             className={clsx(
-              "flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-green-800 md:flex-none md:justify-start md:p-2 md:px-3",
-              {
-                "bg-sky-100 text-green-800": pathname === link.href,
-              }
+              "nav-link",
+              isActive && "nav-link-active",
+              collapsed ? "justify-center px-2" : "px-3"
             )}
           >
-            <LinkIcon className="w-6" />
-            <p className="hidden md:block">{link.name}</p>
+            <LinkIcon className="w-5 h-5 flex-shrink-0" />
+            <span
+              className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${
+                collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+              }`}
+            >
+              {link.name}
+            </span>
           </Link>
         );
       })}

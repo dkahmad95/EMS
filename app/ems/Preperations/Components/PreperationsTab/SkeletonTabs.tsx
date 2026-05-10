@@ -1,26 +1,17 @@
 "use client";
 
-import { Skeleton } from "antd";
-
-interface TabsSkeletonProps {
-  count?: number;
-}
-
-export default function TabsSkeleton({ count = 3 }: TabsSkeletonProps) {
+export default function TabsSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <div className="flex gap-6 border-b pb-3">
-      {Array.from({ length: count }).map((_, index) => (
-        <Skeleton.Input
-          key={index}
-          active
-          size="default"
-          style={{
-            width: 120,
-            height: 32,
-            borderRadius: 8,
-          }}
-        />
+    <ul className="space-y-2 mt-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <li key={i} className="settings-list-item">
+          <div className="skeleton-shimmer h-4 rounded" style={{ width: `${120 + (i % 3) * 40}px` }} />
+          <div className="flex gap-2">
+            <div className="skeleton-shimmer h-8 w-8 rounded-lg" />
+            <div className="skeleton-shimmer h-8 w-8 rounded-lg" />
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

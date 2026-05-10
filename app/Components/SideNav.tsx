@@ -5,22 +5,36 @@ import PowerButton from "./PowerButton";
 
 export default function SideNav() {
   return (
-    <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
-      <Link
-        className="mb-4 flex h-20 items-center justify-start rounded-xl bg-primary-700 p-4 md:h-40 md:justify-center md:p-2 shadow-soft-lg  overflow-hidden group"
-        href="/ems"
-      >
-        <div className="w-32 flex items-center justify-center text-white md:w-40 relative z-10">
+    <div className="flex h-full py-3 pr-3"> {/* ← outer wrapper: margin/padding from edge */}
+      <div className="flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm w-full">
+
+        {/* Brand / Logo strip */}
+        <Link
+          href="/ems"
+          className="flex items-center px-5 py-4 bg-gradient-to-l from-primary-600 to-secondary-600
+                     hover:from-primary-700 hover:to-secondary-700 transition-all duration-200
+                     flex-shrink-0"
+        >
           <Logo />
+        </Link>
+
+        {/* Nav section */}
+        <div className="flex flex-col flex-1 overflow-y-auto px-3 pt-5 pb-3">
+          <p className="px-3 mb-2 text-[11px] font-semibold text-gray-400 uppercase tracking-widest hidden md:block">
+            القائمة الرئيسية
+          </p>
+
+          <nav className="flex flex-row md:flex-col gap-1">
+            <NavLinks />
+          </nav>
+
+          <div className="flex-1" />
+
+          <div className="border-t border-gray-100 pt-3 mt-3">
+            <PowerButton />
+          </div>
         </div>
-      </Link>
-      
-      <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-3">
-        <NavLinks />
-        
-        <div className="hidden h-auto w-full grow rounded-xl  md:block"></div>
-        
-        <PowerButton />
+
       </div>
     </div>
   );

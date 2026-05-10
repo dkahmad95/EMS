@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/app/Components/Button";
 import { Input } from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import FormModal from "@/app/Components/FormModal";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createPermissionGroup,
@@ -13,27 +14,72 @@ import {
 } from "@/server/services/api/permissionGroups/permissionGroups";
 import { usePermissionGroups } from "@/server/store/permissionGroups";
 
+/* ─── Helpers ─────────────────────────────────────────── */
+const checkboxCls =
+  "w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer accent-indigo-600";
+
+const labelFor = (key: string) =>
+  key === "create" ? "إنشاء" : key === "read" ? "قراءة" : key === "update" ? "تحديث" : key === "delete" ? "حذف" : "الوصول";
+
+const PermSection = ({
+  title,
+  keys,
+  permissions,
+  resource,
+  onChange,
+}: {
+  title: string;
+  keys: string[];
+  permissions: any;
+  resource: string;
+  onChange: (resource: any, action: string, value: boolean) => void;
+}) => (
+  <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50">
+    <h3 className="text-sm font-semibold text-gray-700 mb-3">{title}</h3>
+    <div className="grid grid-cols-2 gap-2">
+      {keys.map((key) => (
+        <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 select-none">
+          <input
+            type="checkbox"
+            className={checkboxCls}
+            checked={permissions[resource]?.[key] ?? false}
+            onChange={(e) => onChange(resource, key, e.target.checked)}
+          />
+          {labelFor(key)}
+        </label>
+      ))}
+    </div>
+  </div>
+);
+
+/* ─── Default permissions ─────────────────────────────── */
+const defaultPermissions = () => ({
+  employees:     { create: false, read: false, update: false, delete: false },
+  revenues:      { create: false, read: false, update: false, delete: false },
+  users:         { create: false, read: false, update: false, delete: false },
+  dashboard:     { access: false },
+  control_panel: { access: false },
+});
+
+/* ─── Component ───────────────────────────────────────── */
 export default function PermissionGroupsTab() {
   const queryClient = useQueryClient();
-  const [groupName, setGroupName] = useState("");
-  const [permissions, setPermissions] = useState<any>({
-    employees: { create: false, read: false, update: false, delete: false },
-    revenues: { create: false, read: false, update: false, delete: false },
-    users: { create: false, read: false, update: false, delete: false },
-    dashboard: { access: false },
-    control_panel: { access: false },
-  });
-  const [editId, setEditId] = useState<number | null>(null);
 
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [groupName,        setGroupName]        = useState("");
+  const [permissions,      setPermissions]      = useState<any>(defaultPermissions());
+  const [editId,           setEditId]           = useState<number | null>(null);
+  const [isModalOpen,      setIsModalOpen]      = useState(false);
+  const [openDeleteModal,  setOpenDeleteModal]  = useState(false);
+  const [selectedGroupId,  setSelectedGroupId]  = useState<number | null>(null);
 
   const { data: groups, isLoading, error } = usePermissionGroups();
 
+  /* ── Mutations ──────────────────────────────────────── */
   const createMutation = useMutation({
     mutationFn: createPermissionGroup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["permissionGroups"] });
+      setIsModalOpen(false);
       resetForm();
     },
   });
@@ -43,6 +89,7 @@ export default function PermissionGroupsTab() {
       updatePermissionGroup(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["permissionGroups"] });
+      setIsModalOpen(false);
       resetForm();
     },
   });
@@ -56,74 +103,50 @@ export default function PermissionGroupsTab() {
     },
   });
 
+  /* ── Helpers ────────────────────────────────────────── */
   const resetForm = () => {
     setGroupName("");
-    setPermissions({
-      control_panel: { access: false },
-      employees: { create: false, read: false, update: false, delete: false },
-      revenues: { create: false, read: false, update: false, delete: false },
-      users: { create: false, read: false, update: false, delete: false },
-      dashboard: { access: false },
-    });
+    setPermissions(defaultPermissions());
     setEditId(null);
   };
 
-  const handlePermissionChange = (
-    resource: keyof Permissions,
-    action: string,
-    value: boolean
-  ) => {
+  const handlePermissionChange = (resource: keyof Permissions, action: string, value: boolean) => {
     setPermissions((prev: any) => ({
       ...prev,
-      [resource]: {
-        ...prev[resource],
-        [action]: value,
-      },
+      [resource]: { ...prev[resource], [action]: value },
     }));
   };
 
   const handleSaveGroup = () => {
     if (!groupName.trim()) return;
-
-    const groupData: PermissionGroup = {
-      name: groupName.trim(),
-      permissions,
-    };
-
-    if (editId !== null) {
-      updateMutation.mutate({ id: editId, data: groupData });
-    } else {
-      createMutation.mutate(groupData);
-    }
+    const groupData: PermissionGroup = { name: groupName.trim(), permissions };
+    if (editId !== null) updateMutation.mutate({ id: editId, data: groupData });
+    else createMutation.mutate(groupData);
   };
 
-  const handleEditGroup = (group: PermissionGroup) => {
+  const openCreateModal = () => { resetForm(); setIsModalOpen(true); };
+
+  const openEditModal = (group: PermissionGroup) => {
     if (!group.id) return;
     setGroupName(group.name);
     setPermissions(group.permissions);
     setEditId(group.id);
+    setIsModalOpen(true);
   };
 
-  const handleDeleteGroup = (id: number) => {
-    setSelectedGroupId(id);
-    setOpenDeleteModal(true);
-  };
-
-  const confirmDeleteGroup = () => {
-    if (selectedGroupId !== null) {
-      deleteMutation.mutate(selectedGroupId);
-    }
-  };
+  const closeModal = () => { setIsModalOpen(false); resetForm(); };
 
   const isFormValid = groupName.trim().length > 0;
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving    = createMutation.isPending || updateMutation.isPending;
+  const isEditing   = editId !== null;
 
+  /* ── Loading / error states ─────────────────────────── */
   if (isLoading) {
     return (
-      <div className="md:p-4">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">مجموعات الصلاحيات</h2>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+      <div>
+        <h2 className="section-title">مجموعات الصلاحيات</h2>
+        <div className="flex justify-center items-center h-48">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent border-primary-500" />
         </div>
       </div>
     );
@@ -131,307 +154,151 @@ export default function PermissionGroupsTab() {
 
   if (error) {
     return (
-      <div className="md:p-4">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">مجموعات الصلاحيات</h2>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div>
+        <h2 className="section-title">مجموعات الصلاحيات</h2>
+        <div className="card p-4 border-r-4 border-danger-400 text-sm text-danger-700">
           حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.
         </div>
       </div>
     );
   }
 
+  /* ── Render ─────────────────────────────────────────── */
   return (
-    <div className="md:p-4">
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">مجموعات الصلاحيات</h2>
-
-      <div className="flex flex-col gap-3 mb-4 bg-white shadow p-4 rounded">
-        <Input
-          placeholder="أدخل اسم المجموعة (مثال: الإدارة، الموارد البشرية)"
-          value={groupName}
-          onChange={(e) => setGroupName(e.target.value)}
-        />
-
-        <div className="space-y-4 text-gray-700">
-
-
-
-          <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">لوحة التحليل</h3>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={permissions.dashboard.access}
-                onChange={(e) =>
-                  handlePermissionChange("dashboard", "access", e.target.checked)
-                }
-              />
-              الوصول
-            </label>
-          </div>
-
-          <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">قائمة الموظفين</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.employees.create}
-                  onChange={(e) =>
-                    handlePermissionChange("employees", "create", e.target.checked)
-                  }
-                />
-                إنشاء
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.employees.read}
-                  onChange={(e) =>
-                    handlePermissionChange("employees", "read", e.target.checked)
-                  }
-                />
-                قراءة
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.employees.update}
-                  onChange={(e) =>
-                    handlePermissionChange("employees", "update", e.target.checked)
-                  }
-                />
-                تحديث
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.employees.delete}
-                  onChange={(e) =>
-                    handlePermissionChange("employees", "delete", e.target.checked)
-                  }
-                />
-                حذف
-              </label>
-            </div>
-          </div>
-
-          <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">الإيرادات</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.revenues.create}
-                  onChange={(e) =>
-                    handlePermissionChange("revenues", "create", e.target.checked)
-                  }
-                />
-                إنشاء
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.revenues.read}
-                  onChange={(e) =>
-                    handlePermissionChange("revenues", "read", e.target.checked)
-                  }
-                />
-                قراءة
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.revenues.update}
-                  onChange={(e) =>
-                    handlePermissionChange("revenues", "update", e.target.checked)
-                  }
-                />
-                تحديث
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.revenues.delete}
-                  onChange={(e) =>
-                    handlePermissionChange("revenues", "delete", e.target.checked)
-                  }
-                />
-                حذف
-              </label>
-            </div>
-          </div>
-
-          <div className="pb-3 border-b">
-            <h3 className="font-semibold mb-2">إدارة المستخدمين</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.users.create}
-                  onChange={(e) =>
-                    handlePermissionChange("users", "create", e.target.checked)
-                  }
-                />
-                إنشاء
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.users.read}
-                  onChange={(e) =>
-                    handlePermissionChange("users", "read", e.target.checked)
-                  }
-                />
-                قراءة
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.users.update}
-                  onChange={(e) =>
-                    handlePermissionChange("users", "update", e.target.checked)
-                  }
-                />
-                تحديث
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={permissions.users.delete}
-                  onChange={(e) =>
-                    handlePermissionChange("users", "delete", e.target.checked)
-                  }
-                />
-                حذف
-              </label>
-            </div>
-          </div>
-          <div className="border-b pb-3">
-            <h3 className="font-semibold mb-2">إدارة النظام</h3>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={permissions.control_panel.access}
-                onChange={(e) =>
-                  handlePermissionChange("control_panel", "access", e.target.checked)
-                }
-              />
-              الوصول
-            </label>
-          </div>
-        </div>
-
-        <Button
-          onClick={handleSaveGroup}
-          disabled={!isFormValid || isSaving}
-          className={`grid w-20 items-center gap-2 text-white ${isFormValid && !isSaving
-            ? "bg-green-700 hover:bg-green-600"
-            : "bg-gray-400 cursor-not-allowed"
-            }`}
-        >
-          {isSaving ? "..." : editId !== null ? "تحديث" : "إضافة"}
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="section-title mb-0">مجموعات الصلاحيات</h2>
+        <Button variant="primary" size="sm" onClick={openCreateModal}>
+          <PlusIcon className="w-4 h-4" />
+          إضافة مجموعة
         </Button>
       </div>
 
+      {/* Groups list */}
       <div className="space-y-3">
         {groups && groups.length > 0 ? (
           groups.map((group) => (
-            <div
-              key={group.id}
-              className="p-3 bg-white shadow rounded flex justify-between items-start"
-            >
+            <div key={group.id} className="settings-list-item items-start">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-800 mb-2">{group.name}</h3>
-                <div className="text-sm text-gray-600 space-y-1">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{group.name}</h3>
+                <div className="flex flex-wrap gap-1.5">
                   {group.permissions.dashboard.access && (
-                    <div>✓ لوحة التحليل</div>
+                    <span className="badge badge-primary">لوحة التحليل</span>
                   )}
                   {group.permissions.control_panel.access && (
-                    <div>✓ إدارة النظام</div>
+                    <span className="badge badge-primary">إدارة النظام</span>
                   )}
-                  {(group.permissions.employees.create ||
-                    group.permissions.employees.read ||
-                    group.permissions.employees.update ||
-                    group.permissions.employees.delete) && (
-                      <div>
-                        ✓ الموظفين:{" "}
-                        {[
-                          group.permissions.employees.create && "إنشاء",
-                          group.permissions.employees.read && "قراءة",
-                          group.permissions.employees.update && "تحديث",
-                          group.permissions.employees.delete && "حذف",
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </div>
-                    )}
-                  {(group.permissions.revenues.create ||
-                    group.permissions.revenues.read ||
-                    group.permissions.revenues.update ||
-                    group.permissions.revenues.delete) && (
-                      <div>
-                        ✓ الإيرادات:{" "}
-                        {[
-                          group.permissions.revenues.create && "إنشاء",
-                          group.permissions.revenues.read && "قراءة",
-                          group.permissions.revenues.update && "تحديث",
-                          group.permissions.revenues.delete && "حذف",
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </div>
-                    )}
-                  {(group.permissions.users.create ||
-                    group.permissions.users.read ||
-                    group.permissions.users.update ||
-                    group.permissions.users.delete) && (
-                      <div>
-                        ✓ المستخدمين:{" "}
-                        {[
-                          group.permissions.users.create && "إنشاء",
-                          group.permissions.users.read && "قراءة",
-                          group.permissions.users.update && "تحديث",
-                          group.permissions.users.delete && "حذف",
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </div>
-                    )}
+                  {(["employees", "revenues", "users"] as const).map((res) => {
+                    const perms  = group.permissions[res];
+                    const active = Object.entries(perms).filter(([, v]) => v).map(([k]) => labelFor(k));
+                    if (!active.length) return null;
+                    return (
+                      <span key={res} className="badge badge-gray">
+                        {res === "employees" ? "الموظفين" : res === "revenues" ? "الإيرادات" : "المستخدمين"}:{" "}
+                        {active.join("، ")}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
-
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 flex-shrink-0 mt-1">
                 <button
-                  onClick={() => handleEditGroup(group)}
-                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  onClick={() => openEditModal(group)}
+                  className="table-action-edit"
                   title="تعديل"
                 >
-                  <PencilIcon className="w-5 h-5 text-gray-700" />
+                  <PencilIcon className="w-4 h-4" />
                 </button>
-
                 <button
-                  onClick={() => group.id && handleDeleteGroup(group.id)}
-                  className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-colors"
+                  onClick={() => {
+                    if (group.id) { setSelectedGroupId(group.id); setOpenDeleteModal(true); }
+                  }}
+                  className="table-action-delete"
                   title="حذف"
                 >
-                  <TrashIcon className="w-5 h-5 text-red-600" />
+                  <TrashIcon className="w-4 h-4" />
                 </button>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-sm text-gray-400 py-10">
             لا توجد مجموعات صلاحيات بعد
           </div>
         )}
       </div>
 
+      {/* Form modal — size lg for the permissions grid */}
+      <FormModal
+        open={isModalOpen}
+        onClose={closeModal}
+        title={isEditing ? "تعديل مجموعة صلاحيات" : "إضافة مجموعة صلاحيات"}
+        onConfirm={handleSaveGroup}
+        isLoading={isSaving}
+        confirmLabel={isEditing ? "تحديث" : "إضافة"}
+        size="lg"
+      >
+        {/* Group name */}
+        <Input
+          label="اسم المجموعة"
+          placeholder="مثال: الإدارة، الموارد البشرية"
+          value={groupName}
+          onChange={(e) => setGroupName(e.target.value)}
+        />
+
+        {/* Permissions grid */}
+        <div>
+          <p className="text-sm font-medium text-gray-700 mb-3">الصلاحيات</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <PermSection
+              title="لوحة التحليل"
+              keys={["access"]}
+              resource="dashboard"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="إدارة النظام"
+              keys={["access"]}
+              resource="control_panel"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="قائمة الموظفين"
+              keys={["create", "read", "update", "delete"]}
+              resource="employees"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="الإيرادات"
+              keys={["create", "read", "update", "delete"]}
+              resource="revenues"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="إدارة المستخدمين"
+              keys={["create", "read", "update", "delete"]}
+              resource="users"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+          </div>
+        </div>
+      </FormModal>
+
+      {/* Delete modal */}
       <DeleteModal
         open={openDeleteModal}
         setOpen={setOpenDeleteModal}
         Title="حذف المجموعة"
         Body="هل أنت متأكد أنك تريد حذف هذه المجموعة؟"
-        handleClick={confirmDeleteGroup}
+        handleClick={() => {
+          if (selectedGroupId !== null) deleteMutation.mutate(selectedGroupId);
+        }}
       />
     </div>
   );

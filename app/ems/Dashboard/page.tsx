@@ -22,9 +22,9 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    const storedEmployees = JSON.parse(localStorage.getItem("employees") || "[]");
-    const storedRevenues = JSON.parse(localStorage.getItem("revenues") || "[]");
-    const storedOffices = JSON.parse(localStorage.getItem("offices") || "[]");
+    const storedEmployees  = JSON.parse(localStorage.getItem("employees")  || "[]");
+    const storedRevenues   = JSON.parse(localStorage.getItem("revenues")   || "[]");
+    const storedOffices    = JSON.parse(localStorage.getItem("offices")    || "[]");
     const storedCurrencies = JSON.parse(localStorage.getItem("currencies") || "[]");
 
     setEmployees(storedEmployees);
@@ -36,23 +36,30 @@ export default function DashboardPage() {
   const filtered = filterRevenues(revenues, filters);
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-in">
+
+      {/* Page header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">لوحة التحليل</h1>
-          <p className="text-slate-600">نظرة عامة على الإيرادات والأداء</p>
+          <h1 className="page-title">لوحة التحليل</h1>
+          <p className="page-subtitle mt-1">نظرة عامة على الإيرادات والأداء</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg border border-primary-200/50">
-          <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <span className="text-sm font-medium text-primary-700">تحليلات مباشرة</span>
-        </div>
+        <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 text-xs font-semibold rounded-full border border-primary-200 mt-1">
+          <span className="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse" />
+          تحليلات مباشرة
+        </span>
       </div>
 
       {/* Filters */}
-      <div className="card card-hover">
+      <div className="card p-5">
+        <p className="section-title mb-3">
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+            </svg>
+            تصفية البيانات
+          </span>
+        </p>
         <Filters
           employees={employees}
           filters={filters}
@@ -62,30 +69,42 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Revenue Summary */}
+      {/* KPI summary */}
       <RevenueSummary revenues={filtered} />
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Charts grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <RevenueChart data={filtered} groupBy="employeeName" />
         <RevenueChart data={filtered} groupBy="office" />
         <RevenueChart data={filtered} groupBy="currency" />
         <RevenueChart data={filtered} groupBy="destination" />
       </div>
 
-      {/* Time Chart */}
-      <div className="card card-hover">
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-          </svg>
-          <h2 className="text-xl font-bold text-slate-900">الإيرادات مع مرور الوقت</h2>
+      {/* Time chart */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-primary-100 rounded-lg">
+            <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <h2 className="text-base font-semibold text-gray-900">الإيرادات مع مرور الوقت</h2>
         </div>
         <RevenueTimeChart data={filtered} />
       </div>
 
-      {/* Revenue Table */}
-      <RevenueTable data={filtered} />
+      {/* Revenue table */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-secondary-100 rounded-lg">
+            <svg className="w-4 h-4 text-secondary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <h2 className="text-base font-semibold text-gray-900">سجل الإيرادات</h2>
+        </div>
+        <RevenueTable data={filtered} />
+      </div>
     </div>
   );
 }
