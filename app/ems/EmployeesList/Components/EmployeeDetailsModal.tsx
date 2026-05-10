@@ -200,11 +200,16 @@ export default function EmployeeDetailsModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" dir="rtl">
+    <Dialog open={open} onClose={onClose} fullWidth   maxWidth="lg" dir="rtl">
       <DialogTitle className="font-bold text-lg">تفاصيل الموظف</DialogTitle>
       <div className="mt-2">
-        <DialogContent className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-
+      <DialogContent
+  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3"
+  sx={{
+    maxHeight: "70vh",
+    overflowY: "auto",
+  }}
+>
           <Controller
             name="id"
             control={control}

@@ -147,10 +147,17 @@ export default function CreateEmployeeModal({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" dir="rtl">
+    <Dialog open={open} onClose={handleClose} fullWidth   maxWidth="lg" dir="rtl">
       <DialogTitle className="font-bold text-lg">إنشاء موظف جديد</DialogTitle>
-      <DialogContent className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-
+   <div> 
+     <DialogContent
+  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3"
+  sx={{
+    maxHeight: "70vh",
+    overflowY: "auto",
+  }}
+ 
+>
         <Controller
           name="first_employment_date"
           control={control}
@@ -342,6 +349,7 @@ export default function CreateEmployeeModal({
         />
 
       </DialogContent>
+       </div>
       <DialogActions className="flex justify-end gap-3 p-4">
         <Button onClick={handleClose} className="bg-gray-400 text-white">
           إلغاء

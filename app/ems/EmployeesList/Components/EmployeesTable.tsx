@@ -35,22 +35,23 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees, isLoading, o
       message.error("حدث خطأ أثناء حذف الموظف.");
     },
   });
-
+ console.log(employees);
   const columns = [
     { field: "name", headerName: "الاسم", width: 200 },
-    { field: "phone", headerName: "رقم الهاتف", width: 150 },
-    {
-      field: "office",
-      headerName: "المكتب",
-      width: 150,
-      valueGetter: (params: any) => params?.row?.office?.name ?? "",
-    },
-    {
-      field: "job_title",
-      headerName: "المسمى الوظيفي",
-      width: 150,
-      valueGetter: (params: any) => params?.row?.job_title?.name ?? "",
-    },
+  { field: "phone", headerName: "رقم الهاتف", width: 150 },
+
+{
+  field: "office",
+  headerName: "المكتب",
+  width: 150,
+  valueGetter: (_value: any, row: Employee) => row?.office?.name ?? "—",
+},
+{
+  field: "job_title",
+  headerName: "المسمى الوظيفي",
+  width: 150,
+  valueGetter: (_value: any, row: Employee) => row?.job_title?.name ?? "—",
+},
     {
       field: "actions",
       headerName: "العمليات",
