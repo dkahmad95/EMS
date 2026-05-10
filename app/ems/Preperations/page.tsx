@@ -84,6 +84,7 @@ export default function PreperationsPage() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="animate-fade-in space-y-5">
       {/* Page header */}
       <div className="page-header">
@@ -122,6 +123,37 @@ export default function PreperationsPage() {
         <div className="card flex-1 p-5 md:p-6 overflow-y-auto">
           {renderContent()}
         </div>
+=======
+  <div
+  dir="rtl"
+  className="font-[Tajawal] flex flex-col md:flex-row min-h-screen bg-gray-50"
+>
+     <div className="w-full md:w-64 md:min-h-screen border-b md:border-b-0 md:border-l border-gray-200 bg-white shadow-md p-3 md:p-4">
+        <h2 className="text-lg md:text-2xl underline font-semibold mb-3 md:mb-4 text-gray-700 text-center md:text-right">
+          الإعدادات
+        </h2>
+
+       <ul className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 md:space-y-2">
+          {preparationTabs.map((tab) => (
+            <li key={tab.id}  className="min-w-[120px] md:min-w-0">
+              <button
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center justify-center md:justify-start w-full gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all
+                    ${activeTab === tab.id
+                    ? "bg-green-700 text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }`}
+              >
+                <span className="text-[15px] font-semibold">{tab.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+   <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        {renderPreparationContent()}
+>>>>>>> 118aed278bc0a08f6ab9eba9ee6940dd91e7eb9f
       </div>
     </div>
   );

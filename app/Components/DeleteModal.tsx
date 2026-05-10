@@ -11,6 +11,21 @@ interface ModalProps {
   id?: string;
 }
 
+<<<<<<< HEAD
+=======
+const style = {
+ 
+  width: 400,
+  maxWidth: "90%",
+  bgcolor: "white",
+  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+  p: 4,
+  borderRadius: "16px",
+  textAlign: "center",
+  border: "1px solid #e2e8f0",
+};
+
+>>>>>>> 118aed278bc0a08f6ab9eba9ee6940dd91e7eb9f
 const DeleteModal: React.FC<ModalProps> = ({
   open,
   setOpen,
@@ -19,6 +34,7 @@ const DeleteModal: React.FC<ModalProps> = ({
   Body,
 }) => {
   return (
+<<<<<<< HEAD
     <Modal
       open={open}
       onClose={() => setOpen(false)}
@@ -46,6 +62,33 @@ const DeleteModal: React.FC<ModalProps> = ({
             />
           </svg>
         </div>
+=======
+    <div>
+     <Modal
+  open={open}
+  onClose={() => setOpen(false)}
+  aria-labelledby="modal-modal-title"
+  aria-describedby="modal-modal-description"
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  <Box
+    sx={{
+      width: 400,
+      maxWidth: "90%",
+      bgcolor: "white",
+      boxShadow: "0 20px 25px rgba(0,0,0,0.1)",
+      p: 4,
+      borderRadius: "16px",
+      textAlign: "center",
+      border: "1px solid #e2e8f0",
+    }}
+    className="animate-scale-in"
+  >
+>>>>>>> 118aed278bc0a08f6ab9eba9ee6940dd91e7eb9f
 
         <h2
           id="delete-modal-title"
