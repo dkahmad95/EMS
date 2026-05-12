@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RevenueSummary from "./Components/RevenueSummary";
 import { filterRevenues } from "./utils/filterRevenues";
 import { Employee, RevenueRecord } from "./utils/types";
@@ -7,12 +7,12 @@ import RevenueChart from "./Components/RevenueChart";
 import Filters from "./Components/Filters";
 import RevenueTable from "./Components/RevenueTable";
 import RevenueTimeChart from "./Components/RevenueTimeChart";
+import { useRevenues } from "@/server/store/revenues";
+import { useEmployees } from "@/server/store/employees";
+import { useOffices } from "@/server/store/offices";
+import { useCurrencies } from "@/server/store/currencies";
 
 export default function DashboardPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [revenues, setRevenues] = useState<RevenueRecord[]>([]);
-  const [offices, setOffices] = useState<{ name: string; city: string }[]>([]);
-  const [currencies, setCurrencies] = useState<{ id: number; name: string }[]>([]);
   const [filters, setFilters] = useState({
     office: "",
     employeeName: "",
@@ -21,17 +21,37 @@ export default function DashboardPage() {
     endDate: "",
   });
 
-  useEffect(() => {
-    const storedEmployees  = JSON.parse(localStorage.getItem("employees")  || "[]");
-    const storedRevenues   = JSON.parse(localStorage.getItem("revenues")   || "[]");
-    const storedOffices    = JSON.parse(localStorage.getItem("offices")    || "[]");
-    const storedCurrencies = JSON.parse(localStorage.getItem("currencies") || "[]");
+  const { data: revenuesData } = useRevenues();
+  const { data: employeesData } = useEmployees();
+  const { data: officesData } = useOffices();
+  const { data: currenciesData } = useCurrencies();
 
-    setEmployees(storedEmployees);
-    setRevenues(storedRevenues);
-    setOffices(storedOffices);
-    setCurrencies(storedCurrencies);
-  }, []);
+  const revenues: RevenueRecord[] = (revenuesData ?? []).map((r) => ({
+    id: r.id ?? 0,
+    employeeName: r.employee?.name ?? "",
+    office: r.office?.name ?? "",
+    destination: r.destination?.name ?? "",
+    currency: r.currency?.name ?? "",
+    date: r.date,
+    revenueAmount: r.revenue_amount,
+    notes: r.notes ?? "",
+  }));
+
+  const employees: Employee[] = (employeesData ?? []).map((e) => ({
+    id: String(e.id),
+    name: e.name,
+    office: e.office?.name ?? "",
+  }));
+
+  const offices = (officesData ?? []).map((o) => ({
+    name: o.name,
+    city: o.address ?? "",
+  }));
+
+  const currencies = (currenciesData ?? []).map((c) => ({
+    id: c.id ?? 0,
+    name: c.name,
+  }));
 
   const filtered = filterRevenues(revenues, filters);
 
