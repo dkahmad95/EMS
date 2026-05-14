@@ -29,8 +29,12 @@ export default function SideNav() {
             transition-all duration-200
             flex-shrink-0
           "
-        >
-          <Logo />
+                  >
+            <Logo
+            logoSize={40}
+            nameWidth={120}
+            textSize="10px"
+          />
         </Link>
 
         {/* Navigation */}

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import {
   UserCircleIcon,
   EyeIcon,
@@ -18,7 +17,8 @@ import { Input } from "@/app/Components/Input";
 import { useMutation } from "@tanstack/react-query";
 import { message } from "antd";
 import * as authApi from "../server/services/api/auth/auth";
-import Image from "next/image";
+import Logo from "./Components/Logo";
+import { useForm } from "react-hook-form";
 
 const features = [
   {
@@ -33,13 +33,14 @@ const features = [
   },
   {
     icon: ChartBarIcon,
-    title: "لوحة تحليلات",
-    desc: "تقارير وتحليلات شاملة لدعم القرار",
+    title: "لوحة التحليلات",
+    desc: "تقارير وتحليلات شاملة لدعم اتخاذ القرار",
   },
 ];
 
 export default function LoginForm() {
   const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -47,28 +48,34 @@ export default function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    defaultValues: { username: "", password: "" },
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
 
   const { mutateAsync: login, isPending } = useMutation({
     mutationFn: (data: LoginFormData) => authApi.Login(data),
-    onSuccess: (data) => {
-      if (data) {
-        router.push("/ems");
-        message.open({
-          content: "تم تسجيل الدخول بنجاح",
-          type: "success",
-          style: { fontSize: "15px", fontFamily: "Cairo, sans-serif" },
-        });
-      }
+
+    onSuccess: () => {
+      router.push("/ems");
+
+      message.success({
+        content: "تم تسجيل الدخول بنجاح",
+        style: {
+          fontFamily: "Cairo, sans-serif",
+        },
+      });
     },
+
     onError: (error: any) => {
-      message.open({
+      message.error({
         content:
           error?.response?.data?.message ||
           "حدث خطأ ما، يرجى المحاولة مرة أخرى",
-        type: "error",
-        style: { fontSize: "15px", fontFamily: "Cairo, sans-serif" },
+        style: {
+          fontFamily: "Cairo, sans-serif",
+        },
       });
     },
   });
@@ -78,29 +85,59 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
+    <div
+      dir="rtl"
+      className="
+        min-h-screen
+        flex flex-col lg:flex-row
+        bg-gray-50
+      "
+    >
+      {/* Mobile Header */}
+      <div
+        className="
+          lg:hidden
+          bg-gradient-to-l from-primary-700 via-primary-600 to-secondary-600
+          px-6 py-5
+          flex justify-center
+          shadow-sm
+        "
+      >
+        <Logo
+          logoSize={42}
+          nameWidth={140}
+          textSize="11px"
+        />
+      </div>
 
-      {/* ── Right: Login form ─────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center bg-white p-6 md:p-12">
-        <div className="w-full max-w-sm">
-
-          {/* Mobile-only logo */}
-          <div className="flex items-center gap-3 mb-8 md:hidden">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">م</span>
-            </div>
-            <span className="font-bold text-gray-900 text-lg">جمعية المبرات</span>
-          </div>
-
+      {/* Login Section */}
+      <div
+        className="
+          flex-1
+          flex items-center justify-center
+          px-5 py-8
+          sm:px-8
+          lg:px-16
+          bg-white
+        "
+      >
+        <div className="w-full max-w-md">
           {/* Heading */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">مرحباً بك</h1>
-            <p className="text-sm text-gray-500">
+          <div className="mb-8 text-center lg:text-right">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              مرحباً بك
+            </h1>
+
+            <p className="text-sm text-gray-500 leading-relaxed">
               الرجاء إدخال بيانات الدخول للمتابعة
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Form */}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-5"
+          >
             {/* Username */}
             <div>
               <label
@@ -109,6 +146,7 @@ export default function LoginForm() {
               >
                 اسم المستخدم
               </label>
+
               <div className="relative">
                 <Input
                   id="username"
@@ -121,7 +159,16 @@ export default function LoginForm() {
                   error={errors.username?.message}
                   className="pl-10"
                 />
-                <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+                <UserCircleIcon
+                  className="
+                    pointer-events-none
+                    absolute left-3 top-1/2
+                    h-4 w-4
+                    -translate-y-1/2
+                    text-gray-400
+                  "
+                />
               </div>
             </div>
 
@@ -133,6 +180,7 @@ export default function LoginForm() {
               >
                 كلمة المرور
               </label>
+
               <div className="relative">
                 <Input
                   id="password"
@@ -143,19 +191,38 @@ export default function LoginForm() {
                     required: "كلمة المرور مطلوبة",
                     minLength: {
                       value: 6,
-                      message: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+                      message:
+                        "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
                     },
                   })}
                   error={errors.password?.message}
                   className="pl-20"
                 />
-                <KeyIcon className="pointer-events-none absolute left-10 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+                <KeyIcon
+                  className="
+                    pointer-events-none
+                    absolute left-10 top-1/2
+                    h-4 w-4
+                    -translate-y-1/2
+                    text-gray-400
+                  "
+                />
+
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setShowPassword((p) => !p)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-                  aria-label="Toggle password visibility"
+                  onClick={() =>
+                    setShowPassword((prev) => !prev)
+                  }
+                  className="
+                    absolute left-3 top-1/2
+                    -translate-y-1/2
+                    text-gray-400
+                    hover:text-gray-600
+                    transition-colors
+                    cursor-pointer
+                  "
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-4 w-4" />
@@ -171,60 +238,103 @@ export default function LoginForm() {
               type="submit"
               disabled={isPending}
               size="lg"
-              className="w-full mt-2"
+              className="
+                w-full
+                bg-primary-600
+                hover:bg-primary-700
+                text-white
+                shadow-sm
+              "
             >
-              {isPending ? (
+              {isPending && (
                 <Loader borderColor="white" />
-              ) : null}
+              )}
+
               تسجيل الدخول
             </Button>
           </form>
         </div>
       </div>
 
-      {/* ── Left: Branding panel (hidden on mobile) ───── */}
-      <div className="hidden md:flex w-2/5 bg-gradient-to-br from-gray-900 via-primary-950 to-secondary-950 flex-col items-center justify-center p-12 relative overflow-hidden">
+      {/* Branding Section */}
+      <div
+        className="
+          hidden lg:flex
+          w-[42%]
+          relative
+          overflow-hidden
+          bg-gradient-to-br
+          from-primary-700
+          via-primary-600
+          to-secondary-600
+          items-center justify-center
+          px-10 py-14
+        "
+      >
+        {/* Background Effects */}
+        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute bottom-[-80px] left-[-80px] w-72 h-72 rounded-full bg-secondary-400/10 blur-3xl" />
 
-        {/* Decorative circles */}
-        <div className="absolute top-[-80px] right-[-80px] w-72 h-72 rounded-full bg-primary-600/20 blur-3xl" />
-        <div className="absolute bottom-[-60px] left-[-60px] w-56 h-56 rounded-full bg-secondary-600/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary-800/10 blur-3xl" />
-
-        <div className="relative z-10 text-center mb-10">
-          {/* Logo mark */}
-          <div className="mx-auto mb-5 w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-            <Image
-              src="/almabbaratLogo.webp"
-              alt="شعار جمعية المبرات"
-              className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-contain flex-shrink-0"
-              width={40}
-              height={40}
-              priority
+        <div className="relative z-10 max-w-md w-full">
+          {/* Logo */}
+          <div className="flex justify-center mb-10">
+            <Logo
+              logoSize={90}
+              nameWidth={260}
+              textSize="16px"
             />
           </div>
-          <h2 className="text-white text-2xl font-bold mb-2">جمعية المبرات</h2>
-          <p className="text-white/60 text-sm">نظام إدارة الموظفين والإيرادات</p>
-        </div>
 
-        {/* Feature highlights */}
-        <div className="relative z-10 w-full max-w-xs space-y-4">
-          {features.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className="flex items-start gap-4 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl p-4"
-              >
-                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary-500/30 border border-primary-400/30 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-primary-300" />
+          {/* Subtitle */}
+          <div className="text-center mb-10">
+            <p className="text-white/75 text-sm leading-relaxed">
+              نظام إدارة الموظفين والإيرادات
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="space-y-4">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+
+              return (
+                <div
+                  key={feature.title}
+                  className="
+                    flex items-start gap-4
+                    rounded-2xl
+                    border border-white/10
+                    bg-white/10
+                    backdrop-blur-md
+                    p-4
+                  "
+                >
+                  <div
+                    className="
+                      flex items-center justify-center
+                      w-10 h-10
+                      rounded-xl
+                      bg-white/10
+                      border border-white/10
+                      flex-shrink-0
+                    "
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-white font-semibold text-sm mb-1">
+                      {feature.title}
+                    </h3>
+
+                    <p className="text-white/65 text-xs leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">{f.title}</p>
-                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

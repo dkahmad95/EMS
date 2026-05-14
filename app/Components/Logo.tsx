@@ -1,16 +1,26 @@
 import Image from "next/image";
 
-export default function Logo() {
+interface LogoProps {
+  logoSize?: number;
+  nameWidth?: number;
+  textSize?: string;
+}
+
+export default function Logo({
+  logoSize = 48,
+  nameWidth = 140,
+  textSize = "10px",
+}: LogoProps) {
   return (
     <div className="flex items-center gap-3">
       {/* Right Logo */}
       <Image
         src="/almabbaratLogo.webp"
         alt="شعار جمعية المبرات"
-        width={48}
-        height={48}
+        width={logoSize}
+        height={logoSize}
         priority
-        className="w-10 h-10 md:w-12 md:h-12 object-contain flex-shrink-0"
+        className="object-contain flex-shrink-0"
       />
 
       {/* Left Content */}
@@ -18,14 +28,17 @@ export default function Logo() {
         <Image
           src="/MabarratLogoName.png"
           alt="اسم جمعية المبرات"
-          width={140}
+          width={nameWidth}
           height={60}
           priority
-          className="w-32  lg:w-36 h-auto object-contain"
+          className="h-auto object-contain"
         />
 
-      <p className="text-white font-medium text-[10px]  whitespace-nowrap leading-none text-center">
-          مديرية التكفل و العلاقات  الخارجية
+        <p
+          className="text-white font-medium whitespace-nowrap leading-none text-center"
+          style={{ fontSize: textSize }}
+        >
+          مديرية التكفل و العلاقات الخارجية
         </p>
       </div>
     </div>
