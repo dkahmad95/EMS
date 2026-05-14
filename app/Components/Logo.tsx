@@ -21,11 +21,11 @@ export default function Logo() {
           width={140}
           height={60}
           priority
-          className="w-24 md:w-32 lg:w-36 h-auto object-contain"
+          className="w-32  lg:w-36 h-auto object-contain"
         />
 
-      <p className="text-white font-medium text-[10px] md:text-xs whitespace-nowrap leading-none text-center">
-          مديرية العلاقات و التكفل
+      <p className="text-white font-medium text-[10px]  whitespace-nowrap leading-none text-center">
+          مديرية التكفل و العلاقات  الخارجية
         </p>
       </div>
     </div>

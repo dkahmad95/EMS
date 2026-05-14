@@ -61,7 +61,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
     {
       field: "actions",
       headerName: "العمليات",
-      width: 300,
+      width: 400,
       renderCell: (params: any) => (
         <div className="flex flex-row gap-3 mt-3" dir="rtl">
           <PermissionGate resource="users" action="update">
