@@ -97,6 +97,7 @@ export default function OfficesTab() {
 
       {/* List */}
       {officesLoading ? <TabsSkeleton /> : (
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {offices?.map((office) => (
             <li key={office.id} className="settings-list-item">
@@ -115,6 +116,7 @@ export default function OfficesTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

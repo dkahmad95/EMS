@@ -97,6 +97,7 @@ export default function DistrictsTab() {
 
       {/* List */}
       {districtsLoading ? <TabsSkeleton /> : (
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {districts?.map((district) => (
             <li key={district.id} className="settings-list-item">
@@ -115,6 +116,7 @@ export default function DistrictsTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

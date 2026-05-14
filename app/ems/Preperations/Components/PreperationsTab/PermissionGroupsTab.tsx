@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/app/Components/Button";
-import { Input } from "@/app/Components/Input";
+import {useState} from "react";
+import {Button} from "@/app/Components/Button";
+import {Input} from "@/app/Components/Input";
 import DeleteModal from "@/app/Components/DeleteModal";
 import FormModal from "@/app/Components/FormModal";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {PencilIcon, TrashIcon, PlusIcon} from "@heroicons/react/24/outline";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {
   createPermissionGroup,
   updatePermissionGroup,
   deletePermissionGroup,
 } from "@/server/services/api/permissionGroups/permissionGroups";
-import { usePermissionGroups } from "@/server/store/permissionGroups";
+import {usePermissionGroups} from "@/server/store/permissionGroups";
 
 /* ─── Helpers ─────────────────────────────────────────── */
 const checkboxCls =
   "w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer accent-indigo-600";
 
 const labelFor = (key: string) =>
-  key === "create" ? "إنشاء" : key === "read" ? "قراءة" : key === "update" ? "تحديث" : key === "delete" ? "حذف" : "الوصول";
+  key === "create"
+    ? "إنشاء"
+    : key === "read"
+      ? "قراءة"
+      : key === "update"
+        ? "تحديث"
+        : key === "delete"
+          ? "حذف"
+          : "الوصول";
 
 const PermSection = ({
   title,
@@ -54,41 +62,40 @@ const PermSection = ({
 
 /* ─── Default permissions ─────────────────────────────── */
 const defaultPermissions = () => ({
-  employees:     { create: false, read: false, update: false, delete: false },
-  revenues:      { create: false, read: false, update: false, delete: false },
-  users:         { create: false, read: false, update: false, delete: false },
-  dashboard:     { access: false },
-  control_panel: { access: false },
+  employees: {create: false, read: false, update: false, delete: false},
+  revenues: {create: false, read: false, update: false, delete: false},
+  users: {create: false, read: false, update: false, delete: false},
+  dashboard: {access: false},
+  control_panel: {access: false},
 });
 
 /* ─── Component ───────────────────────────────────────── */
 export default function PermissionGroupsTab() {
   const queryClient = useQueryClient();
 
-  const [groupName,        setGroupName]        = useState("");
-  const [permissions,      setPermissions]      = useState<any>(defaultPermissions());
-  const [editId,           setEditId]           = useState<number | null>(null);
-  const [isModalOpen,      setIsModalOpen]      = useState(false);
-  const [openDeleteModal,  setOpenDeleteModal]  = useState(false);
-  const [selectedGroupId,  setSelectedGroupId]  = useState<number | null>(null);
+  const [groupName, setGroupName] = useState("");
+  const [permissions, setPermissions] = useState<any>(defaultPermissions());
+  const [editId, setEditId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
-  const { data: groups, isLoading, error } = usePermissionGroups();
+  const {data: groups, isLoading, error} = usePermissionGroups();
 
   /* ── Mutations ──────────────────────────────────────── */
   const createMutation = useMutation({
     mutationFn: createPermissionGroup,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissionGroups"] });
+      queryClient.invalidateQueries({queryKey: ["permissionGroups"]});
       setIsModalOpen(false);
       resetForm();
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: PermissionGroup }) =>
-      updatePermissionGroup(id, data),
+    mutationFn: ({id, data}: {id: number; data: PermissionGroup}) => updatePermissionGroup(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissionGroups"] });
+      queryClient.invalidateQueries({queryKey: ["permissionGroups"]});
       setIsModalOpen(false);
       resetForm();
     },
@@ -97,7 +104,7 @@ export default function PermissionGroupsTab() {
   const deleteMutation = useMutation({
     mutationFn: deletePermissionGroup,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["permissionGroups"] });
+      queryClient.invalidateQueries({queryKey: ["permissionGroups"]});
       setOpenDeleteModal(false);
       setSelectedGroupId(null);
     },
@@ -113,18 +120,21 @@ export default function PermissionGroupsTab() {
   const handlePermissionChange = (resource: keyof Permissions, action: string, value: boolean) => {
     setPermissions((prev: any) => ({
       ...prev,
-      [resource]: { ...prev[resource], [action]: value },
+      [resource]: {...prev[resource], [action]: value},
     }));
   };
 
   const handleSaveGroup = () => {
     if (!groupName.trim()) return;
-    const groupData: PermissionGroup = { name: groupName.trim(), permissions };
-    if (editId !== null) updateMutation.mutate({ id: editId, data: groupData });
+    const groupData: PermissionGroup = {name: groupName.trim(), permissions};
+    if (editId !== null) updateMutation.mutate({id: editId, data: groupData});
     else createMutation.mutate(groupData);
   };
 
-  const openCreateModal = () => { resetForm(); setIsModalOpen(true); };
+  const openCreateModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
 
   const openEditModal = (group: PermissionGroup) => {
     if (!group.id) return;
@@ -134,11 +144,14 @@ export default function PermissionGroupsTab() {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => { setIsModalOpen(false); resetForm(); };
+  const closeModal = () => {
+    setIsModalOpen(false);
+    resetForm();
+  };
 
   const isFormValid = groupName.trim().length > 0;
-  const isSaving    = createMutation.isPending || updateMutation.isPending;
-  const isEditing   = editId !== null;
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isEditing = editId !== null;
 
   /* ── Loading / error states ─────────────────────────── */
   if (isLoading) {
@@ -163,6 +176,24 @@ export default function PermissionGroupsTab() {
     );
   }
 
+  /* ─── Select All ───────────────────────────────────── */
+
+  const toggleAllPermissions = (value: boolean) => {
+    const updated: any = {};
+
+    Object.keys(permissions).forEach((resource) => {
+      updated[resource] = {};
+
+      Object.keys(permissions[resource]).forEach((action) => {
+        updated[resource][action] = value;
+      });
+    });
+
+    setPermissions(updated);
+  };
+
+  const allChecked = Object.values(permissions).every((resource: any) => Object.values(resource).every(Boolean));
+
   /* ── Render ─────────────────────────────────────────── */
   return (
     <div>
@@ -174,59 +205,57 @@ export default function PermissionGroupsTab() {
           إضافة مجموعة
         </Button>
       </div>
-
+     
       {/* Groups list */}
-      <div className="space-y-3">
-        {groups && groups.length > 0 ? (
-          groups.map((group) => (
-            <div key={group.id} className="settings-list-item items-start">
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{group.name}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.permissions.dashboard.access && (
-                    <span className="badge badge-primary">لوحة التحليل</span>
-                  )}
-                  {group.permissions.control_panel.access && (
-                    <span className="badge badge-primary">إدارة النظام</span>
-                  )}
-                  {(["employees", "revenues", "users"] as const).map((res) => {
-                    const perms  = group.permissions[res];
-                    const active = Object.entries(perms).filter(([, v]) => v).map(([k]) => labelFor(k));
-                    if (!active.length) return null;
-                    return (
-                      <span key={res} className="badge badge-gray">
-                        {res === "employees" ? "الموظفين" : res === "revenues" ? "الإيرادات" : "المستخدمين"}:{" "}
-                        {active.join("، ")}
-                      </span>
-                    );
-                  })}
+      <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
+        <div className="space-y-3">
+          {groups && groups.length > 0 ? (
+            groups.map((group) => (
+              <div key={group.id} className="settings-list-item items-start">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{group.name}</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.permissions.dashboard.access && <span className="badge badge-primary">لوحة التحليل</span>}
+                    {group.permissions.control_panel.access && (
+                      <span className="badge badge-primary">إدارة النظام</span>
+                    )}
+                    {(["employees", "revenues", "users"] as const).map((res) => {
+                      const perms = group.permissions[res];
+                      const active = Object.entries(perms)
+                        .filter(([, v]) => v)
+                        .map(([k]) => labelFor(k));
+                      if (!active.length) return null;
+                      return (
+                        <span key={res} className="badge badge-primary">
+                          {res === "employees" ? "الموظفين" : res === "revenues" ? "الإيرادات" : "المستخدمين"}:{" "}
+                          {active.join("، ")}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex gap-1.5 flex-shrink-0 mt-1">
+                  <button onClick={() => openEditModal(group)} className="table-action-edit" title="تعديل">
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (group.id) {
+                        setSelectedGroupId(group.id);
+                        setOpenDeleteModal(true);
+                      }
+                    }}
+                    className="table-action-delete"
+                    title="حذف">
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-1.5 flex-shrink-0 mt-1">
-                <button
-                  onClick={() => openEditModal(group)}
-                  className="table-action-edit"
-                  title="تعديل"
-                >
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (group.id) { setSelectedGroupId(group.id); setOpenDeleteModal(true); }
-                  }}
-                  className="table-action-delete"
-                  title="حذف"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center text-sm text-gray-400 py-10">
-            لا توجد مجموعات صلاحيات بعد
-          </div>
-        )}
+            ))
+          ) : (
+            <div className="text-center text-sm text-gray-400 py-10">لا توجد مجموعات صلاحيات بعد</div>
+          )}
+        </div>
       </div>
 
       {/* Form modal — size lg for the permissions grid */}
@@ -237,8 +266,7 @@ export default function PermissionGroupsTab() {
         onConfirm={handleSaveGroup}
         isLoading={isSaving}
         confirmLabel={isEditing ? "تحديث" : "إضافة"}
-        size="lg"
-      >
+        size="lg">
         {/* Group name */}
         <Input
           label="اسم المجموعة"
@@ -246,11 +274,21 @@ export default function PermissionGroupsTab() {
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
         />
-
+ {/* Select All Checkbox */}
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          type="checkbox"
+          className={checkboxCls}
+          checked={allChecked}
+          onChange={(e) => toggleAllPermissions(e.target.checked)}
+        />
+        <label className="text-sm text-gray-700 font-medium">تحديد  جميع الصلاحيات</label>
+      </div>
         {/* Permissions grid */}
         <div>
           <p className="text-sm font-medium text-gray-700 mb-3">الصلاحيات</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
             <PermSection
               title="لوحة التحليل"
               keys={["access"]}

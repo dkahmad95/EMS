@@ -94,6 +94,7 @@ export default function CitiesTab() {
 
       {/* List */}
       {citiesLoading ? <TabsSkeleton /> : (
+        <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {cities?.map((city) => (
             <li key={city.id} className="settings-list-item">
@@ -112,6 +113,7 @@ export default function CitiesTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

@@ -87,6 +87,7 @@ export default function JobTitlesTab() {
 
       {/* List */}
       {jobTitlesLoading ? <TabsSkeleton /> : (
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {data?.map((title) => (
             <li key={title.id} className="settings-list-item">
@@ -102,6 +103,7 @@ export default function JobTitlesTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

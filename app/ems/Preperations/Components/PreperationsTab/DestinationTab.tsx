@@ -87,6 +87,7 @@ export default function DestinationsTab() {
 
       {/* List */}
       {destinationsLoading ? <TabsSkeleton /> : (
+          <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {data?.map((destination) => (
             <li key={destination.id} className="settings-list-item">
@@ -102,6 +103,7 @@ export default function DestinationsTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

@@ -94,7 +94,7 @@ const FormModal: React.FC<FormModalProps> = ({
       >
         <div className="flex items-center justify-end gap-3 px-5 py-4 w-full">
           <Button variant="outline" onClick={onClose} disabled={isLoading}
-            className="bg-red-800  text-white hover:bg-red-600 border-red-500 hover:border-red-600 focus-visible:ring-red-500">
+            className="bg-red-600  text-white hover:bg-red-800 border-red-500 hover:border-red-600 focus-visible:ring-red-500">
             إلغاء
           </Button>
           <Button variant="primary" onClick={onConfirm} disabled={isLoading}>

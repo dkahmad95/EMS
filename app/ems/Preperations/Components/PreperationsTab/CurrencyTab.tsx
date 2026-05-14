@@ -90,6 +90,7 @@ export default function CurrenciesTab() {
 
       {/* List */}
       {currenciesLoading ? <TabsSkeleton /> : (
+         <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {data?.map((currency) => (
             <li key={currency.id} className="settings-list-item">
@@ -108,6 +109,7 @@ export default function CurrenciesTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}

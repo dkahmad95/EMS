@@ -87,6 +87,7 @@ export default function EducationLevelsTab() {
 
       {/* List */}
       {educationLevelsLoading ? <TabsSkeleton /> : (
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {data?.map((level) => (
             <li key={level.id} className="settings-list-item">
@@ -101,7 +102,8 @@ export default function EducationLevelsTab() {
               </div>
             </li>
           ))}
-        </ul>
+        </ul> 
+        </div>
       )}
 
       {/* Form modal */}

@@ -89,6 +89,7 @@ export default function GovernoratesTab() {
 
       {/* List */}
       {governoratesLoading ? <TabsSkeleton /> : (
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
         <ul className="space-y-2">
           {data?.map((gov) => (
             <li key={gov.id} className="settings-list-item">
@@ -104,6 +105,7 @@ export default function GovernoratesTab() {
             </li>
           ))}
         </ul>
+        </div>
       )}
 
       {/* Form modal */}
