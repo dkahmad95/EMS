@@ -99,6 +99,7 @@ export default function RevenueChart({ data, groupBy }: Props) {
             type="number"
             orientation="right"
             width={70}
+             direction={'ltr'}
             tickFormatter={(val) => val.toLocaleString()}
             tick={{
               fill: "#9ca3af",
