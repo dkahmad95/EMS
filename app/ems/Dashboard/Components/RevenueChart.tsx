@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { RevenueRecord } from "../utils/types";
 
 interface Props {
   data: RevenueRecord[];

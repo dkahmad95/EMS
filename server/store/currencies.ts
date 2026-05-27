@@ -8,3 +8,10 @@ export const useCurrencies = (options: {enabled?: boolean} = {enabled: true}) =>
     enabled: options.enabled,
   });
 };
+export const useDashboardCurrencies = (options: {enabled?: boolean} = {enabled: true}) => {
+  return useQuery({
+    queryKey: ['dashboardCurrencies'],
+    queryFn: () => api.getDashboardCurrencies(),
+    enabled: options.enabled,
+  });
+};

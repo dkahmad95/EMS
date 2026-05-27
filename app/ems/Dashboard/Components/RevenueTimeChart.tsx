@@ -2,7 +2,6 @@
 
 import React, {useState} from "react";
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend} from "recharts";
-import {RevenueRecord} from "../utils/types";
 
 interface Props {
   data: RevenueRecord[];

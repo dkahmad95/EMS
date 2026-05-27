@@ -10,6 +10,13 @@ export const getCurrencies = async (): Promise<Currency[] | null> =>
             withCredentials: true,
         }),
     );
+export const getDashboardCurrencies = async (): Promise<Currency[] | null> =>
+    withToken((decodedToken, authHeader) =>
+        axios.get(api.CURRENCIES_API.DASHBOARD_GET, {
+            headers: authHeader,
+            withCredentials: true,
+        }),
+    );
 
 export const createCurrency = async (data: Currency): Promise<Currency | null> =>
     withToken((decodedToken, authHeader) =>

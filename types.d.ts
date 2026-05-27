@@ -89,7 +89,6 @@ type Currency = {
   name: string;
   code: string;
   rate: number;
-  currency_type: string;
 };
 
 type PermissionGroup = {

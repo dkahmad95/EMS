@@ -1,5 +1,4 @@
 "use client";
-import { RevenueRecord } from "../utils/types";
 
 interface Props {
   revenues: RevenueRecord[];
