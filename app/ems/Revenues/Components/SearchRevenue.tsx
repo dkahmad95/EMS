@@ -33,12 +33,12 @@ const muiSx = {
 
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   const { data: employeeList } = useEmployees();
-  const { data: officeList }   = useOffices();
+  const { data: officeList } = useOffices();
 
-  const [employee,  setEmployee]  = useState<string | null>(null);
-  const [office,    setOffice]    = useState<string | null>(null);
+  const [employee, setEmployee] = useState<string | null>(null);
+  const [office, setOffice] = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
-  const [endDate,   setEndDate]   = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const handleReset = () => {
     setEmployee(null);
@@ -49,7 +49,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="card p-5">
+    <div >
       <p className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
         <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
         بحث الإيرادات

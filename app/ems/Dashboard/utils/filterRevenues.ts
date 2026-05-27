@@ -1,4 +1,3 @@
-import { RevenueRecord } from "./types";
 
 interface Filters {
   office?: string;

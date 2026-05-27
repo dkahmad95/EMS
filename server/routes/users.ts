@@ -5,7 +5,6 @@ interface UsersApi {
   GET: string;
   UPDATE: (id: number) => string;
   DELETE: (id: number) => string;
-  UPDATE_PERMISSION_GROUP: (id: number) => string;
 }
 
 export const USERS_API: UsersApi = {
@@ -13,5 +12,4 @@ export const USERS_API: UsersApi = {
   GET: `${API_BASE_URL}/users`,
   UPDATE: (id: number) => `${API_BASE_URL}/users/${id}`,
   DELETE: (id: number) => `${API_BASE_URL}/users/${id}`,
-  UPDATE_PERMISSION_GROUP: (id: number) => `${API_BASE_URL}/users/${id}/update-permission-group`,
 };

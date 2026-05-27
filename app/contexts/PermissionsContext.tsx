@@ -24,17 +24,17 @@ export function PermissionsProvider({
   useEffect(() => {
     if (decodedToken) {
       const savedOfficeId = localStorage.getItem('currentOfficeId');
-      if (savedOfficeId && decodedToken.office_ids.includes(Number(savedOfficeId))) {
+      if (savedOfficeId && decodedToken.office_id === Number(savedOfficeId)) {
         setCurrentOfficeId(Number(savedOfficeId));
-      } else if (decodedToken.office_ids.length > 0) {
-        setCurrentOfficeId(decodedToken.office_ids[0]);
+      } else if (decodedToken.office_id) {
+        setCurrentOfficeId(decodedToken.office_id);
       }
     }
     setIsLoading(false);
   }, [decodedToken]);
 
   const switchOffice = (officeId: number) => {
-    if (decodedToken?.office_ids.includes(officeId) || decodedToken?.is_admin) {
+    if (decodedToken?.office_id === officeId || decodedToken?.is_admin) {
       setCurrentOfficeId(officeId);
       localStorage.setItem('currentOfficeId', String(officeId));
     }

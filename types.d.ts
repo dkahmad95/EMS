@@ -7,6 +7,7 @@ interface Permissions {
   employees: { create: boolean; read: boolean; update: boolean; delete: boolean };
   revenues: { create: boolean; read: boolean; update: boolean; delete: boolean };
   users: { create: boolean; read: boolean; update: boolean; delete: boolean };
+  collections: { create: boolean; read: boolean; update: boolean; delete: boolean };
   dashboard: { access: boolean };
   control_panel: { access: boolean };
 };
@@ -21,8 +22,8 @@ type DecodedToken = {
   username: string;
   is_admin: boolean;
   permissions: Permissions;
-  office_ids: number[];
-  offices: OfficeAssignment[];
+  office_id: number;
+  office: OfficeAssignment;
   iat: number;
   exp: number;
 };
@@ -87,6 +88,8 @@ type Currency = {
   id?: number;
   name: string;
   code: string;
+  rate: number;
+  currency_type: string;
 };
 
 type PermissionGroup = {
@@ -101,6 +104,7 @@ type User = {
   id?: number;
   name: string;
   username: string;
+  office_id?: number;
   permission_group_id?: number;
   permission_group_name?: string;
   is_admin?: boolean;
@@ -132,11 +136,16 @@ type CreateUserRequest = {
   name: string;
   username: string;
   password: string;
+  officeId: number;
+  permissionGroupId: number;
 };
 
 type UpdateUserRequest = {
+  name?: string;
   username?: string;
   password?: string;
+  officeId?: number;
+  permissionGroupId?: number;
 };
 
 type Employee = {
@@ -180,7 +189,48 @@ type Revenue = {
   employee?: { id: number; name: string };
   office?: { id: number; name: string };
   destination?: { id: number; name: string };
-  currency?: { id: number; name: string; code: string };
+  currency?: { id: number; name: string; code: string; currency_type: CurrencyType; rate: number };
+  created_at?: string;
+  updated_at?: string;
+};
+
+interface RevenueRecord {
+  id: number;
+  employeeName: string;
+  office: string;
+  destination: string;
+  currency: string;
+  date: string;
+  revenueAmount: number;
+  notes: string;
+}
+
+
+enum CollectionType {
+  SPONSORSHIP = "SPONSORSHIP",
+  BOX = "BOX",
+}
+
+enum CurrencyType {
+  USD = "USD",
+  LBP = "LBP",
+  OTHERS = "OTHERS",
+}
+
+type Collection = {
+  id?: number;
+  employee_id: number;
+  office_id: number;
+  collection_type: CollectionType;
+  date: string;
+  count: number;
+  notes?: string | null;
+  employee?: { id: number; name: string };
+  office?: { id: number; name: string };
+  user?: { id: number; name: string; username: string };
+  employeeName?: string;
+  officeName?: string;
+  userName?: string;
   created_at?: string;
   updated_at?: string;
 };

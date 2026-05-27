@@ -2,12 +2,12 @@
 import { useState } from "react";
 import RevenueSummary from "./Components/RevenueSummary";
 import { filterRevenues } from "./utils/filterRevenues";
-import { Employee, RevenueRecord } from "./utils/types";
+import { Employee } from "./utils/types";
 import RevenueChart from "./Components/RevenueChart";
 import Filters from "./Components/Filters";
 import RevenueTable from "./Components/RevenueTable";
 import RevenueTimeChart from "./Components/RevenueTimeChart";
-import { useRevenues } from "@/server/store/revenues";
+import { useDashboardRevenues, useRevenues } from "@/server/store/revenues";
 import { useEmployees } from "@/server/store/employees";
 import { useOffices } from "@/server/store/offices";
 import { useCurrencies } from "@/server/store/currencies";
@@ -21,7 +21,7 @@ export default function DashboardPage() {
     endDate: "",
   });
 
-  const { data: revenuesData } = useRevenues();
+  const { data: revenuesData } = useDashboardRevenues();
   const { data: employeesData } = useEmployees();
   const { data: officesData } = useOffices();
   const { data: currenciesData } = useCurrencies();
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     id: c.id ?? 0,
     name: c.name,
   }));
-
+console.log("Dashboard currencies:", currencies);
   const filtered = filterRevenues(revenues, filters);
 
   return (

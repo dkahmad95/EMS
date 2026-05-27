@@ -10,7 +10,7 @@ import { useUsers } from "@/server/store/users";
 import { Button } from "@/app/Components/Button";
 
 const UsersList = () => {
-  const [searchTerm,        setSearchTerm]        = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: users, isLoading, error } = useUsers();

@@ -8,3 +8,10 @@ export const useRevenues = (options: { enabled?: boolean } = { enabled: true }) 
     enabled: options.enabled,
   });
 };
+export const useDashboardRevenues = (options: { enabled?: boolean } = { enabled: true }) => {
+  return useQuery({
+    queryKey: ["dashboardRevenues"],
+    queryFn: () => api.getDashboardRevenues(),
+    enabled: options.enabled,
+  });
+};

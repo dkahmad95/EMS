@@ -18,7 +18,7 @@ interface FormModalProps {
   onConfirm: () => void | Promise<void>;
   isLoading?: boolean;
   confirmLabel?: string;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "sm";
   children: React.ReactNode;
 }
 
@@ -32,7 +32,7 @@ const FormModal: React.FC<FormModalProps> = ({
   size = "md",
   children,
 }) => {
-  const maxWidth = size === "lg" ? "md" : "sm"; // MUI: sm ≈ max-w-lg, md ≈ max-w-2xl
+  const maxWidth = size === "lg" ? "md" : "sm";
 
   return (
     <Dialog

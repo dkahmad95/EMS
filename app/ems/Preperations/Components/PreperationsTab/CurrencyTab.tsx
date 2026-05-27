@@ -16,12 +16,12 @@ export default function CurrenciesTab() {
   const queryClient = useQueryClient();
   const { data, isLoading: currenciesLoading } = useCurrencies();
 
-  const [deleteId,     setDeleteID]    = useState<number | undefined>(undefined);
-  const [loading,      setLoading]     = useState(false);
-  const [errors,       setErrors]      = useState<{ code?: string }>({});
-  const [formState,    setFormState]   = useState<Currency>({ name: "", code: "", id: undefined });
+  const [deleteId, setDeleteID] = useState<number | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ code?: string; rate?: string }>({});
+  const [formState, setFormState] = useState<Currency>({ name: "", code: "", rate: 1 , id: undefined });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
-  const [isModalOpen,  setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { mutateAsync: createCurrency } = useMutation({
     mutationFn: (data: Currency) => api.createCurrency(data),
@@ -61,21 +61,22 @@ export default function CurrenciesTab() {
     if (!formState.name.trim()) { message.error("يرجى إدخال اسم العملة"); return; }
     if (!formState.code.trim()) { setErrors({ code: "يرجى إدخال كود العملة" }); return; }
     if (formState.code.trim().length > 3) { setErrors({ code: "يجب أن يكون كود العملة أقل من 4 أحرف" }); return; }
+    if (formState.rate == null || isNaN(formState.rate)) { setErrors({ rate: "يرجى إدخال سعر الصرف" }); return; }
     setLoading(true);
     try {
-      const data: Currency = { name: formState.name.trim(), code: formState.code.trim() };
+      const data: Currency = { name: formState.name.trim(), code: formState.code.trim(), rate: formState.rate };
       if (formState.id != null) await updateCurrency({ id: formState.id, data });
       else await createCurrency(data);
     } catch { /* handled */ }
     finally { setLoading(false); }
   };
 
-  const handleResetForm = () => { setFormState({ name: "", code: "", id: undefined }); setErrors({}); };
+  const handleResetForm = () => { setFormState({ name: "", code: "", rate: 1, id: undefined }); setErrors({}); };
   const openCreateModal = () => { handleResetForm(); setIsModalOpen(true); };
-  const openEditModal   = (c: Currency) => { setFormState({ name: c.name, code: c.code, id: c.id }); setErrors({}); setIsModalOpen(true); };
-  const closeModal      = () => { setIsModalOpen(false); handleResetForm(); };
-  const isEditing       = formState.id != null;
-  const isFormValid     = formState.name.trim().length > 0 && formState.code.trim().length > 0 && formState.code.trim().length < 4;
+  const openEditModal = (c: Currency) => { setFormState({ name: c.name, code: c.code, rate: c.rate, id: c.id }); setErrors({}); setIsModalOpen(true); };
+  const closeModal = () => { setIsModalOpen(false); handleResetForm(); };
+  const isEditing = formState.id != null;
+  const isFormValid = formState.name.trim().length > 0 && formState.code.trim().length > 0 && formState.code.trim().length < 4;
 
   return (
     <div>
@@ -90,25 +91,25 @@ export default function CurrenciesTab() {
 
       {/* List */}
       {currenciesLoading ? <TabsSkeleton /> : (
-         <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
-        <ul className="space-y-2">
-          {data?.map((currency) => (
-            <li key={currency.id} className="settings-list-item">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-900">{currency.name}</span>
-                <span className="badge badge-primary">{currency.code}</span>
-              </div>
-              <div className="flex gap-1.5">
-                <button onClick={() => openEditModal(currency)} className="table-action-edit" title="تعديل">
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button onClick={() => { setDeleteID(currency.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
+          <ul className="space-y-2">
+            {data?.map((currency) => (
+              <li key={currency.id} className="settings-list-item">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-900">{currency.name}</span>
+                  <span className="badge badge-primary">{currency.code}</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <button onClick={() => openEditModal(currency)} className="table-action-edit" title="تعديل">
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { setDeleteID(currency.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -133,6 +134,13 @@ export default function CurrenciesTab() {
           value={formState.code}
           onChange={(e) => setFormState((p) => ({ ...p, code: e.target.value }))}
           error={errors.code}
+        />
+        <Input
+          label="سعر الصرف"
+          placeholder="مثال: 1.00"
+          value={formState.rate}
+          onChange={(e) => setFormState((p) => ({ ...p, rate: parseFloat(e.target.value) }))}
+          error={errors.rate}
         />
       </FormModal>
 

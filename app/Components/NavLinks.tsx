@@ -10,6 +10,7 @@ import {
   BanknotesIcon,
   ChartBarIcon,
   UsersIcon,
+  ArchiveBoxIcon,
 } from "@heroicons/react/24/outline";
 
 const links = [
@@ -33,6 +34,13 @@ const links = [
     icon: BanknotesIcon,
     checkAccess: (permissions: ReturnType<typeof usePermissions>) =>
       permissions.hasPermission('revenues', 'read'),
+  },
+  {
+    name: "التحصيلات",
+    href: "/ems/Collections",
+    icon: ArchiveBoxIcon,
+    checkAccess: (permissions: ReturnType<typeof usePermissions>) =>
+      permissions.hasPermission('collections', 'read'),
   },
   {
     name: "إدارة المستخدمين",

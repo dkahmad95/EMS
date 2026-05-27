@@ -6,4 +6,5 @@ export const REVENUES_API = {
   GET_ONE: (id: number) => `${API_BASE_URL}/revenues/${id}`,
   UPDATE: (id: number) => `${API_BASE_URL}/revenues/${id}`,
   DELETE: (id: number) => `${API_BASE_URL}/revenues/${id}`,
+  GET_DASHBOARD: `${API_BASE_URL}/revenues/dashboard`,
 };

@@ -23,18 +23,6 @@ export const createUser = async (data: CreateUserRequest): Promise<User | null> 
     ),
   );
 
-export const updatePermissionGroup = async (userId: number, groupId: number): Promise<any | null> =>
-  withToken((decodedToken, authHeader) =>
-    axios.post(
-      api.USERS_API.UPDATE_PERMISSION_GROUP(userId),
-      { permission_group_id: groupId },
-      {
-        headers: authHeader,
-        withCredentials: true,
-      },
-    ),
-  );
-
 export const updateUser = async (id: number, data: UpdateUserRequest): Promise<User | null> =>
   withToken((decodedToken, authHeader) =>
     axios.patch(

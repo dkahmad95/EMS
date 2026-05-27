@@ -4,7 +4,7 @@ import { usePermissions } from "../hooks/usePermissions";
 import { ReactNode } from "react";
 
 interface PermissionGateProps {
-  resource: 'employees' | 'revenues' | 'users';
+  resource: 'employees' | 'revenues' | 'users' | 'collections';
   action: 'create' | 'read' | 'update' | 'delete';
   children: ReactNode;
   fallback?: ReactNode;

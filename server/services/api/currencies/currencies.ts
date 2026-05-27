@@ -30,6 +30,7 @@ export const updateCurrency = async (id: number, data: Currency): Promise<Curren
             {
                 name: data.name,
                 code: data.code,
+                rate: data.rate,
             },
             {
                 headers: authHeader,

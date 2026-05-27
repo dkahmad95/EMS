@@ -11,6 +11,14 @@ export const getRevenues = async (): Promise<Revenue[] | null> =>
     }),
   );
 
+export const getDashboardRevenues = async (): Promise<Revenue[] | null> =>
+  withToken((decodedToken, authHeader) =>
+    axios.get(api.REVENUES_API.GET_DASHBOARD, {
+      headers: authHeader,
+      withCredentials: true,
+    }),
+  );
+
 export const getRevenue = async (id: number): Promise<Revenue | null> =>
   withToken((decodedToken, authHeader) =>
     axios.get(api.REVENUES_API.GET_ONE(id), {

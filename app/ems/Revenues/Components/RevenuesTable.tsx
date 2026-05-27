@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/app/Components/Button";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import DataTable from "@/app/Components/DataTable";
 import SearchRevenue from "./SearchRevenue";
@@ -20,6 +21,7 @@ const RevenuesTable = () => {
   const [selectedEntry, setSelectedEntry] = useState<Revenue | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
 
   const [searchFilters, setSearchFilters] = useState<{
     employee?: string | null;
@@ -32,6 +34,7 @@ const RevenuesTable = () => {
     mutationFn: (id: number) => api.deleteRevenue(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["revenues"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardRevenues"] });
       setOpenDelete(false);
       setSelectedEntry(null);
       message.success("تم حذف الإيراد بنجاح");
@@ -144,14 +147,29 @@ const RevenuesTable = () => {
   ];
   return (
     <div dir="rtl" className="space-y-6">
-      <SearchRevenue onSearch={handleSearch} />
-      <AddRevenueForm />
+      <div className="card flex items-end justify-between gap-3 p-5 ">
+        <SearchRevenue onSearch={handleSearch} />
+        <Button
+          variant="primary"
+          onClick={() => setOpenAdd(true)}
+          className="flex items-center gap-2 whitespace-nowrap"
+        >
+          <PlusIcon className="w-4 h-4" />
+          إضافة إيراد
+        </Button>
+
+      </div>
 
       {isLoading ? (
         <DataTableSkeleton />
       ) : (
         <DataTable columns={columns} rows={filtered} />
       )}
+
+      <AddRevenueForm
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+      />
 
       <DeleteRevenueModal
         open={openDelete}
@@ -166,6 +184,7 @@ const RevenuesTable = () => {
         onSuccess={() => {
           setOpenEdit(false);
           queryClient.invalidateQueries({ queryKey: ["revenues"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboardRevenues"] });
         }}
       />
     </div>

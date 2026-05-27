@@ -68,6 +68,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
       api.updateRevenue(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["revenues"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardRevenues"] });
       message.success("تم تحديث الإيراد بنجاح");
       onSuccess();
     },

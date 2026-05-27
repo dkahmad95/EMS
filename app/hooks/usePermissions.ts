@@ -6,7 +6,7 @@ export const usePermissions = () => {
 
 
   const hasPermission = (
-    resource: 'employees' | 'revenues' | 'users',
+    resource: 'employees' | 'revenues' | 'users' | 'collections',
     action: 'create' | 'read' | 'update' | 'delete'
   ): boolean => {
     if (decodedToken?.is_admin) return true;

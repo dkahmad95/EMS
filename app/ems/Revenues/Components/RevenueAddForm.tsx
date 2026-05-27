@@ -8,6 +8,11 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Box,
 } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,7 +24,12 @@ import { useCurrencies } from "@/server/store/currencies";
 import { message } from "antd";
 import Loader from "@/app/Components/Loader";
 
-const AddRevenueForm: React.FC = () => {
+interface AddRevenueFormProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
   const queryClient = useQueryClient();
 
   const { data: employeeList } = useEmployees();
@@ -39,19 +49,25 @@ const AddRevenueForm: React.FC = () => {
     mutationFn: (data: Revenue) => api.createRevenue(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["revenues"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardRevenues"] });
       message.success("تم إضافة الإيراد بنجاح");
-      setEmployeeId(null);
-      setOfficeId(null);
-      setDestinationId(null);
-      setCurrencyId(null);
-      setDate("");
-      setRevenueAmount("");
-      setNotes("");
+      resetForm();
+      onClose();
     },
     onError: () => {
       message.error("حدث خطأ أثناء إضافة الإيراد.");
     },
   });
+
+  const resetForm = () => {
+    setEmployeeId(null);
+    setOfficeId(null);
+    setDestinationId(null);
+    setCurrencyId(null);
+    setDate("");
+    setRevenueAmount("");
+    setNotes("");
+  };
 
   const isFormValid =
     employeeId !== null &&
@@ -75,102 +91,127 @@ const AddRevenueForm: React.FC = () => {
     });
   };
 
+  const handleClose = () => {
+    if (!isPending) {
+      resetForm();
+      onClose();
+    }
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow space-y-3">
-      <h2 className="text-lg font-semibold text-gray-700 mb-2">
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="md"
+      dir="rtl"
+    >
+      <DialogTitle className="font-bold text-lg">
         إضافة الإيراد اليومي
-      </h2>
+      </DialogTitle>
 
-      <div className="flex flex-wrap items-end gap-2 md:gap-4">
+      <DialogContent>
+        <Box sx={{ mt: 2 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        {/* EMPLOYEE */}
-        <Autocomplete
-          options={employeeList ?? []}
-          getOptionLabel={(option) => option.name}
-          value={employeeList?.find((e) => e.id === employeeId) ?? null}
-          onChange={(_, newValue) => setEmployeeId(newValue?.id ?? null)}
-          renderInput={(params) => (
-            <TextField {...params} label="اسم الموظف" variant="outlined" />
-          )}
-          sx={{ minWidth: 200 }}
-        />
+          <Autocomplete
+            options={employeeList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={employeeList?.find((e) => e.id === employeeId) ?? null}
+            onChange={(_, newValue) => setEmployeeId(newValue?.id ?? null)}
+            disabled={isPending}
+            renderInput={(params) => (
+              <TextField {...params} label="اسم الموظف" variant="outlined" />
+            )}
+          />
 
-        {/* OFFICE */}
-        <Autocomplete
-          options={officeList ?? []}
-          getOptionLabel={(option) => option.name}
-          value={officeList?.find((o) => o.id === officeId) ?? null}
-          onChange={(_, newValue) => setOfficeId(newValue?.id ?? null)}
-          renderInput={(params) => (
-            <TextField {...params} label="المكتب" variant="outlined" />
-          )}
-          sx={{ minWidth: 200 }}
-        />
+          <Autocomplete
+            options={officeList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={officeList?.find((o) => o.id === officeId) ?? null}
+            onChange={(_, newValue) => setOfficeId(newValue?.id ?? null)}
+            disabled={isPending}
+            renderInput={(params) => (
+              <TextField {...params} label="المكتب" variant="outlined" />
+            )}
+          />
 
-        {/* DESTINATION */}
-        <Autocomplete
-          options={destinationsList ?? []}
-          getOptionLabel={(option) => option.name}
-          value={destinationsList?.find((d) => d.id === destinationId) ?? null}
-          onChange={(_, newValue) => setDestinationId(newValue?.id ?? null)}
-          renderInput={(params) => (
-            <TextField {...params} label="الوجهة" variant="outlined" />
-          )}
-          sx={{ minWidth: 200 }}
-        />
+          <Autocomplete
+            options={destinationsList ?? []}
+            getOptionLabel={(option) => option.name}
+            value={destinationsList?.find((d) => d.id === destinationId) ?? null}
+            onChange={(_, newValue) => setDestinationId(newValue?.id ?? null)}
+            disabled={isPending}
+            renderInput={(params) => (
+              <TextField {...params} label="الوجهة" variant="outlined" />
+            )}
+          />
 
-        {/* DATE */}
-        <TextField
-          type="date"
-          label="التاريخ"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
+          <TextField
+            type="date"
+            label="التاريخ"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+            disabled={isPending}
+            fullWidth
+          />
 
-        {/* REVENUE AMOUNT */}
-        <TextField
-          type="number"
-          label="قيمة الإيراد"
-          value={revenueAmount}
-          onChange={(e) => setRevenueAmount(e.target.value)}
-        />
+          <TextField
+            type="number"
+            label="قيمة الإيراد"
+            value={revenueAmount}
+            onChange={(e) => setRevenueAmount(e.target.value)}
+            disabled={isPending}
+            fullWidth
+          />
 
-        {/* CURRENCY */}
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel id="currency-label">العملة</InputLabel>
-          <Select
-            labelId="currency-label"
-            value={currencyId ?? ""}
-            label="العملة"
-            onChange={(e) => setCurrencyId(Number(e.target.value))}
-          >
-            {currenciesList?.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name} ({c.code})
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="currency-label">العملة</InputLabel>
+            <Select
+              labelId="currency-label"
+              value={currencyId ?? ""}
+              label="العملة"
+              onChange={(e) => setCurrencyId(Number(e.target.value))}
+              disabled={isPending}
+            >
+              {currenciesList?.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name} ({c.code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        {/* NOTES */}
-        <TextField
-          label="ملاحظات"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="اختياري"
-        />
+          <TextField
+            label="ملاحظات"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="اختياري"
+            disabled={isPending}
+            fullWidth
+            className="md:col-span-2"
+          />
+        </Box>
+      </DialogContent>
 
-        {/* ADD BUTTON */}
+      <DialogActions className="flex justify-end gap-3 p-4">
+        <Button
+          onClick={handleClose}
+          className="bg-gray-400 text-white"
+          disabled={isPending}
+        >
+          إلغاء
+        </Button>
+
         <Button
           onClick={handleAdd}
           disabled={!isFormValid || isPending}
-          className="disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+          className="disabled:cursor-not-allowed"
         >
           {isPending ? <Loader borderColor="white" /> : "إضافة الإيراد"}
         </Button>
-      </div>
-    </div>
+      </DialogActions>
+    </Dialog>
   );
 };
 
