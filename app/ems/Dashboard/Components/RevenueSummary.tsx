@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 interface Props {
   revenues: RevenueRecord[];
+  collections: Collection[];
 }
 
 const currencyColors = [
@@ -11,7 +12,7 @@ const currencyColors = [
   { icon: "text-warning-600", bg: "bg-warning-100", accent: "border-warning-400" },
 ];
 
-export default function RevenueSummary({ revenues }: Props) {
+export default function RevenueSummary({ revenues, collections }: Props) {
   const totalsByCurrency = revenues.reduce<Record<string, number>>((acc, r) => {
     if (!acc[r.currency]) acc[r.currency] = 0;
     acc[r.currency] += r.revenueAmount;
@@ -23,6 +24,14 @@ export default function RevenueSummary({ revenues }: Props) {
     acc[r.destination] += 1;
     return acc;
   }, {});
+
+  const sponsorshipTotal = collections
+    .filter((c) => c.collection_type === "SPONSORSHIP")
+    .reduce((sum, c) => sum + c.count, 0);
+
+  const boxTotal = collections
+    .filter((c) => c.collection_type === "BOX")
+    .reduce((sum, c) => sum + c.count, 0);
 
   const currencyEntries = Object.entries(totalsByCurrency);
 
@@ -53,8 +62,8 @@ export default function RevenueSummary({ revenues }: Props) {
         })}
       </div>
 
-      {/* Revenue count + destinations row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Revenue count + destinations + collections row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         {/* Revenue count */}
         <div className="card p-5 border-r-4 border-success-400">
@@ -94,6 +103,29 @@ export default function RevenueSummary({ revenues }: Props) {
             ))}
           </div>
         </div>
+
+        {/* Collections */}
+        <div className="card p-5 border-r-4 border-accent-400">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-accent-100 rounded-lg">
+              <svg className="w-5 h-5 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-700">التحصيلات</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-1 p-1 bg-accent-50 rounded-xl border border-accent-200">
+              <span className="text-xs text-gray-500 font-medium">كفالة</span>
+              <span className="text-2xl font-bold text-accent-700">{sponsorshipTotal.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1 p-1 bg-warning-50 rounded-xl border border-warning-200">
+              <span className="text-xs text-gray-500 font-medium">حصالة</span>
+              <span className="text-2xl font-bold text-warning-700">{boxTotal.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

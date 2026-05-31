@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import RevenueSummary from "./Components/RevenueSummary";
 import { filterRevenues } from "./utils/filterRevenues";
@@ -11,6 +11,7 @@ import { useDashboardRevenues } from "@/server/store/revenues";
 import { useEmployees } from "@/server/store/employees";
 import { useOffices } from "@/server/store/offices";
 import { useDashboardCurrencies } from "@/server/store/currencies";
+import { useCollections } from "@/server/store/collections";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState({
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const { data: employeesData } = useEmployees();
   const { data: officesData } = useOffices();
   const { data: currenciesData } = useDashboardCurrencies();
+  const { data: collectionsData } = useCollections();
 
   const revenues: RevenueRecord[] = (revenuesData ?? []).map((r) => ({
     id: r.id ?? 0,
@@ -52,8 +54,17 @@ export default function DashboardPage() {
     id: c.id ?? 0,
     name: c.name,
   }));
-  console.log("Dashboard currencies:", currencies);
+
   const filtered = filterRevenues(revenues, filters);
+
+  const filteredCollections = (collectionsData ?? []).filter((c) => {
+    if (filters.office && c.office?.name !== filters.office) return false;
+    if (filters.employeeName && c.employee?.name !== filters.employeeName) return false;
+    const dateStr = c.date?.split("T")[0] ?? c.date ?? "";
+    if (filters.startDate && dateStr < filters.startDate) return false;
+    if (filters.endDate && dateStr > filters.endDate) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -77,6 +88,7 @@ export default function DashboardPage() {
             <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
             </svg>
+
             تصفية البيانات
           </span>
         </p>
@@ -90,7 +102,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI summary */}
-      <RevenueSummary revenues={filtered} />
+      <RevenueSummary revenues={filtered} collections={filteredCollections} />
 
       {/* Charts grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -98,6 +110,7 @@ export default function DashboardPage() {
         <RevenueChart data={filtered} groupBy="office" />
         <RevenueChart data={filtered} groupBy="currency" />
         <RevenueChart data={filtered} groupBy="destination" />
+        
       </div>
 
       {/* Time chart */}
