@@ -13,7 +13,7 @@ import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/employees/employees";
 import { useJobTitles } from "@/server/store/jobTitles";
-import { useOffices } from "@/server/store/offices";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useEducationLevels } from "@/server/store/educationLevels";
 import { useCities } from "@/server/store/cities";
 import { message } from "antd";
@@ -127,7 +127,7 @@ export default function EmployeeDetailsModal({
   });
 
   const { data: jobTitles } = useJobTitles();
-  const { data: offices } = useOffices();
+  const { data: offices } = useTokenOffices();
   const { data: educationLevels } = useEducationLevels();
   const { data: cities } = useCities();
 

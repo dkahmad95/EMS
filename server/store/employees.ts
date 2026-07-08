@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import * as api from "../services/api/employees/employees";
 
-export const useEmployees = (options: { enabled?: boolean } = { enabled: true }) => {
+export const useEmployees = (
+  officeId?: number | null,
+  options: { enabled?: boolean } = { enabled: true },
+) => {
   return useQuery({
-    queryKey: ["employees"],
-    queryFn: () => api.getEmployees(),
+    queryKey: ["employees", officeId ?? "all"],
+    queryFn: () => api.getEmployees(officeId),
     enabled: options.enabled,
   });
 };

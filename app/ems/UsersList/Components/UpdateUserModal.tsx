@@ -14,7 +14,8 @@ import { Button } from "@/app/Components/Button";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUser } from "@/server/services/api/users/users";
-import { useOffices } from "@/server/store/offices";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
+import { usePermissions } from "@/app/hooks/usePermissions";
 import { usePermissionGroups } from "@/server/store/permissionGroups";
 
 interface UpdateUserModalProps {
@@ -26,11 +27,15 @@ interface UpdateUserModalProps {
 type UpdateUserFormInputs = {
     name: string;
     username: string;
-    officeId: number;
+    officeId: number | null; // null = access to all offices
     permissionGroupId: number;
     password: string;
     confirmPassword: string;
 };
+
+type OfficeOption = { id: number | null; name: string };
+
+const ALL_OFFICES_OPTION: OfficeOption = { id: null, name: "جميع المكاتب" };
 
 const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
     open,
@@ -39,8 +44,14 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 }) => {
     const queryClient = useQueryClient();
 
-    const { data: officesList } = useOffices();
+    const { data: officesList } = useTokenOffices();
+    const { hasAllOfficesAccess } = usePermissions();
     const { data: permissionGroupsList } = usePermissionGroups();
+
+    // "All offices" (office_id = null) can only be granted by someone who has it
+    const officeOptions: OfficeOption[] = hasAllOfficesAccess
+        ? [ALL_OFFICES_OPTION, ...officesList]
+        : officesList;
 
     const {
         register,
@@ -57,7 +68,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
             reset({
                 name: user.name ?? "",
                 username: user.username ?? "",
-                officeId: user.office_id,
+                officeId: user.office_id ?? null,
                 permissionGroupId: user.permission_group_id,
                 password: "",
                 confirmPassword: "",
@@ -67,7 +78,9 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 
 
     React.useEffect(() => {
-        register("officeId", { required: "المكتب مطلوب" });
+        register("officeId", {
+            validate: (v) => v !== undefined || "المكتب مطلوب",
+        });
         register("permissionGroupId", { required: "مجموعة الصلاحيات مطلوبة" });
     }, [register]);
 
@@ -94,10 +107,10 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 
     const onSubmit = (data: UpdateUserFormInputs) => {
         if (!user?.id) return;
-        console.log("Submitting update with data:", data);
         const payload: UpdateUserRequest = {
             name: data.name,
             username: data.username,
+            // omitted officeId => backend stores office_id = null (all offices)
             officeId: data.officeId ?? undefined,
             permissionGroupId: data.permissionGroupId ?? undefined,
         };
@@ -119,7 +132,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 
 
     const selectedOffice =
-        officesList?.find((o) => o.id === user?.office_id) ?? null;
+        officeOptions.find((o) => o.id === (user?.office_id ?? null)) ?? null;
     const selectedPermissionGroup =
         permissionGroupsList?.find((pg) => pg.id === user?.permission_group_id) ??
         null;
@@ -183,11 +196,12 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
                     {/* المكتب */}
                     <Autocomplete
                         key={`office-${user.id}-${open}`}
-                        options={officesList ?? []}
+                        options={officeOptions}
                         getOptionLabel={(option) => option.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
                         defaultValue={selectedOffice}
                         onChange={(_, val) => {
-                            setValue("officeId", val?.id as number, {
+                            setValue("officeId", (val ? val.id : undefined) as number | null, {
                                 shouldValidate: true,
                             });
                         }}

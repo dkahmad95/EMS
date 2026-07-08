@@ -22,8 +22,8 @@ type DecodedToken = {
   username: string;
   is_admin: boolean;
   permissions: Permissions;
-  office_id: number;
-  office: OfficeAssignment;
+  office_id: number | null; // null = access to all offices
+  offices: OfficeAssignment[];
   iat: number;
   exp: number;
 };
@@ -135,7 +135,7 @@ type CreateUserRequest = {
   name: string;
   username: string;
   password: string;
-  officeId: number;
+  officeId?: number; // omitted = access to all offices
   permissionGroupId: number;
 };
 
@@ -158,7 +158,7 @@ type Employee = {
   office_id: number;
   number_of_children: number;
   phone: string;
-  email: string;
+  email?: string;
   lives_in: string;
   address: string;
   insurance: boolean;

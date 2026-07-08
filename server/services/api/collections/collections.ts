@@ -3,11 +3,14 @@ import axios from "axios";
 import * as api from "../../../routes/collections";
 import { withToken } from "../auth/authRequests";
 
-export const getCollections = async (): Promise<Collection[] | null> =>
+export const getCollections = async (
+  officeId?: number | null,
+): Promise<Collection[] | null> =>
   withToken((_decodedToken, authHeader) =>
     axios.get(api.COLLECTIONS_API.GET, {
       headers: authHeader,
       withCredentials: true,
+      params: officeId != null ? { office_id: officeId } : undefined,
     }),
   );
 

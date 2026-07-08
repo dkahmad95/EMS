@@ -2,6 +2,7 @@ import Link from "next/link";
 import NavLinks from "./NavLinks";
 import Logo from "./Logo";
 import PowerButton from "./PowerButton";
+import OfficeSwitcher from "./OfficeSwitcher";
 
 export default function SideNav() {
   return (
@@ -36,6 +37,9 @@ export default function SideNav() {
             textSize="10px"
           />
         </Link>
+
+        {/* Office switcher */}
+        <OfficeSwitcher />
 
         {/* Navigation */}
         <div

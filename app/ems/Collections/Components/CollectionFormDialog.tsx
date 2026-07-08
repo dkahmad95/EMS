@@ -13,7 +13,7 @@ import FormModal from "@/app/Components/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/collections/collections";
 import { useEmployees } from "@/server/store/employees";
-import { useOffices } from "@/server/store/offices";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { message } from "antd";
 
 interface CollectionFormDialogProps {
@@ -45,7 +45,7 @@ const CollectionFormDialog: React.FC<CollectionFormDialogProps> = ({
   const isEditing = selectedCollection !== null;
 
   const { data: employeeList } = useEmployees();
-  const { data: officeList } = useOffices();
+  const { data: officeList } = useTokenOffices();
 
   const [form, setForm] = useState(emptyForm());
 

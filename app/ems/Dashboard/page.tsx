@@ -9,24 +9,23 @@ import RevenueTable from "./Components/RevenueTable";
 import RevenueTimeChart from "./Components/RevenueTimeChart";
 import { useDashboardRevenues } from "@/server/store/revenues";
 import { useEmployees } from "@/server/store/employees";
-import { useOffices } from "@/server/store/offices";
 import { useDashboardCurrencies } from "@/server/store/currencies";
 import { useCollections } from "@/server/store/collections";
+import { usePermissions } from "@/app/hooks/usePermissions";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState({
-    office: "",
     employeeName: "",
     currency: "",
     startDate: "",
     endDate: "",
   });
 
-  const { data: revenuesData } = useDashboardRevenues();
-  const { data: employeesData } = useEmployees();
-  const { data: officesData } = useOffices();
+  const { currentOfficeId } = usePermissions();
+  const { data: revenuesData } = useDashboardRevenues(currentOfficeId);
+  const { data: employeesData } = useEmployees(currentOfficeId);
   const { data: currenciesData } = useDashboardCurrencies();
-  const { data: collectionsData } = useCollections();
+  const { data: collectionsData } = useCollections(currentOfficeId);
 
   const revenues: RevenueRecord[] = (revenuesData ?? []).map((r) => ({
     id: r.id ?? 0,
@@ -45,11 +44,6 @@ export default function DashboardPage() {
     office: e.office?.name ?? "",
   }));
 
-  const offices = (officesData ?? []).map((o) => ({
-    name: o.name,
-    city: o.address ?? "",
-  }));
-
   const currencies = (currenciesData ?? []).map((c) => ({
     id: c.id ?? 0,
     name: c.name,
@@ -58,7 +52,6 @@ export default function DashboardPage() {
   const filtered = filterRevenues(revenues, filters);
 
   const filteredCollections = (collectionsData ?? []).filter((c) => {
-    if (filters.office && c.office?.name !== filters.office) return false;
     if (filters.employeeName && c.employee?.name !== filters.employeeName) return false;
     const dateStr = c.date?.split("T")[0] ?? c.date ?? "";
     if (filters.startDate && dateStr < filters.startDate) return false;
@@ -96,7 +89,6 @@ export default function DashboardPage() {
           employees={employees}
           filters={filters}
           setFilters={setFilters}
-          offices={offices.map((o) => o.name)}
           currencies={currencies}
         />
       </div>

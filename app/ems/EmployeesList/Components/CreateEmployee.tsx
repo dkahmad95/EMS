@@ -14,7 +14,7 @@ import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/employees/employees";
 import { useJobTitles } from "@/server/store/jobTitles";
-import { useOffices } from "@/server/store/offices";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useEducationLevels } from "@/server/store/educationLevels";
 import { useCities } from "@/server/store/cities";
 import { message } from "antd";
@@ -98,7 +98,7 @@ export default function CreateEmployeeModal({
   });
 
   const { data: jobTitles } = useJobTitles();
-  const { data: offices } = useOffices();
+  const { data: offices } = useTokenOffices();
   const { data: educationLevels } = useEducationLevels();
   const { data: cities } = useCities();
 
@@ -118,7 +118,7 @@ export default function CreateEmployeeModal({
   const onSubmit = async (data: any) => {
     const payload: Employee = {
       name: data.name,
-      email: data.email,
+      email: data.email?.trim() ? data.email.trim() : undefined,
       phone: data.phone,
       gender: genderMap[data.gender] ?? data.gender,
       contract_type: contractMap[data.contract_type] ?? data.contract_type,
@@ -188,7 +188,12 @@ export default function CreateEmployeeModal({
         <Controller
           name="email"
           control={control}
-          rules={{ required: "البريد الإلكتروني مطلوب" }}
+          rules={{
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "البريد الإلكتروني غير صالح",
+            },
+          }}
           render={({ field, fieldState }) => (
             <TextField label="البريد الإلكتروني" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
           )}

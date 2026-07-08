@@ -3,19 +3,25 @@ import axios from "axios";
 import * as api from "../../../routes/revenues";
 import { withToken } from "../auth/authRequests";
 
-export const getRevenues = async (): Promise<Revenue[] | null> =>
+export const getRevenues = async (
+  officeId?: number | null,
+): Promise<Revenue[] | null> =>
   withToken((decodedToken, authHeader) =>
     axios.get(api.REVENUES_API.GET, {
       headers: authHeader,
       withCredentials: true,
+      params: officeId != null ? { office_id: officeId } : undefined,
     }),
   );
 
-export const getDashboardRevenues = async (): Promise<Revenue[] | null> =>
+export const getDashboardRevenues = async (
+  officeId?: number | null,
+): Promise<Revenue[] | null> =>
   withToken((decodedToken, authHeader) =>
     axios.get(api.REVENUES_API.GET_DASHBOARD, {
       headers: authHeader,
       withCredentials: true,
+      params: officeId != null ? { office_id: officeId } : undefined,
     }),
   );
 

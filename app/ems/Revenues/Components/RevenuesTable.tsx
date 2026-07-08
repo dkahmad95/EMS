@@ -10,13 +10,15 @@ import EditRevenueDialog from "./EditRevenueDialog";
 import DeleteRevenueModal from "./DeleteRevenueModal";
 import AddRevenueForm from "./RevenueAddForm";
 import { useRevenues } from "@/server/store/revenues";
+import { usePermissions } from "@/app/hooks/usePermissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/revenues/revenues";
 import { message } from "antd";
 
 const RevenuesTable = () => {
   const queryClient = useQueryClient();
-  const { data: revenues, isLoading } = useRevenues();
+  const { currentOfficeId } = usePermissions();
+  const { data: revenues, isLoading } = useRevenues(currentOfficeId);
 
   const [selectedEntry, setSelectedEntry] = useState<Revenue | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
@@ -25,7 +27,6 @@ const RevenuesTable = () => {
 
   const [searchFilters, setSearchFilters] = useState<{
     employee?: string | null;
-    office?: string | null;
     startDate?: string;
     endDate?: string;
   }>({});
@@ -48,11 +49,9 @@ const RevenuesTable = () => {
     if (!revenues) return [];
     return revenues.filter((r) => {
       const empName = r.employee?.name ?? "";
-      const officeName = r.office?.name ?? "";
       const revDate = r.date?.split("T")[0] ?? r.date;
 
       if (searchFilters.employee && empName !== searchFilters.employee) return false;
-      if (searchFilters.office && officeName !== searchFilters.office) return false;
       if (searchFilters.startDate && revDate < searchFilters.startDate) return false;
       if (searchFilters.endDate && revDate > searchFilters.endDate) return false;
       return true;
@@ -61,16 +60,14 @@ const RevenuesTable = () => {
 
   const handleSearch = ({
     employee,
-    office,
     startDate,
     endDate,
   }: {
     employee?: string | null;
-    office?: string | null;
     startDate?: string;
     endDate?: string;
   }) => {
-    setSearchFilters({ employee, office, startDate, endDate });
+    setSearchFilters({ employee, startDate, endDate });
   };
 
   const handleDelete = async () => {

@@ -17,7 +17,7 @@ import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/revenues/revenues";
 import { useEmployees } from "@/server/store/employees";
-import { useOffices } from "@/server/store/offices";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useDestinations } from "@/server/store/destinations";
 import { useCurrencies } from "@/server/store/currencies";
 import { message } from "antd";
@@ -39,7 +39,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
   const queryClient = useQueryClient();
 
   const { data: employeeList } = useEmployees();
-  const { data: officeList } = useOffices();
+  const { data: officeList } = useTokenOffices();
   const { data: destinationsList } = useDestinations();
   const { data: currenciesList } = useCurrencies();
 

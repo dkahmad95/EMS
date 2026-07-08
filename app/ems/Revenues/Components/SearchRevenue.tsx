@@ -4,13 +4,11 @@ import React, { useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useEmployees } from "@/server/store/employees";
-import { useOffices } from "@/server/store/offices";
 import { MagnifyingGlassIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 interface SearchRevenueProps {
   onSearch: (filters: {
     employee?: string | null;
-    office?: string | null;
     startDate?: string;
     endDate?: string;
   }) => void;
@@ -33,16 +31,13 @@ const muiSx = {
 
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   const { data: employeeList } = useEmployees();
-  const { data: officeList } = useOffices();
 
   const [employee, setEmployee] = useState<string | null>(null);
-  const [office, setOffice] = useState<string | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const handleReset = () => {
     setEmployee(null);
-    setOffice(null);
     setStartDate("");
     setEndDate("");
     onSearch({});
@@ -65,17 +60,6 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
             <TextField {...params} label="اسم الموظف" variant="outlined" size="small" />
           )}
           sx={{ minWidth: 200, ...muiSx }}
-        />
-
-        {/* Office */}
-        <Autocomplete
-          options={officeList?.map((o) => o.name) ?? []}
-          value={office}
-          onChange={(_, newValue) => setOffice(newValue)}
-          renderInput={(params) => (
-            <TextField {...params} label="المكتب" variant="outlined" size="small" />
-          )}
-          sx={{ minWidth: 180, ...muiSx }}
         />
 
         {/* Start date */}
@@ -103,7 +87,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
         {/* Actions */}
         <Button
           variant="primary"
-          onClick={() => onSearch({ employee, office, startDate, endDate })}
+          onClick={() => onSearch({ employee, startDate, endDate })}
         >
           <MagnifyingGlassIcon className="w-4 h-4" />
           بحث

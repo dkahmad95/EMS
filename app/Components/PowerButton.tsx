@@ -16,6 +16,7 @@ const PowerButton = () => {
   const { mutateAsync: Logout } = useMutation({
     mutationFn: () => authApi.Logout(),
     onSuccess: () => {
+      localStorage.removeItem("currentOfficeId");
       router.push("/");
       message.open({
         content: "تم تسجيل الخروج بنجاح",

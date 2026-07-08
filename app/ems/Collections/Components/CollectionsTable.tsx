@@ -9,6 +9,7 @@ import DeleteCollectionModal from "./DeleteCollectionModal";
 import { Button } from "@/app/Components/Button";
 import PermissionGate from "@/app/Components/PermissionGate";
 import { useCollections } from "@/server/store/collections";
+import { usePermissions } from "@/app/hooks/usePermissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/collections/collections";
 import { message } from "antd";
@@ -20,7 +21,8 @@ const COLLECTION_TYPE_LABELS: Record<CollectionType, string> = {
 
 const CollectionsTable = () => {
   const queryClient = useQueryClient();
-  const { data: collections, isLoading } = useCollections();
+  const { currentOfficeId } = usePermissions();
+  const { data: collections, isLoading } = useCollections(currentOfficeId);
 
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [isFormModalOpen,   setIsFormModalOpen]   = useState(false);

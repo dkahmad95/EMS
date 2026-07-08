@@ -3,11 +3,14 @@ import axios from "axios";
 import * as api from "../../../routes/employees";
 import { withToken } from "../auth/authRequests";
 
-export const getEmployees = async (): Promise<Employee[] | null> =>
+export const getEmployees = async (
+  officeId?: number | null,
+): Promise<Employee[] | null> =>
   withToken((decodedToken, authHeader) =>
     axios.get(api.EMPLOYEES_API.GET, {
       headers: authHeader,
       withCredentials: true,
+      params: officeId != null ? { office_id: officeId } : undefined,
     }),
   );
 
@@ -21,8 +24,6 @@ export const getEmployee = async (id: number): Promise<Employee | null> =>
 
 export const createEmployee = async (data: Employee): Promise<Employee | null> =>
   withToken((decodedToken, authHeader) => {
-    console.log(data)
-
     return axios.post(api.EMPLOYEES_API.CREATE, data, {
       headers: authHeader,
       withCredentials: true,

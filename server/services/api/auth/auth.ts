@@ -16,13 +16,13 @@ export const Login = async (data: LoginType): Promise<any> => {
     if (response.status >= 200 && response.status < 300) {
       if (response.data.accessToken) {
         (await cookies()).set("access_token", response.data.accessToken, {
-          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 12),
           domain: process.env.NODE_ENV === "production" ? ".ems-mabarrat.vercel.app" : undefined,
           path: "/",
           secure: process.env.NODE_ENV === "production" ? true : false,
           sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
           httpOnly: process.env.NODE_ENV === "production" ? true : false,
-          maxAge: 60 * 60 * 24,
+          maxAge: 60 * 60 * 12,
         });
       }
       return response.data;

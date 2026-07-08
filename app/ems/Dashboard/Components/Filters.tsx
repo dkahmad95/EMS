@@ -6,7 +6,6 @@ interface Props {
   employees: Employee[];
   filters: any;
   setFilters: (f: any) => void;
-  offices: string[];
   currencies: { id: number; name: string }[];
 }
 
@@ -26,24 +25,9 @@ const muiSx = {
   "& .MuiMenuItem-root": { fontFamily: "Cairo, sans-serif" },
 };
 
-export default function Filters({ employees, filters, setFilters, offices, currencies }: Props) {
+export default function Filters({ employees, filters, setFilters, currencies }: Props) {
   return (
     <div className="flex flex-wrap gap-3">
-
-      {/* Offices */}
-      <TextField
-        select
-        label="المكاتب"
-        value={filters.office ?? ""}
-        onChange={(e) => setFilters({ ...filters, office: e.target.value })}
-        sx={{ minWidth: 140, ...muiSx }}
-        size="small"
-      >
-        <MenuItem value="" sx={{ fontFamily: "Cairo, sans-serif" }}>جميع المكاتب</MenuItem>
-        {offices.map((o) => (
-          <MenuItem key={o} value={o} sx={{ fontFamily: "Cairo, sans-serif" }}>{o}</MenuItem>
-        ))}
-      </TextField>
 
       {/* Employees */}
       <TextField
