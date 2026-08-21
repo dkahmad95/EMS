@@ -39,7 +39,7 @@ export default function RevenueChart({ data, groupBy }: Props) {
     ...r,
     revenueAmount:
       r.currency === "لبناني"
-        ? r.revenueAmount / 100000
+        ? r.revenueAmount / 1000000
         : r.revenueAmount,
   }));
 
@@ -72,7 +72,7 @@ export default function RevenueChart({ data, groupBy }: Props) {
         </h3>
 
         <p className="text-xs text-gray-500 mt-1">
-        *  يتم عرض قيمة الليرة اللبنانية لتسهيل قراءة الأرقام بعد قسمتها على 100,000. (مثال: 1,000,000 ليرة تظهر كـ 10) 
+        *  يتم عرض قيمة الليرة اللبنانية لتسهيل قراءة الأرقام بعد قسمتها على 1,000,000. (مثال: 1,000,000 ليرة تظهر كـ 1) 
       </p>
       </div>
 

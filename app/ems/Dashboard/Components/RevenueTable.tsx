@@ -19,16 +19,18 @@ const columns: GridColDef[] = [
   { field: "destination", headerName: "الوجهة", width: 130 },
   { field: "currency", headerName: "العملة", width: 100 },
   { field: "date", headerName: "التاريخ", width: 120 },
-  {
-    field: "revenueAmount",
-    headerName: "المبلغ",
-    width: 140,
-    renderCell: (params) => (
+ {
+  field: "revenueAmount",
+  headerName: "المبلغ",
+  width: 140,
+  renderCell: (params) => (
+    <div className="flex w-full h-full items-center justify-center">
       <Typography fontWeight="bold" color="green">
-        {params.value.toLocaleString()}
+        {params.value?.toLocaleString()}
       </Typography>
-    ),
-  },
+    </div>
+  ),
+},
   { field: "notes", headerName: "ملاحظات", width: 200 },
 ];
 

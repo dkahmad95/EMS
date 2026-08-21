@@ -131,7 +131,7 @@ const CollectionsTable = () => {
         <PermissionGate resource="collections" action="create">
           <Button variant="primary" size="sm" onClick={openCreateModal}>
             <PlusIcon className="w-4 h-4" />
-            إضافة تحصيل
+            إضافة جديدة
           </Button>
         </PermissionGate>
       </div>

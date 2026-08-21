@@ -67,7 +67,7 @@ export default function RevenueSummary({ revenues, collections }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         {/* Revenue count */}
-        <div className="card p-5 border-r-4 border-success-400">
+        {/* <div className="card p-5 border-r-4 border-success-400">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-success-100 rounded-xl">
               <svg className="w-7 h-7 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +79,7 @@ export default function RevenueSummary({ revenues, collections }: Props) {
               <p className="text-3xl font-bold text-gray-900">{revenues.length}</p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Destinations */}
         <div className="card p-5 border-r-4 border-secondary-400">
@@ -90,8 +90,10 @@ export default function RevenueSummary({ revenues, collections }: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
+            <div className="flex flex-row w-full justify-between">
             <p className="text-sm font-semibold text-gray-700">الوجهات</p>
-          </div>
+            <div className="text-sm font-bold text-gray-700">{revenues.length}</div>
+          </div></div>
           <div className="flex flex-wrap gap-2">
             {Object.entries(destinationsCount).map(([dest, count]) => (
               <span

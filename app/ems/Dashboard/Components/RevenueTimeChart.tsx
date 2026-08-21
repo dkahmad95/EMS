@@ -24,7 +24,7 @@ const periodLabels: Record<Period, string> = {
 
 // ✅ Normalize currency
 const normalizeAmount = (amount: number, currency: string) => {
-  if (currency === "لبناني") return amount / 100000;
+  if (currency === "لبناني") return amount / 1000000;
   return amount;
 };
 
@@ -80,7 +80,7 @@ export default function RevenueTimeChart({data}: Props) {
           ))}
         </div>{" "}
         <p className="text-xs text-gray-500 mt-1">
-          * يتم عرض قيمة الليرة اللبنانية لتسهيل قراءة الأرقام بعد قسمتها على 100,000. (مثال: 1,000,000 ليرة تظهر كـ 10)
+          * يتم عرض قيمة الليرة اللبنانية لتسهيل قراءة الأرقام بعد قسمتها على 1,000,000. (مثال: 1,000,000 ليرة تظهر كـ 1)
         </p>
       </div>
 

@@ -36,7 +36,7 @@ const links = [
       permissions.hasPermission('revenues', 'read'),
   },
   {
-    name: "التحصيلات",
+    name: "إستقطاب",
     href: "/ems/Collections",
     icon: ArchiveBoxIcon,
     checkAccess: (permissions: ReturnType<typeof usePermissions>) =>
