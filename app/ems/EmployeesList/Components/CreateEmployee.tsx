@@ -9,6 +9,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -202,39 +203,54 @@ export default function CreateEmployeeModal({
         <Controller
           name="job_title_id"
           control={control}
-          rules={{ required: "المسمى الوظيفي مطلوب" }}
+          rules={{ validate: (v) => (v ? true : "المسمى الوظيفي مطلوب") }}
           render={({ field, fieldState }) => (
-            <TextField select label="المسمى الوظيفي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {jobTitles?.map((jt) => (
-                <MenuItem key={jt.id} value={jt.id}>{jt.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              options={jobTitles ?? []}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              value={jobTitles?.find((o) => o.id === field.value) ?? null}
+              onChange={(_, v) => field.onChange(v?.id ?? "")}
+              onBlur={field.onBlur}
+              fullWidth
+              renderInput={(p) => <TextField {...p} label="المسمى الوظيفي" error={!!fieldState.error} helperText={fieldState.error?.message} />}
+            />
           )}
         />
 
         <Controller
           name="office_id"
           control={control}
-          rules={{ required: "يرجى اختيار المكتب" }}
+          rules={{ validate: (v) => (v ? true : "يرجى اختيار المكتب") }}
           render={({ field, fieldState }) => (
-            <TextField select label="مكتب العمل" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {offices?.map((o) => (
-                <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              options={offices ?? []}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              value={offices?.find((o) => o.id === field.value) ?? null}
+              onChange={(_, v) => field.onChange(v?.id ?? "")}
+              onBlur={field.onBlur}
+              fullWidth
+              renderInput={(p) => <TextField {...p} label="مكتب العمل" error={!!fieldState.error} helperText={fieldState.error?.message} />}
+            />
           )}
         />
 
         <Controller
           name="education_level_id"
           control={control}
-          rules={{ required: "المستوى العلمي مطلوب" }}
+          rules={{ validate: (v) => (v ? true : "المستوى العلمي مطلوب") }}
           render={({ field, fieldState }) => (
-            <TextField select label="المستوى العلمي" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message}>
-              {educationLevels?.map((ed) => (
-                <MenuItem key={ed.id} value={ed.id}>{ed.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              options={educationLevels ?? []}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              value={educationLevels?.find((o) => o.id === field.value) ?? null}
+              onChange={(_, v) => field.onChange(v?.id ?? "")}
+              onBlur={field.onBlur}
+              fullWidth
+              renderInput={(p) => <TextField {...p} label="المستوى العلمي" error={!!fieldState.error} helperText={fieldState.error?.message} />}
+            />
           )}
         />
 
@@ -308,12 +324,17 @@ export default function CreateEmployeeModal({
         <Controller
           name="born_in"
           control={control}
-          render={({ field }) => (
-            <TextField select label="مكان الولادة" {...field} fullWidth value={field.value ?? ""}>
-              {cities?.map((c) => (
-                <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
-              ))}
-            </TextField>
+          render={({ field, fieldState }) => (
+            <Autocomplete
+              options={cities ?? []}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              value={cities?.find((c) => c.name === field.value) ?? null}
+              onChange={(_, v) => field.onChange(v?.name ?? "")}
+              onBlur={field.onBlur}
+              fullWidth
+              renderInput={(p) => <TextField {...p} label="مكان الولادة" error={!!fieldState.error} helperText={fieldState.error?.message} />}
+            />
           )}
         />
 
@@ -332,12 +353,17 @@ export default function CreateEmployeeModal({
         <Controller
           name="lives_in"
           control={control}
-          render={({ field }) => (
-            <TextField select label="مكان السكن" {...field} fullWidth value={field.value ?? ""}>
-              {cities?.map((c) => (
-                <MenuItem key={c.id} value={c.name}>{c.name}</MenuItem>
-              ))}
-            </TextField>
+          render={({ field, fieldState }) => (
+            <Autocomplete
+              options={cities ?? []}
+              getOptionLabel={(o) => o.name}
+              isOptionEqualToValue={(o, v) => o.id === v.id}
+              value={cities?.find((c) => c.name === field.value) ?? null}
+              onChange={(_, v) => field.onChange(v?.name ?? "")}
+              onBlur={field.onBlur}
+              fullWidth
+              renderInput={(p) => <TextField {...p} label="مكان السكن" error={!!fieldState.error} helperText={fieldState.error?.message} />}
+            />
           )}
         />
 

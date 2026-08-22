@@ -9,12 +9,19 @@ interface Permissions {
   users: { create: boolean; read: boolean; update: boolean; delete: boolean };
   collections: { create: boolean; read: boolean; update: boolean; delete: boolean };
   office_reports?: { create: boolean; read: boolean; update: boolean; delete: boolean };
+  freezed_collections?: { create: boolean; read: boolean; update: boolean; delete: boolean };
   dashboard: { access: boolean };
   control_panel: { access: boolean };
 };
 
 /** Resources that have CRUD permissions (used by usePermissions / PermissionGate). */
-type CrudResource = "employees" | "revenues" | "users" | "collections" | "office_reports";
+type CrudResource =
+  | "employees"
+  | "revenues"
+  | "users"
+  | "collections"
+  | "office_reports"
+  | "freezed_collections";
 
 // ---- Server-side pagination -------------------------------------------------
 type SortOrder = "asc" | "desc";
@@ -36,8 +43,38 @@ type EmployeeListParams = PaginationParams & { office_id?: number | null };
 type RevenueListParams = PaginationParams & {
   office_id?: number | null;
   employee_id?: number | null;
+  destination_id?: number | null;
+  currency_id?: number | null;
   date_from?: string;
   date_to?: string;
+  /** Compared against the raw stored revenue_amount */
+  amount_min?: number;
+  amount_max?: number;
+};
+/** GET /revenues/dashboard params (charts/KPIs use all:true, table uses page/limit). */
+type DashboardRevenueParams = RevenueListParams & {
+  currency_type?: CurrencyType;
+};
+/** Row shape returned by GET /revenues/dashboard */
+type DashboardRevenueRow = {
+  id: number;
+  date: string; // YYYY-MM-DD
+  notes: string | null;
+  /** raw amount as entered */
+  revenue_amount: number;
+  /** OTHERS ÷ rate, USD/LBP raw — for KPIs + tables */
+  display_amount: number;
+  /** USD units for charts: USD raw, LBP ÷ rate, OTHERS ÷ rate */
+  chart_amount: number;
+  /** legend label: currency name, "لورال" for LBP, "عملات أخرى" for OTHERS */
+  chart_series: string;
+  employee: { id: number; name: string };
+  office: { id: number; name: string };
+  destination: { id: number; name: string };
+  currency: { id: number; name: string; code: string; currency_type: CurrencyType; rate: number };
+};
+type DashboardRevenuesResponse = Paginated<DashboardRevenueRow> & {
+  meta: { lbp_rate: number | null };
 };
 type CollectionListParams = PaginationParams & {
   office_id?: number | null;
@@ -46,6 +83,7 @@ type CollectionListParams = PaginationParams & {
   date_to?: string;
   collection_type?: CollectionType;
 };
+type FreezedCollectionListParams = CollectionListParams;
 type UserListParams = PaginationParams;
 type OfficeReportListParams = PaginationParams & {
   office_id?: number | null;
@@ -257,6 +295,9 @@ enum CurrencyType {
   LBP = "LBP",
   OTHERS = "OTHERS",
 }
+
+/** Same shape as Collection — independent table/endpoint (/freezed-collections). */
+type FreezedCollection = Collection;
 
 type OfficeReport = {
   id?: number;

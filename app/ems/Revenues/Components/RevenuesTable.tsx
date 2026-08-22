@@ -126,8 +126,8 @@ const RevenuesTable = () => {
     },
   ];
   return (
-    <div dir="rtl" className="space-y-6">
-      <div className="card flex items-end justify-between gap-3 p-5 ">
+    <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
+      <div className="card flex-none flex items-end justify-between gap-3 p-5">
         <SearchRevenue onSearch={handleSearch} />
         <Button
           variant="primary"
@@ -141,9 +141,10 @@ const RevenuesTable = () => {
       </div>
 
       {isLoading ? (
-        <DataTableSkeleton />
+        <DataTableSkeleton fullHeight />
       ) : (
         <DataTable
+          fullHeight
           columns={columns}
           rows={data?.data ?? []}
           loading={isFetching}

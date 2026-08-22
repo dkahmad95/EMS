@@ -4,16 +4,16 @@ import React, { useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import DataTable from "@/app/Components/DataTable";
-import CollectionFormDialog from "./CollectionFormDialog";
-import DeleteCollectionModal from "./DeleteCollectionModal";
+import FreezedCollectionFormDialog from "./FreezedCollectionFormDialog";
+import DeleteFreezedCollectionModal from "./DeleteFreezedCollectionModal";
 import { Button } from "@/app/Components/Button";
 import SearchBar from "@/app/Components/SearchBar";
 import PermissionGate from "@/app/Components/PermissionGate";
-import { useCollections } from "@/server/store/collections";
+import { useFreezedCollections } from "@/server/store/freezedCollections";
 import { usePermissions } from "@/app/hooks/usePermissions";
 import { useServerTable } from "@/app/hooks/useServerTable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as api from "@/server/services/api/collections/collections";
+import * as api from "@/server/services/api/freezedCollections/freezedCollections";
 import { message } from "antd";
 
 const COLLECTION_TYPE_LABELS: Record<CollectionType, string> = {
@@ -21,17 +21,17 @@ const COLLECTION_TYPE_LABELS: Record<CollectionType, string> = {
   BOX: "حصالة",
 };
 
-const CollectionsTable = () => {
+const FreezedCollectionsTable = () => {
   const queryClient = useQueryClient();
   const { currentOfficeId } = usePermissions();
 
   const table = useServerTable({ resetDeps: [currentOfficeId] });
-  const { data, isLoading, isFetching } = useCollections({
+  const { data, isLoading, isFetching } = useFreezedCollections({
     ...table.params,
     office_id: currentOfficeId,
   });
 
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<FreezedCollection | null>(null);
   const [isFormModalOpen,   setIsFormModalOpen]   = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -40,7 +40,7 @@ const CollectionsTable = () => {
     setIsFormModalOpen(true);
   };
 
-  const openEditModal = (col: Collection) => {
+  const openEditModal = (col: FreezedCollection) => {
     setSelectedCollection(col);
     setIsFormModalOpen(true);
   };
@@ -50,7 +50,7 @@ const CollectionsTable = () => {
     setSelectedCollection(null);
   };
 
-  const openDeleteModal = (col: Collection) => {
+  const openDeleteModal = (col: FreezedCollection) => {
     setSelectedCollection(col);
     setIsDeleteModalOpen(true);
   };
@@ -60,21 +60,21 @@ const CollectionsTable = () => {
     setSelectedCollection(null);
   };
 
-  const { mutateAsync: deleteCollection } = useMutation({
-    mutationFn: (id: number) => api.deleteCollection(id),
+  const { mutateAsync: deleteFreezedCollection } = useMutation({
+    mutationFn: (id: number) => api.deleteFreezedCollection(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["freezedCollections"] });
       closeDeleteModal();
-      message.success("تم حذف التحصيل بنجاح");
+      message.success("تم حذف السجل بنجاح");
     },
     onError: () => {
-      message.error("حدث خطأ أثناء حذف التحصيل.");
+      message.error("حدث خطأ أثناء حذف السجل.");
     },
   });
 
   const handleDelete = async () => {
     if (!selectedCollection?.id) return;
-    await deleteCollection(selectedCollection.id);
+    await deleteFreezedCollection(selectedCollection.id);
   };
 
   const columns = [
@@ -115,13 +115,13 @@ const CollectionsTable = () => {
       width: 120,
       renderCell: (params: any) => (
         <div className="flex gap-2 items-center justify-center">
-          <PermissionGate resource="collections" action="update">
+          <PermissionGate resource="freezed_collections" action="update">
             <PencilIcon
               className="w-5 text-blue-400 cursor-pointer mt-4"
               onClick={() => openEditModal(params.row)}
             />
           </PermissionGate>
-          <PermissionGate resource="collections" action="delete">
+          <PermissionGate resource="freezed_collections" action="delete">
             <TrashIcon
               className="w-5 text-red-600 cursor-pointer mt-4"
               onClick={() => openDeleteModal(params.row)}
@@ -145,7 +145,7 @@ const CollectionsTable = () => {
 
         <div className="flex-1 hidden md:block" />
 
-        <PermissionGate resource="collections" action="create">
+        <PermissionGate resource="freezed_collections" action="create">
           <Button variant="primary" size="sm" onClick={openCreateModal}>
             <PlusIcon className="w-4 h-4" />
             إضافة جديدة
@@ -167,13 +167,13 @@ const CollectionsTable = () => {
         />
       )}
 
-      <CollectionFormDialog
+      <FreezedCollectionFormDialog
         open={isFormModalOpen}
         onClose={closeFormModal}
         selectedCollection={selectedCollection}
       />
 
-      <DeleteCollectionModal
+      <DeleteFreezedCollectionModal
         open={isDeleteModalOpen}
         onClose={closeDeleteModal}
         onConfirm={handleDelete}
@@ -182,4 +182,4 @@ const CollectionsTable = () => {
   );
 };
 
-export default CollectionsTable;
+export default FreezedCollectionsTable;

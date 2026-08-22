@@ -30,7 +30,7 @@ export default async function RootLayout({
           <SideNav />
         </div>
         {/* Main content */}
-        <main className="flex-grow overflow-y-auto bg-gray-50 p-5 md:p-7">
+        <main className="flex-grow min-h-0 overflow-y-auto flex flex-col bg-gray-50 p-5 md:p-7">
           {children}
         </main>
       </div>

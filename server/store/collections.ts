@@ -14,15 +14,17 @@ export const useCollections = (
   });
 };
 
-/** Full collections list (dashboard aggregates). Returns a plain array. */
+/** Full collections list (dashboard aggregates). Accepts the same filters as the list
+ *  (office_id, employee_id, date_from, date_to, collection_type). Returns a plain array. */
 export const useAllCollections = (
-  officeId?: number | null,
+  params: Omit<CollectionListParams, "all" | "page" | "limit"> = {},
   options: { enabled?: boolean } = {},
 ) => {
   return useQuery({
-    queryKey: ["collections", { all: true, office_id: officeId ?? null }],
-    queryFn: () => api.getCollections({ all: true, office_id: officeId ?? undefined }),
+    queryKey: ["collections", { all: true, ...params }],
+    queryFn: () => api.getCollections({ ...params, all: true }),
     select: (res) => res?.data ?? [],
+    placeholderData: keepPreviousData,
     enabled: options.enabled ?? true,
   });
 };

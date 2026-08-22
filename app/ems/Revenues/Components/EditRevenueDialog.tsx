@@ -8,10 +8,6 @@ import {
   DialogActions,
   TextField,
   Autocomplete,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -147,21 +143,14 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
           />
 
           {/* Currency */}
-          <FormControl fullWidth>
-            <InputLabel id="edit-currency-label">العملة</InputLabel>
-            <Select
-              labelId="edit-currency-label"
-              value={currencyId ?? ""}
-              label="العملة"
-              onChange={(e) => setCurrencyId(Number(e.target.value))}
-            >
-              {currenciesList?.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name} ({c.code})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            options={currenciesList ?? []}
+            getOptionLabel={(c) => `${c.name} (${c.code})`}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+            value={currenciesList?.find((c) => c.id === currencyId) ?? null}
+            onChange={(_, val) => setCurrencyId(val?.id ?? null)}
+            renderInput={(params) => <TextField {...params} label="العملة" />}
+          />
 
           {/* Notes */}
           <TextField

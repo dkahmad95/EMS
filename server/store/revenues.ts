@@ -14,13 +14,20 @@ export const useRevenues = (
   });
 };
 
+/**
+ * Dashboard revenues (server-side filters). Use `{ ...filters, all: true }` for KPIs/charts
+ * and `{ ...filters, page, limit }` for the table. Key prefix "dashboardRevenues" is
+ * invalidated by revenue mutations.
+ */
 export const useDashboardRevenues = (
-  officeId?: number | null,
-  options: { enabled?: boolean } = { enabled: true },
+  params: DashboardRevenueParams = {},
+  options: { enabled?: boolean } = {},
 ) => {
   return useQuery({
-    queryKey: ["dashboardRevenues", officeId ?? "all"],
-    queryFn: () => api.getDashboardRevenues(officeId),
-    enabled: options.enabled,
+    queryKey: ["dashboardRevenues", params],
+    queryFn: () => api.getDashboardRevenues(params),
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+    enabled: options.enabled ?? true,
   });
 };

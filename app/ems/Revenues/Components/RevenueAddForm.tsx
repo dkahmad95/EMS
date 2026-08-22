@@ -4,10 +4,6 @@ import React, { useState } from "react";
 import {
   Autocomplete,
   TextField,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -165,22 +161,17 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
             fullWidth
           />
 
-          <FormControl fullWidth>
-            <InputLabel id="currency-label">العملة</InputLabel>
-            <Select
-              labelId="currency-label"
-              value={currencyId ?? ""}
-              label="العملة"
-              onChange={(e) => setCurrencyId(Number(e.target.value))}
-              disabled={isPending}
-            >
-              {currenciesList?.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name} ({c.code})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            options={currenciesList ?? []}
+            getOptionLabel={(c) => `${c.name} (${c.code})`}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+            value={currenciesList?.find((c) => c.id === currencyId) ?? null}
+            onChange={(_, newValue) => setCurrencyId(newValue?.id ?? null)}
+            disabled={isPending}
+            renderInput={(params) => (
+              <TextField {...params} label="العملة" variant="outlined" />
+            )}
+          />
 
           <TextField
             label="ملاحظات"

@@ -28,16 +28,16 @@ const EmployeesList = () => {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="flex flex-col h-full min-h-0 gap-4 animate-fade-in">
 
       {/* Page header */}
-      <div className="page-header">
+      <div className="page-header !mb-0 flex-none">
         <h1 className="page-title">قائمة الموظفين</h1>
         <p className="page-subtitle">إدارة بيانات الموظفين والمعلومات الوظيفية</p>
       </div>
 
       {/* Toolbar */}
-      <div className="card p-4">
+      <div className="card p-4 flex-none">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
 
           {/* Search */}

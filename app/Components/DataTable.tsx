@@ -15,7 +15,14 @@ type DataTableProps = {
   handleEvent?: any;
   /** Shows the DataGrid loading overlay (use react-query `isFetching`). */
   loading?: boolean;
+  /** Page-size menu. Defaults to [25, 50, 100, 200] everywhere. */
   pageSizeOptions?: number[];
+  /** Fill the parent's remaining flex height (parent must be `flex flex-col min-h-0`). */
+  fullHeight?: boolean;
+  /** Fixed height when not fullHeight (default 400). */
+  height?: number | string;
+  checkboxSelection?: boolean;
+  className?: string;
   // ---- Server-side pagination (provide all three to enable) ----
   /** Total number of rows on the server (`total` from the paginated envelope). */
   rowCount?: number;
@@ -35,6 +42,10 @@ export default function DataTable({
   handleEvent,
   loading = false,
   pageSizeOptions,
+  fullHeight = false,
+  height = 400,
+  checkboxSelection = true,
+  className,
   rowCount,
   paginationModel,
   onPaginationModelChange,
@@ -131,22 +142,31 @@ export default function DataTable({
     [existingTheme]
   );
 
+  const PAGE_SIZES = pageSizeOptions ?? [25, 50, 100, 200];
+
   const paginationProps = isServer
     ? {
         paginationMode: "server" as const,
         rowCount: rowCountRef.current,
         paginationModel,
         onPaginationModelChange,
-        pageSizeOptions: pageSizeOptions ?? [10, 25, 50],
+        pageSizeOptions: PAGE_SIZES,
       }
     : {
         paginationMode: "client" as const,
-        initialState: { pagination: { paginationModel: { page: 0, pageSize: 5 } } },
-        pageSizeOptions: pageSizeOptions ?? [5, 10],
+        initialState: { pagination: { paginationModel: { page: 0, pageSize: PAGE_SIZES[0] } } },
+        pageSizeOptions: PAGE_SIZES,
       };
 
   return (
-    <div style={{ height: 400, width: "100%" }} className="rounded-xl overflow-hidden border border-gray-200 shadow-card">
+    <div
+      style={fullHeight ? { minHeight: 320, width: "100%" } : { height, width: "100%" }}
+      className={[
+        "rounded-xl overflow-hidden border border-gray-200 shadow-card",
+        fullHeight ? "flex-1 min-h-0" : "",
+        className ?? "",
+      ].join(" ")}
+    >
       <CacheProvider value={cacheRtl}>
         <ThemeProvider theme={theme}>
           <DataGrid
@@ -155,7 +175,7 @@ export default function DataTable({
             loading={loading}
             {...paginationProps}
             keepNonExistentRowsSelected
-            checkboxSelection
+            checkboxSelection={checkboxSelection}
             disableRowSelectionOnClick
             onRowDoubleClick={handleEvent}
             getRowClassName={getRowClassName}

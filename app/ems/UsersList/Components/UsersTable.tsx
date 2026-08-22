@@ -100,18 +100,25 @@ const UsersTable: React.FC<UsersTableProps> = ({
     },
   ];
 
-  if (isLoading) return <DataTableSkeleton />;
+  if (isLoading) {
+    return (
+      <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
+        <DataTableSkeleton fullHeight />
+      </div>
+    );
+  }
 
   const isEmpty = !isLoading && total === 0 && !search;
 
   return (
-    <div dir="rtl">
+    <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
       {isEmpty ? (
         <div className="text-center text-gray-500 py-8">
           لا توجد مستخدمين بعد
         </div>
       ) : (
         <DataTable
+          fullHeight
           columns={columns}
           rows={users}
           loading={loading}

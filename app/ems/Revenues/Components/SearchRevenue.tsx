@@ -4,11 +4,15 @@ import React, { useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { Button } from "@/app/Components/Button";
 import { useAllEmployees } from "@/server/store/employees";
+import { useDestinations } from "@/server/store/destinations";
+import { useCurrencies } from "@/server/store/currencies";
 import { MagnifyingGlassIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 /** Server-side filters sent straight to GET /revenues (YYYY-MM-DD dates). */
 export type RevenueSearchFilters = {
   employee_id?: number | null;
+  destination_id?: number | null;
+  currency_id?: number | null;
   date_from?: string;
   date_to?: string;
 };
@@ -34,14 +38,20 @@ const muiSx = {
 
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   const { data: employeeList } = useAllEmployees();
+  const { data: destinationsList } = useDestinations();
+  const { data: currenciesList } = useCurrencies();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [destination, setDestination] = useState<Destination | null>(null);
+  const [currency, setCurrency] = useState<Currency | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const handleSearch = () => {
     onSearch({
       employee_id: employee?.id ?? undefined,
+      destination_id: destination?.id ?? undefined,
+      currency_id: currency?.id ?? undefined,
       date_from: startDate || undefined,
       date_to: endDate || undefined,
     });
@@ -49,6 +59,8 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
 
   const handleReset = () => {
     setEmployee(null);
+    setDestination(null);
+    setCurrency(null);
     setStartDate("");
     setEndDate("");
     onSearch({});
@@ -73,6 +85,32 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
             <TextField {...params} label="اسم الموظف" variant="outlined" size="small" />
           )}
           sx={{ minWidth: 200, ...muiSx }}
+        />
+
+        {/* Destination */}
+        <Autocomplete
+          options={destinationsList ?? []}
+          getOptionLabel={(o) => o.name}
+          isOptionEqualToValue={(o, v) => o.id === v.id}
+          value={destination}
+          onChange={(_, newValue) => setDestination(newValue)}
+          renderInput={(params) => (
+            <TextField {...params} label="الوجهة" variant="outlined" size="small" />
+          )}
+          sx={{ minWidth: 180, ...muiSx }}
+        />
+
+        {/* Currency */}
+        <Autocomplete
+          options={currenciesList ?? []}
+          getOptionLabel={(c) => `${c.name} (${c.code})`}
+          isOptionEqualToValue={(o, v) => o.id === v.id}
+          value={currency}
+          onChange={(_, newValue) => setCurrency(newValue)}
+          renderInput={(params) => (
+            <TextField {...params} label="العملة" variant="outlined" size="small" />
+          )}
+          sx={{ minWidth: 180, ...muiSx }}
         />
 
         {/* Start date */}

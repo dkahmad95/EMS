@@ -18,8 +18,8 @@ const UsersList = () => {
 
   if (error) {
     return (
-      <div className="space-y-5 animate-fade-in">
-        <div className="page-header">
+      <div className="flex flex-col h-full min-h-0 gap-4 animate-fade-in">
+        <div className="page-header !mb-0 flex-none">
           <h1 className="page-title">إدارة المستخدمين</h1>
         </div>
         <div className="card p-5 border-r-4 border-danger-400 flex items-start gap-3">
@@ -33,16 +33,16 @@ const UsersList = () => {
   }
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="flex flex-col h-full min-h-0 gap-4 animate-fade-in">
 
       {/* Page header */}
-      <div className="page-header">
+      <div className="page-header !mb-0 flex-none">
         <h1 className="page-title">إدارة المستخدمين</h1>
         <p className="page-subtitle">إدارة حسابات المستخدمين والصلاحيات</p>
       </div>
 
       {/* Toolbar */}
-      <div className="card p-4">
+      <div className="card p-4 flex-none">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
           {/* Search */}
           <div className="flex-1 w-full md:max-w-xs">

@@ -117,9 +117,9 @@ const OfficeReportsTable = () => {
   ];
 
   return (
-    <div dir="rtl" className="space-y-6">
+    <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
       {/* Toolbar */}
-      <div className="card p-4">
+      <div className="card p-4 flex-none">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
           <div className="flex-1 w-full md:max-w-xs">
             <SearchBar
@@ -141,9 +141,10 @@ const OfficeReportsTable = () => {
       </div>
 
       {isLoading ? (
-        <DataTableSkeleton />
+        <DataTableSkeleton fullHeight />
       ) : (
         <DataTable
+          fullHeight
           columns={columns}
           rows={data?.data ?? []}
           rowCount={data?.total}

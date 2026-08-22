@@ -28,13 +28,14 @@ const labelFor = (key: string) =>
           ? "حذف"
           : "الوصول";
 
-const CRUD_RESOURCES = ["employees", "revenues", "users", "collections", "office_reports"] as const satisfies readonly CrudResource[];
+const CRUD_RESOURCES = ["employees", "revenues", "users", "collections", "freezed_collections", "office_reports"] as const satisfies readonly CrudResource[];
 
 const RESOURCE_LABELS: Record<CrudResource, string> = {
   employees: "الموظفين",
   revenues: "الإيرادات",
   users: "المستخدمين",
   collections: "التحصيلات",
+  freezed_collections: "تجميد/سحب",
   office_reports: "تقرير عمل المكتب",
 };
 
@@ -74,6 +75,7 @@ const defaultPermissions = () => ({
   revenues: { create: false, read: false, update: false, delete: false },
   users: { create: false, read: false, update: false, delete: false },
   collections: { create: false, read: false, update: false, delete: false },
+  freezed_collections: { create: false, read: false, update: false, delete: false },
   office_reports: { create: false, read: false, update: false, delete: false },
   dashboard: { access: false },
   control_panel: { access: false },
@@ -327,6 +329,13 @@ export default function PermissionGroupsTab() {
               title="التحصيلات"
               keys={["create", "read", "update", "delete"]}
               resource="collections"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="تجميد/سحب"
+              keys={["create", "read", "update", "delete"]}
+              resource="freezed_collections"
               permissions={permissions}
               onChange={handlePermissionChange}
             />

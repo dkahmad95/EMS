@@ -19,7 +19,7 @@ type Options = {
  *            paginationModel={table.paginationModel}
  *            onPaginationModelChange={table.setPaginationModel} />
  */
-export function useServerTable({ pageSize = 10, resetDeps = [] }: Options = {}) {
+export function useServerTable({ pageSize = 25, resetDeps = [] }: Options = {}) {
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize,

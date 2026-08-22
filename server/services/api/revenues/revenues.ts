@@ -16,14 +16,18 @@ export const getRevenues = async (
     }),
   );
 
+/**
+ * Dashboard revenues (paginated + filterable). Pass `{ all: true }` for the full set
+ * (KPIs / charts) or `{ page, limit }` for the table. Response carries `meta.lbp_rate`.
+ */
 export const getDashboardRevenues = async (
-  officeId?: number | null,
-): Promise<Revenue[] | null> =>
-  withToken((decodedToken, authHeader) =>
+  params: DashboardRevenueParams = {},
+): Promise<DashboardRevenuesResponse | null> =>
+  withToken((_decodedToken, authHeader) =>
     axios.get(api.REVENUES_API.GET_DASHBOARD, {
       headers: authHeader,
       withCredentials: true,
-      params: officeId != null ? { office_id: officeId } : undefined,
+      params: cleanParams(params),
     }),
   );
 

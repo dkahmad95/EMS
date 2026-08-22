@@ -11,6 +11,7 @@ import {
   ChartBarIcon,
   UsersIcon,
   ArchiveBoxIcon,
+  ArchiveBoxXMarkIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 
@@ -42,6 +43,13 @@ const links = [
     icon: ArchiveBoxIcon,
     checkAccess: (permissions: ReturnType<typeof usePermissions>) =>
       permissions.hasPermission('collections', 'read'),
+  },
+  {
+    name: "تجميد/سحب",
+    href: "/ems/FreezedCollections",
+    icon: ArchiveBoxXMarkIcon,
+    checkAccess: (permissions: ReturnType<typeof usePermissions>) =>
+      permissions.hasPermission('freezed_collections', 'read'),
   },
   {
     name: "تقرير عمل المكتب",

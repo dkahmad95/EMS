@@ -94,11 +94,18 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({
     },
   ];
 
-  if (isLoading) return <DataTableSkeleton />;
+  if (isLoading) {
+    return (
+      <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
+        <DataTableSkeleton fullHeight />
+      </div>
+    );
+  }
 
   return (
-    <div dir="rtl">
+    <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
       <DataTable
+        fullHeight
         columns={columns}
         rows={employees}
         loading={loading}
