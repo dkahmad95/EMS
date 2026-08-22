@@ -1,7 +1,7 @@
 "use client";
 
 import { PowerIcon } from "@heroicons/react/24/outline";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { message } from "antd";
 import { useState } from "react";
@@ -11,13 +11,16 @@ import DeleteModal from "./DeleteModal";
 
 const PowerButton = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
   const { mutateAsync: Logout } = useMutation({
     mutationFn: () => authApi.Logout(),
     onSuccess: () => {
+      queryClient.clear();
       localStorage.removeItem("currentOfficeId");
-      router.push("/");
+      router.replace("/");
+      router.refresh();
       message.open({
         content: "تم تسجيل الخروج بنجاح",
         type: "success",

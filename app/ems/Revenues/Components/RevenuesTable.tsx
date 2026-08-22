@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/app/Components/Button";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import DataTable from "@/app/Components/DataTable";
-import SearchRevenue from "./SearchRevenue";
+import SearchRevenue, { type RevenueSearchFilters } from "./SearchRevenue";
 import EditRevenueDialog from "./EditRevenueDialog";
 import DeleteRevenueModal from "./DeleteRevenueModal";
 import AddRevenueForm from "./RevenueAddForm";
 import { useRevenues } from "@/server/store/revenues";
 import { usePermissions } from "@/app/hooks/usePermissions";
+import { useServerTable } from "@/app/hooks/useServerTable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/revenues/revenues";
 import { message } from "antd";
@@ -18,18 +19,21 @@ import { message } from "antd";
 const RevenuesTable = () => {
   const queryClient = useQueryClient();
   const { currentOfficeId } = usePermissions();
-  const { data: revenues, isLoading } = useRevenues(currentOfficeId);
+
+  // New object reference only when the user hits search/reset -> resets the page.
+  const [searchFilters, setSearchFilters] = useState<RevenueSearchFilters>({});
+
+  const table = useServerTable({ resetDeps: [currentOfficeId, searchFilters] });
+  const { data, isLoading, isFetching } = useRevenues({
+    ...table.params,
+    office_id: currentOfficeId,
+    ...searchFilters,
+  });
 
   const [selectedEntry, setSelectedEntry] = useState<Revenue | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-
-  const [searchFilters, setSearchFilters] = useState<{
-    employee?: string | null;
-    startDate?: string;
-    endDate?: string;
-  }>({});
 
   const { mutateAsync: deleteRevenue } = useMutation({
     mutationFn: (id: number) => api.deleteRevenue(id),
@@ -45,29 +49,8 @@ const RevenuesTable = () => {
     },
   });
 
-  const filtered = useMemo(() => {
-    if (!revenues) return [];
-    return revenues.filter((r) => {
-      const empName = r.employee?.name ?? "";
-      const revDate = r.date?.split("T")[0] ?? r.date;
-
-      if (searchFilters.employee && empName !== searchFilters.employee) return false;
-      if (searchFilters.startDate && revDate < searchFilters.startDate) return false;
-      if (searchFilters.endDate && revDate > searchFilters.endDate) return false;
-      return true;
-    });
-  }, [revenues, searchFilters]);
-
-  const handleSearch = ({
-    employee,
-    startDate,
-    endDate,
-  }: {
-    employee?: string | null;
-    startDate?: string;
-    endDate?: string;
-  }) => {
-    setSearchFilters({ employee, startDate, endDate });
+  const handleSearch = (filters: RevenueSearchFilters) => {
+    setSearchFilters({ ...filters });
   };
 
   const handleDelete = async () => {
@@ -160,7 +143,14 @@ const RevenuesTable = () => {
       {isLoading ? (
         <DataTableSkeleton />
       ) : (
-        <DataTable columns={columns} rows={filtered} />
+        <DataTable
+          columns={columns}
+          rows={data?.data ?? []}
+          loading={isFetching}
+          rowCount={data?.total}
+          paginationModel={table.paginationModel}
+          onPaginationModelChange={table.setPaginationModel}
+        />
       )}
 
       <AddRevenueForm

@@ -12,6 +12,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import TabsSkeleton from "./SkeletonTabs";
 
+type CurrencyFormState = Omit<Currency, "rate"> & { rate: string };
+
 export default function CurrenciesTab() {
   const queryClient = useQueryClient();
   const { data, isLoading: currenciesLoading } = useCurrencies();
@@ -19,7 +21,7 @@ export default function CurrenciesTab() {
   const [deleteId, setDeleteID] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ code?: string; rate?: string }>({});
-  const [formState, setFormState] = useState<Currency>({ name: "", code: "", rate: 1 , id: undefined });
+  const [formState, setFormState] = useState<CurrencyFormState>({ name: "", code: "", rate: "1", id: undefined });
   const [openDeleteDS, setOpenDeleteDS] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -61,22 +63,25 @@ export default function CurrenciesTab() {
     if (!formState.name.trim()) { message.error("يرجى إدخال اسم العملة"); return; }
     if (!formState.code.trim()) { setErrors({ code: "يرجى إدخال كود العملة" }); return; }
     if (formState.code.trim().length > 3) { setErrors({ code: "يجب أن يكون كود العملة أقل من 4 أحرف" }); return; }
-    if (formState.rate == null || isNaN(formState.rate)) { setErrors({ rate: "يرجى إدخال سعر الصرف" }); return; }
+    const rate = Number(formState.rate);
+    if (formState.rate.trim() === "" || isNaN(rate) || rate < 0) { setErrors({ rate: "يرجى إدخال سعر صرف صالح" }); return; }
     setLoading(true);
     try {
-      const data: Currency = { name: formState.name.trim(), code: formState.code.trim(), rate: formState.rate };
+      const data: Currency = { name: formState.name.trim(), code: formState.code.trim(), rate };
       if (formState.id != null) await updateCurrency({ id: formState.id, data });
       else await createCurrency(data);
     } catch { /* handled */ }
     finally { setLoading(false); }
   };
 
-  const handleResetForm = () => { setFormState({ name: "", code: "", rate: 1, id: undefined }); setErrors({}); };
+  const handleResetForm = () => { setFormState({ name: "", code: "", rate: "1", id: undefined }); setErrors({}); };
   const openCreateModal = () => { handleResetForm(); setIsModalOpen(true); };
-  const openEditModal = (c: Currency) => { setFormState({ name: c.name, code: c.code, rate: c.rate, id: c.id }); setErrors({}); setIsModalOpen(true); };
+  const openEditModal = (c: Currency) => { setFormState({ name: c.name, code: c.code, rate: String(c.rate), id: c.id }); setErrors({}); setIsModalOpen(true); };
   const closeModal = () => { setIsModalOpen(false); handleResetForm(); };
   const isEditing = formState.id != null;
-  const isFormValid = formState.name.trim().length > 0 && formState.code.trim().length > 0 && formState.code.trim().length < 4;
+  const parsedRate = Number(formState.rate);
+  const isRateValid = formState.rate.trim() !== "" && !isNaN(parsedRate) && parsedRate >= 0;
+  const isFormValid = formState.name.trim().length > 0 && formState.code.trim().length > 0 && formState.code.trim().length < 4 && isRateValid;
 
   return (
     <div>
@@ -138,8 +143,12 @@ export default function CurrenciesTab() {
         <Input
           label="سعر الصرف"
           placeholder="مثال: 1.00"
+          type="number"
+          step="any"
+          min="0"
+          inputMode="decimal"
           value={formState.rate}
-          onChange={(e) => setFormState((p) => ({ ...p, rate: parseFloat(e.target.value) }))}
+          onChange={(e) => setFormState((p) => ({ ...p, rate: e.target.value }))}
           error={errors.rate}
         />
       </FormModal>

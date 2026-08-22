@@ -7,9 +7,11 @@ import DataTable from "@/app/Components/DataTable";
 import CollectionFormDialog from "./CollectionFormDialog";
 import DeleteCollectionModal from "./DeleteCollectionModal";
 import { Button } from "@/app/Components/Button";
+import SearchBar from "@/app/Components/SearchBar";
 import PermissionGate from "@/app/Components/PermissionGate";
 import { useCollections } from "@/server/store/collections";
 import { usePermissions } from "@/app/hooks/usePermissions";
+import { useServerTable } from "@/app/hooks/useServerTable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/collections/collections";
 import { message } from "antd";
@@ -22,7 +24,12 @@ const COLLECTION_TYPE_LABELS: Record<CollectionType, string> = {
 const CollectionsTable = () => {
   const queryClient = useQueryClient();
   const { currentOfficeId } = usePermissions();
-  const { data: collections, isLoading } = useCollections(currentOfficeId);
+
+  const table = useServerTable({ resetDeps: [currentOfficeId] });
+  const { data, isLoading, isFetching } = useCollections({
+    ...table.params,
+    office_id: currentOfficeId,
+  });
 
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [isFormModalOpen,   setIsFormModalOpen]   = useState(false);
@@ -127,7 +134,17 @@ const CollectionsTable = () => {
 
   return (
     <div dir="rtl" className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+        <div className="flex-1 w-full md:max-w-xs">
+          <SearchBar
+            value={table.searchTerm}
+            onChange={table.setSearchTerm}
+            placeholder="ابحث باسم الموظف..."
+          />
+        </div>
+
+        <div className="flex-1 hidden md:block" />
+
         <PermissionGate resource="collections" action="create">
           <Button variant="primary" size="sm" onClick={openCreateModal}>
             <PlusIcon className="w-4 h-4" />
@@ -139,7 +156,14 @@ const CollectionsTable = () => {
       {isLoading ? (
         <DataTableSkeleton />
       ) : (
-        <DataTable columns={columns} rows={collections ?? []} />
+        <DataTable
+          columns={columns}
+          rows={data?.data ?? []}
+          loading={isFetching}
+          rowCount={data?.total}
+          paginationModel={table.paginationModel}
+          onPaginationModelChange={table.setPaginationModel}
+        />
       )}
 
       <CollectionFormDialog

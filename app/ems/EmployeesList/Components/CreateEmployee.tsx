@@ -356,7 +356,7 @@ export default function CreateEmployeeModal({
       </DialogContent>
        </div>
       <DialogActions className="flex justify-end gap-3 p-4">
-        <Button onClick={handleClose} className="bg-gray-400 text-white">
+        <Button variant="muted" onClick={handleClose}>
           إلغاء
         </Button>
         <Button

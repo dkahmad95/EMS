@@ -17,7 +17,7 @@ import {
 import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/revenues/revenues";
-import { useEmployees } from "@/server/store/employees";
+import { useAllEmployees } from "@/server/store/employees";
 import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useDestinations } from "@/server/store/destinations";
 import { useCurrencies } from "@/server/store/currencies";
@@ -32,7 +32,7 @@ interface AddRevenueFormProps {
 const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
   const queryClient = useQueryClient();
 
-  const { data: employeeList } = useEmployees();
+  const { data: employeeList } = useAllEmployees();
   const { data: officeList } = useTokenOffices();
   const { data: currenciesList } = useCurrencies();
   const { data: destinationsList } = useDestinations();
@@ -195,11 +195,7 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
       </DialogContent>
 
       <DialogActions className="flex justify-end gap-3 p-4">
-        <Button
-          onClick={handleClose}
-          className="bg-gray-400 text-white"
-          disabled={isPending}
-        >
+        <Button variant="muted" onClick={handleClose} disabled={isPending}>
           إلغاء
         </Button>
 

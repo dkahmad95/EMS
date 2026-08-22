@@ -10,18 +10,27 @@ class ApiError extends Error {
     this.name = "ApiError";
   }
 }
+// Shared cookie attributes — deletion only matches the original cookie when
+// path/domain (and the other attributes) are identical to those used at login.
+const accessCookieOptions = () => {
+  const isProd = process.env.NODE_ENV === "production";
+  return {
+    domain: isProd ? ".ems-mabarrat.vercel.app" : undefined,
+    path: "/",
+    secure: isProd,
+    sameSite: (isProd ? "none" : "strict") as "none" | "strict",
+    httpOnly: isProd,
+  };
+};
+
 export const Login = async (data: LoginType): Promise<any> => {
   try {
     const response: AxiosResponse<any> = await axios.post(api.AUTH_API.LOGIN(), data);
     if (response.status >= 200 && response.status < 300) {
       if (response.data.accessToken) {
         (await cookies()).set("access_token", response.data.accessToken, {
+          ...accessCookieOptions(),
           expires: new Date(Date.now() + 1000 * 60 * 60 * 12),
-          domain: process.env.NODE_ENV === "production" ? ".ems-mabarrat.vercel.app" : undefined,
-          path: "/",
-          secure: process.env.NODE_ENV === "production" ? true : false,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-          httpOnly: process.env.NODE_ENV === "production" ? true : false,
           maxAge: 60 * 60 * 12,
         });
       }
@@ -39,14 +48,20 @@ export const Login = async (data: LoginType): Promise<any> => {
 };
 
 export const Logout = async () => {
+  // Best-effort server-side logout; never block clearing the cookie on its outcome.
   try {
-    const cookieManager = cookies();
-    if ((await cookieManager).get("access_token")) {
-      (await cookieManager).set("access_token", "", {
-        expires: new Date(0),
-      });
-    }
-  } catch (error) {
-    throw new Error(`Logout failed: ${error}`);
+    await withToken((_token, authHeader) =>
+      axios.post(api.AUTH_API.LOGOUT(), {}, { headers: authHeader, withCredentials: true }),
+    );
+  } catch {
+    /* ignore — cookie is cleared regardless */
   }
+
+  // Expire the cookie with the SAME path/domain/attributes used at login so the
+  // browser actually deletes it (plain `expires` without path/domain won't match in prod).
+  (await cookies()).set("access_token", "", {
+    ...accessCookieOptions(),
+    expires: new Date(0),
+    maxAge: 0,
+  });
 };

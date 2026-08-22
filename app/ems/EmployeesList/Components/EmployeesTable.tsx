@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import type { GridPaginationModel } from "@mui/x-data-grid";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
@@ -12,11 +13,25 @@ import { message } from "antd";
 
 interface EmployeesTableProps {
   employees: Employee[];
+  /** First load -> skeleton */
   isLoading?: boolean;
+  /** Background refetch (page change / search) -> DataGrid overlay */
+  loading?: boolean;
+  rowCount?: number;
+  paginationModel?: GridPaginationModel;
+  onPaginationModelChange?: (model: GridPaginationModel) => void;
   onSuccess?: () => void;
 }
 
-const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees, isLoading, onSuccess }) => {
+const EmployeesTable: React.FC<EmployeesTableProps> = ({
+  employees,
+  isLoading,
+  loading,
+  rowCount,
+  paginationModel,
+  onPaginationModelChange,
+  onSuccess,
+}) => {
   const queryClient = useQueryClient();
   const [openDelete, setOpenDelete] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -35,7 +50,7 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees, isLoading, o
       message.error("حدث خطأ أثناء حذف الموظف.");
     },
   });
- console.log(employees);
+
   const columns = [
     { field: "name", headerName: "الاسم", width: 200 },
   { field: "phone", headerName: "رقم الهاتف", width: 150 },
@@ -83,7 +98,14 @@ const EmployeesTable: React.FC<EmployeesTableProps> = ({ employees, isLoading, o
 
   return (
     <div dir="rtl">
-      <DataTable columns={columns} rows={employees} />
+      <DataTable
+        columns={columns}
+        rows={employees}
+        loading={loading}
+        rowCount={rowCount}
+        paginationModel={paginationModel}
+        onPaginationModelChange={onPaginationModelChange}
+      />
 
       <DeleteModal
         open={openDelete}

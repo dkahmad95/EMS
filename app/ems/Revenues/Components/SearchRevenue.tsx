@@ -3,15 +3,18 @@
 import React, { useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { Button } from "@/app/Components/Button";
-import { useEmployees } from "@/server/store/employees";
+import { useAllEmployees } from "@/server/store/employees";
 import { MagnifyingGlassIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
+/** Server-side filters sent straight to GET /revenues (YYYY-MM-DD dates). */
+export type RevenueSearchFilters = {
+  employee_id?: number | null;
+  date_from?: string;
+  date_to?: string;
+};
+
 interface SearchRevenueProps {
-  onSearch: (filters: {
-    employee?: string | null;
-    startDate?: string;
-    endDate?: string;
-  }) => void;
+  onSearch: (filters: RevenueSearchFilters) => void;
 }
 
 const muiSx = {
@@ -30,11 +33,19 @@ const muiSx = {
 };
 
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
-  const { data: employeeList } = useEmployees();
+  const { data: employeeList } = useAllEmployees();
 
-  const [employee, setEmployee] = useState<string | null>(null);
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const handleSearch = () => {
+    onSearch({
+      employee_id: employee?.id ?? undefined,
+      date_from: startDate || undefined,
+      date_to: endDate || undefined,
+    });
+  };
 
   const handleReset = () => {
     setEmployee(null);
@@ -53,7 +64,9 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
       <div className="flex flex-wrap items-end gap-3">
         {/* Employee */}
         <Autocomplete
-          options={employeeList?.map((e) => e.name) ?? []}
+          options={employeeList ?? []}
+          getOptionLabel={(o) => o.name}
+          isOptionEqualToValue={(o, v) => o.id === v.id}
           value={employee}
           onChange={(_, newValue) => setEmployee(newValue)}
           renderInput={(params) => (
@@ -85,10 +98,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
         />
 
         {/* Actions */}
-        <Button
-          variant="primary"
-          onClick={() => onSearch({ employee, startDate, endDate })}
-        >
+        <Button variant="primary" onClick={handleSearch}>
           <MagnifyingGlassIcon className="w-4 h-4" />
           بحث
         </Button>

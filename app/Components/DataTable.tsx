@@ -1,6 +1,6 @@
 'use client';
-import React from "react";
-import { DataGrid, GridRowParams } from "@mui/x-data-grid";
+import React, { useRef } from "react";
+import { DataGrid, GridRowParams, GridPaginationModel } from "@mui/x-data-grid";
 import { prefixer } from "stylis";
 import rtlPlugin from "@mui/stylis-plugin-rtl";
 import { CacheProvider } from "@emotion/react";
@@ -13,6 +13,14 @@ type DataTableProps = {
   rows: any[];
   columns: any[];
   handleEvent?: any;
+  /** Shows the DataGrid loading overlay (use react-query `isFetching`). */
+  loading?: boolean;
+  pageSizeOptions?: number[];
+  // ---- Server-side pagination (provide all three to enable) ----
+  /** Total number of rows on the server (`total` from the paginated envelope). */
+  rowCount?: number;
+  paginationModel?: GridPaginationModel;
+  onPaginationModelChange?: (model: GridPaginationModel) => void;
 };
 
 const cacheRtl = createCache({
@@ -21,8 +29,23 @@ const cacheRtl = createCache({
   prepend: true,
 });
 
-export default function DataTable({ rows, columns, handleEvent }: DataTableProps) {
+export default function DataTable({
+  rows,
+  columns,
+  handleEvent,
+  loading = false,
+  pageSizeOptions,
+  rowCount,
+  paginationModel,
+  onPaginationModelChange,
+}: DataTableProps) {
   const getRowClassName = (_params: GridRowParams) => "hover:bg-indigo-50/40 transition-colors";
+
+  const isServer = !!paginationModel && !!onPaginationModelChange;
+
+  // MUI warns if rowCount flips to undefined while a new page is loading; keep the last known total.
+  const rowCountRef = useRef(rowCount ?? 0);
+  if (rowCount !== undefined) rowCountRef.current = rowCount;
 
   const existingTheme = useTheme();
 
@@ -108,17 +131,30 @@ export default function DataTable({ rows, columns, handleEvent }: DataTableProps
     [existingTheme]
   );
 
+  const paginationProps = isServer
+    ? {
+        paginationMode: "server" as const,
+        rowCount: rowCountRef.current,
+        paginationModel,
+        onPaginationModelChange,
+        pageSizeOptions: pageSizeOptions ?? [10, 25, 50],
+      }
+    : {
+        paginationMode: "client" as const,
+        initialState: { pagination: { paginationModel: { page: 0, pageSize: 5 } } },
+        pageSizeOptions: pageSizeOptions ?? [5, 10],
+      };
+
   return (
     <div style={{ height: 400, width: "100%" }} className="rounded-xl overflow-hidden border border-gray-200 shadow-card">
       <CacheProvider value={cacheRtl}>
         <ThemeProvider theme={theme}>
           <DataGrid
-            rows={rows?.toReversed()}
+            rows={rows ?? []}
             columns={columns}
-            initialState={{
-              pagination: { paginationModel: { page: 0, pageSize: 5 } },
-            }}
-            pageSizeOptions={[5, 10]}
+            loading={loading}
+            {...paginationProps}
+            keepNonExistentRowsSelected
             checkboxSelection
             disableRowSelectionOnClick
             onRowDoubleClick={handleEvent}

@@ -7,36 +7,14 @@ import PermissionGate from "@/app/Components/PermissionGate";
 import CreateUserModal from "./Components/CreateUserModal";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useUsers } from "@/server/store/users";
+import { useServerTable } from "@/app/hooks/useServerTable";
 import { Button } from "@/app/Components/Button";
 
 const UsersList = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { data: users, isLoading, error } = useUsers();
-
-  const filteredUsers = (users || []).filter((user) => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      user.username?.toLowerCase().includes(searchLower) ||
-      user.id?.toString().includes(searchLower)
-    );
-  });
-
-  if (isLoading) {
-    return (
-      <div className="space-y-5 animate-fade-in">
-        <div className="page-header">
-          <h1 className="page-title">إدارة المستخدمين</h1>
-          <p className="page-subtitle">إدارة حسابات المستخدمين والصلاحيات</p>
-        </div>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent border-primary-500" />
-        </div>
-      </div>
-    );
-  }
+  const table = useServerTable();
+  const { data, isLoading, isFetching, error } = useUsers(table.params);
 
   if (error) {
     return (
@@ -69,8 +47,8 @@ const UsersList = () => {
           {/* Search */}
           <div className="flex-1 w-full md:max-w-xs">
             <SearchBar
-              value={searchTerm}
-              onChange={(val: string) => setSearchTerm(val)}
+              value={table.searchTerm}
+              onChange={table.setSearchTerm}
               placeholder="ابحث باسم المستخدم..."
             />
           </div>
@@ -90,7 +68,15 @@ const UsersList = () => {
       </div>
 
       {/* Table */}
-      <UsersTable users={filteredUsers} />
+      <UsersTable
+        users={data?.data ?? []}
+        total={data?.total}
+        search={table.search}
+        isLoading={isLoading}
+        loading={isFetching}
+        paginationModel={table.paginationModel}
+        onPaginationModelChange={table.setPaginationModel}
+      />
 
       <CreateUserModal
         open={isCreateModalOpen}

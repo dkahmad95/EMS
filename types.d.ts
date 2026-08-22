@@ -8,8 +8,50 @@ interface Permissions {
   revenues: { create: boolean; read: boolean; update: boolean; delete: boolean };
   users: { create: boolean; read: boolean; update: boolean; delete: boolean };
   collections: { create: boolean; read: boolean; update: boolean; delete: boolean };
+  office_reports?: { create: boolean; read: boolean; update: boolean; delete: boolean };
   dashboard: { access: boolean };
   control_panel: { access: boolean };
+};
+
+/** Resources that have CRUD permissions (used by usePermissions / PermissionGate). */
+type CrudResource = "employees" | "revenues" | "users" | "collections" | "office_reports";
+
+// ---- Server-side pagination -------------------------------------------------
+type SortOrder = "asc" | "desc";
+
+/** Envelope returned by every paginated list endpoint. */
+type Paginated<T> = { data: T[]; total: number; page: number; limit: number };
+
+type PaginationParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: SortOrder;
+  /** true = return the full list (dropdowns) in the same envelope */
+  all?: boolean;
+};
+
+type EmployeeListParams = PaginationParams & { office_id?: number | null };
+type RevenueListParams = PaginationParams & {
+  office_id?: number | null;
+  employee_id?: number | null;
+  date_from?: string;
+  date_to?: string;
+};
+type CollectionListParams = PaginationParams & {
+  office_id?: number | null;
+  employee_id?: number | null;
+  date_from?: string;
+  date_to?: string;
+  collection_type?: CollectionType;
+};
+type UserListParams = PaginationParams;
+type OfficeReportListParams = PaginationParams & {
+  office_id?: number | null;
+  employee_id?: number | null;
+  date_from?: string;
+  date_to?: string;
 };
 
 type OfficeAssignment = {
@@ -215,6 +257,16 @@ enum CurrencyType {
   LBP = "LBP",
   OTHERS = "OTHERS",
 }
+
+type OfficeReport = {
+  id?: number;
+  date: string; // YYYY-MM-DD
+  employee_id: number;
+  description: string;
+  employee?: { id: number; name: string; office_id?: number; office?: { id: number; name: string } };
+  created_at?: string;
+  updated_at?: string;
+};
 
 type Collection = {
   id?: number;

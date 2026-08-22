@@ -2,12 +2,17 @@
 import axios from "axios";
 import * as api from "../../../routes/users";
 import { withToken } from "../auth/authRequests";
+import { cleanParams } from "../params";
 
-export const getUsers = async (): Promise<User[] | null> =>
+/** Paginated list. Pass `{ all: true }` to get the full list in the same envelope. */
+export const getUsers = async (
+  params: UserListParams = {},
+): Promise<Paginated<User> | null> =>
   withToken((decodedToken, authHeader) =>
     axios.get(api.USERS_API.GET, {
       headers: authHeader,
       withCredentials: true,
+      params: cleanParams(params),
     }),
   );
 

@@ -2,15 +2,17 @@
 import axios from "axios";
 import * as api from "../../../routes/employees";
 import { withToken } from "../auth/authRequests";
+import { cleanParams } from "../params";
 
+/** Paginated list. Pass `{ all: true }` to get the full list (dropdowns). */
 export const getEmployees = async (
-  officeId?: number | null,
-): Promise<Employee[] | null> =>
-  withToken((decodedToken, authHeader) =>
+  params: EmployeeListParams = {},
+): Promise<Paginated<Employee> | null> =>
+  withToken((_decodedToken, authHeader) =>
     axios.get(api.EMPLOYEES_API.GET, {
       headers: authHeader,
       withCredentials: true,
-      params: officeId != null ? { office_id: officeId } : undefined,
+      params: cleanParams(params),
     }),
   );
 

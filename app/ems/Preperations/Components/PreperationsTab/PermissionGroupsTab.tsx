@@ -28,6 +28,16 @@ const labelFor = (key: string) =>
           ? "حذف"
           : "الوصول";
 
+const CRUD_RESOURCES = ["employees", "revenues", "users", "collections", "office_reports"] as const satisfies readonly CrudResource[];
+
+const RESOURCE_LABELS: Record<CrudResource, string> = {
+  employees: "الموظفين",
+  revenues: "الإيرادات",
+  users: "المستخدمين",
+  collections: "التحصيلات",
+  office_reports: "تقرير عمل المكتب",
+};
+
 const PermSection = ({
   title,
   keys,
@@ -64,6 +74,7 @@ const defaultPermissions = () => ({
   revenues: { create: false, read: false, update: false, delete: false },
   users: { create: false, read: false, update: false, delete: false },
   collections: { create: false, read: false, update: false, delete: false },
+  office_reports: { create: false, read: false, update: false, delete: false },
   dashboard: { access: false },
   control_panel: { access: false },
 });
@@ -135,7 +146,8 @@ export default function PermissionGroupsTab() {
   const openEditModal = (group: PermissionGroup) => {
     if (!group.id) return;
     setGroupName(group.name);
-    setPermissions(group.permissions);
+    // Merge with defaults so groups created before new resources were added still get every key
+    setPermissions({ ...defaultPermissions(), ...group.permissions });
     setEditId(group.id);
     setIsModalOpen(true);
   };
@@ -210,22 +222,16 @@ export default function PermissionGroupsTab() {
                     {group.permissions.control_panel.access && (
                       <span className="badge badge-primary">إدارة النظام</span>
                     )}
-                    {(["employees", "revenues", "users", "collections"] as const).map((res) => {
+                    {CRUD_RESOURCES.map((res) => {
                       const perms = group.permissions[res];
+                      if (!perms) return null;
                       const active = Object.entries(perms)
                         .filter(([, v]) => v)
                         .map(([k]) => labelFor(k));
                       if (!active.length) return null;
                       return (
                         <span key={res} className="badge badge-primary">
-                          {res === "employees"
-                            ? "الموظفين"
-                            : res === "revenues"
-                              ? "الإيرادات"
-                              : res === "users"
-                                ? "المستخدمين"
-                                : "التحصيلات"}:{" "}
-                          {active.join("، ")}
+                          {RESOURCE_LABELS[res]}: {active.join("، ")}
                         </span>
                       );
                     })}
@@ -321,6 +327,13 @@ export default function PermissionGroupsTab() {
               title="التحصيلات"
               keys={["create", "read", "update", "delete"]}
               resource="collections"
+              permissions={permissions}
+              onChange={handlePermissionChange}
+            />
+            <PermSection
+              title="تقرير عمل المكتب"
+              keys={["create", "read", "update", "delete"]}
+              resource="office_reports"
               permissions={permissions}
               onChange={handlePermissionChange}
             />

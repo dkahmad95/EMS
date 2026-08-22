@@ -1,10 +1,15 @@
-import {useQuery} from '@tanstack/react-query';
-import * as api from '../services/api/users/users';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import * as api from "../services/api/users/users";
 
-export const useUsers = (options: {enabled?: boolean} = {enabled: true}) => {
+/** Paginated users list (server-side pagination). */
+export const useUsers = (
+  params: UserListParams = {},
+  options: { enabled?: boolean } = {},
+) => {
   return useQuery({
-    queryKey: ['users'],
-    queryFn: () => api.getUsers(),
-    enabled: options.enabled,
+    queryKey: ["users", params],
+    queryFn: () => api.getUsers(params),
+    placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   });
 };

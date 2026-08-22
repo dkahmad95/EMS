@@ -8,9 +8,9 @@ import Filters from "./Components/Filters";
 import RevenueTable from "./Components/RevenueTable";
 import RevenueTimeChart from "./Components/RevenueTimeChart";
 import { useDashboardRevenues } from "@/server/store/revenues";
-import { useEmployees } from "@/server/store/employees";
+import { useAllEmployees } from "@/server/store/employees";
 import { useDashboardCurrencies } from "@/server/store/currencies";
-import { useCollections } from "@/server/store/collections";
+import { useAllCollections } from "@/server/store/collections";
 import { usePermissions } from "@/app/hooks/usePermissions";
 
 export default function DashboardPage() {
@@ -23,9 +23,9 @@ export default function DashboardPage() {
 
   const { currentOfficeId } = usePermissions();
   const { data: revenuesData } = useDashboardRevenues(currentOfficeId);
-  const { data: employeesData } = useEmployees(currentOfficeId);
+  const { data: employeesData } = useAllEmployees(currentOfficeId);
   const { data: currenciesData } = useDashboardCurrencies();
-  const { data: collectionsData } = useCollections(currentOfficeId);
+  const { data: collectionsData } = useAllCollections(currentOfficeId);
 
   const revenues: RevenueRecord[] = (revenuesData ?? []).map((r) => ({
     id: r.id ?? 0,

@@ -137,7 +137,7 @@ export default function EmployeeDetailsModal({
         id: employee.id,
         name: employee.name,
         phone: employee.phone,
-        email: employee.email,
+        email: employee.email ?? "",
         salary: employee.salary,
         insurance: employee.insurance ? "نعم" : "لا",
         insurance_number: employee.insurance_number,
@@ -176,7 +176,7 @@ export default function EmployeeDetailsModal({
     if (!employee?.id) return;
     const payload: Partial<Employee> = {
       name: data.name,
-      email: data.email,
+      email: data.email?.trim() || undefined,
       phone: data.phone,
       gender: genderMap[data.gender] ?? data.gender,
       contract_type: contractMap[data.contract_type] ?? data.contract_type,
@@ -343,6 +343,20 @@ export default function EmployeeDetailsModal({
           />
 
           <Controller
+            name="email"
+            control={control}
+            rules={{
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "البريد الإلكتروني غير صالح",
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <TextField label="البريد الإلكتروني" {...field} fullWidth value={field.value ?? ""} error={!!fieldState.error} helperText={fieldState.error?.message} />
+            )}
+          />
+
+          <Controller
             name="family_status"
             control={control}
             render={({ field }) => (
@@ -400,7 +414,7 @@ export default function EmployeeDetailsModal({
         </DialogContent>
       </div>
       <DialogActions className="flex justify-end gap-3 p-4">
-        <Button onClick={onClose} className="bg-gray-400 text-white">
+        <Button variant="muted" onClick={onClose}>
           إلغاء
         </Button>
         <Button

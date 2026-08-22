@@ -278,8 +278,8 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 
             <DialogActions className="flex justify-end gap-3 p-4">
                 <Button
+                    variant="muted"
                     onClick={handleClose}
-                    className="bg-gray-400 text-white"
                     disabled={updateMutation.isPending}
                 >
                     إلغاء

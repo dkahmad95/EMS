@@ -1,31 +1,27 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "../../Components/Button";
 import EmployeesTable from "./Components/EmployeesTable";
 import SearchBar from "../../Components/SearchBar";
 import CreateEmployeeModal from "./Components/CreateEmployee";
 import { useEmployees } from "@/server/store/employees";
 import { usePermissions } from "@/app/hooks/usePermissions";
+import { useServerTable } from "@/app/hooks/useServerTable";
 import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "@heroicons/react/24/outline";
 
 const EmployeesList = () => {
   const queryClient = useQueryClient();
   const { currentOfficeId } = usePermissions();
-  const { data: employees, isLoading } = useEmployees(currentOfficeId);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const table = useServerTable({ resetDeps: [currentOfficeId] });
+  const { data, isLoading, isFetching } = useEmployees({
+    ...table.params,
+    office_id: currentOfficeId,
+  });
+
   const [createOpen, setCreateOpen] = useState(false);
-
-  const filteredEmployees = useMemo(() => {
-    if (!employees) return [];
-    return employees.filter(
-      (emp) =>
-        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.phone.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [employees, searchTerm]);
 
   const handleSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["employees"] });
@@ -47,8 +43,8 @@ const EmployeesList = () => {
           {/* Search */}
           <div className="flex-1 w-full md:max-w-xs">
             <SearchBar
-              value={searchTerm}
-              onChange={(val: string) => setSearchTerm(val)}
+              value={table.searchTerm}
+              onChange={table.setSearchTerm}
               placeholder="ابحث بالاسم أو الهاتف..."
             />
           </div>
@@ -69,8 +65,12 @@ const EmployeesList = () => {
 
       {/* Table */}
       <EmployeesTable
-        employees={filteredEmployees}
+        employees={data?.data ?? []}
         isLoading={isLoading}
+        loading={isFetching}
+        rowCount={data?.total}
+        paginationModel={table.paginationModel}
+        onPaginationModelChange={table.setPaginationModel}
         onSuccess={handleSuccess}
       />
 

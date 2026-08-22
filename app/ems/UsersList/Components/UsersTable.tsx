@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import type { GridPaginationModel } from "@mui/x-data-grid";
 import { TrashIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import DeleteModal from "@/app/Components/DeleteModal";
 import DataTable from "@/app/Components/DataTable";
+import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import { Button } from "@/app/Components/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteUser } from "@/server/services/api/users/users";
@@ -12,9 +14,27 @@ import UpdateUserModal from "./UpdateUserModal";
 
 interface UsersTableProps {
   users: User[];
+  /** Total rows on the server (`total` from the paginated envelope). */
+  total?: number;
+  /** Active (debounced) search term — suppresses the empty state while searching. */
+  search?: string;
+  /** First load -> skeleton */
+  isLoading?: boolean;
+  /** Background refetch -> DataGrid overlay */
+  loading?: boolean;
+  paginationModel?: GridPaginationModel;
+  onPaginationModelChange?: (model: GridPaginationModel) => void;
 }
 
-const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
+const UsersTable: React.FC<UsersTableProps> = ({
+  users,
+  total,
+  search,
+  isLoading,
+  loading,
+  paginationModel,
+  onPaginationModelChange,
+}) => {
   const queryClient = useQueryClient();
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -80,14 +100,25 @@ const UsersTable: React.FC<UsersTableProps> = ({ users }) => {
     },
   ];
 
+  if (isLoading) return <DataTableSkeleton />;
+
+  const isEmpty = !isLoading && total === 0 && !search;
+
   return (
     <div dir="rtl">
-      {users.length === 0 ? (
+      {isEmpty ? (
         <div className="text-center text-gray-500 py-8">
           لا توجد مستخدمين بعد
         </div>
       ) : (
-        <DataTable columns={columns} rows={users} />
+        <DataTable
+          columns={columns}
+          rows={users}
+          loading={loading}
+          rowCount={total}
+          paginationModel={paginationModel}
+          onPaginationModelChange={onPaginationModelChange}
+        />
       )}
 
       <DeleteModal

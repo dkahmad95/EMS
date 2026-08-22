@@ -89,7 +89,7 @@ const DeleteModal: React.FC<ModalProps> = ({
             </Button>
 
             <Button
-              variant="outline"
+              variant="muted"
               onClick={() => setOpen(false)}
             >
               إلغاء

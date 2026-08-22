@@ -46,6 +46,7 @@ function hasRoutePermission(pathname: string, token: DecodedToken): boolean {
     ["/ems/EmployeesList", permissions?.employees?.read ?? false],
     ["/ems/Revenues", permissions?.revenues?.read ?? false],
     ["/ems/Collections", permissions?.collections?.read ?? false],
+    ["/ems/OfficeReports", permissions?.office_reports?.read ?? false],
     ["/ems/UsersList", permissions?.users?.read ?? false],
     ["/ems/Preperations", permissions?.control_panel?.access ?? false],
   ]);

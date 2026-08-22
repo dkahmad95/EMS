@@ -2,15 +2,17 @@
 import axios from "axios";
 import * as api from "../../../routes/revenues";
 import { withToken } from "../auth/authRequests";
+import { cleanParams } from "../params";
 
+/** Paginated list. Pass `{ all: true }` to get the full list in the same envelope. */
 export const getRevenues = async (
-  officeId?: number | null,
-): Promise<Revenue[] | null> =>
-  withToken((decodedToken, authHeader) =>
+  params: RevenueListParams = {},
+): Promise<Paginated<Revenue> | null> =>
+  withToken((_decodedToken, authHeader) =>
     axios.get(api.REVENUES_API.GET, {
       headers: authHeader,
       withCredentials: true,
-      params: officeId != null ? { office_id: officeId } : undefined,
+      params: cleanParams(params),
     }),
   );
 

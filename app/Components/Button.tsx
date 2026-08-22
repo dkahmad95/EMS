@@ -2,7 +2,7 @@ import clsx from 'clsx';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'danger' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'danger' | 'outline' | 'ghost' | 'muted';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -31,6 +31,9 @@ export function Button({
       'bg-white border-2 border-primary-600 text-primary-700 hover:bg-primary-50 hover:border-primary-700 focus-visible:ring-primary-500',
     ghost:
       'bg-transparent text-primary-700 hover:bg-primary-50 hover:text-primary-800 focus-visible:ring-primary-500',
+    // Neutral/secondary action (e.g. Cancel in modals)
+    muted:
+      'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 hover:text-gray-900 hover:border-gray-300 focus-visible:ring-gray-400',
   };
 
   const sizes: Record<string, string> = {

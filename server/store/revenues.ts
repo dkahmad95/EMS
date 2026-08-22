@@ -1,16 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import * as api from "../services/api/revenues/revenues";
 
+/** Paginated revenues list (server-side pagination). */
 export const useRevenues = (
-  officeId?: number | null,
-  options: { enabled?: boolean } = { enabled: true },
+  params: RevenueListParams = {},
+  options: { enabled?: boolean } = {},
 ) => {
   return useQuery({
-    queryKey: ["revenues", officeId ?? "all"],
-    queryFn: () => api.getRevenues(officeId),
-    enabled: options.enabled,
+    queryKey: ["revenues", params],
+    queryFn: () => api.getRevenues(params),
+    placeholderData: keepPreviousData,
+    enabled: options.enabled ?? true,
   });
 };
+
 export const useDashboardRevenues = (
   officeId?: number | null,
   options: { enabled?: boolean } = { enabled: true },
