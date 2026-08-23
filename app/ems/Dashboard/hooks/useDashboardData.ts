@@ -7,6 +7,7 @@ import { useAllFreezedCollections } from "@/server/store/freezedCollections";
 import { useAllEmployees } from "@/server/store/employees";
 import { useDashboardCurrencies } from "@/server/store/currencies";
 import { useDestinations } from "@/server/store/destinations";
+import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import type { DashboardFiltersApi } from "./useDashboardFilters";
 import type { DashboardCurrency } from "../types";
 
@@ -44,6 +45,7 @@ export function useDashboardData(
   const employeesQ = useAllEmployees(currentOfficeId);
   const currenciesQ = useDashboardCurrencies();
   const destinationsQ = useDestinations();
+  const { data: offices } = useTokenOffices();
 
   const rows = allQ.data?.data ?? EMPTY_ROWS;
   const meta = allQ.data?.meta ?? { lbp_rate: null };
@@ -72,6 +74,7 @@ export function useDashboardData(
     employees: employeesQ.data ?? [],
     currencies: (currenciesQ.data ?? []) as unknown as DashboardCurrency[],
     destinations: destinationsQ.data ?? [],
+    offices,
   };
 }
 

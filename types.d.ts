@@ -45,6 +45,11 @@ type RevenueListParams = PaginationParams & {
   employee_id?: number | null;
   destination_id?: number | null;
   currency_id?: number | null;
+  /** Multi-select variants: comma-separated ids, e.g. "1,2,3" */
+  office_ids?: string;
+  employee_ids?: string;
+  destination_ids?: string;
+  currency_ids?: string;
   date_from?: string;
   date_to?: string;
   /** Compared against the raw stored revenue_amount */
@@ -54,6 +59,8 @@ type RevenueListParams = PaginationParams & {
 /** GET /revenues/dashboard params (charts/KPIs use all:true, table uses page/limit). */
 type DashboardRevenueParams = RevenueListParams & {
   currency_type?: CurrencyType;
+  /** comma-separated CurrencyType values, e.g. "USD,LBP" */
+  currency_types?: string;
 };
 /** Row shape returned by GET /revenues/dashboard */
 type DashboardRevenueRow = {
@@ -79,6 +86,9 @@ type DashboardRevenuesResponse = Paginated<DashboardRevenueRow> & {
 type CollectionListParams = PaginationParams & {
   office_id?: number | null;
   employee_id?: number | null;
+  /** Multi-select variants: comma-separated ids */
+  office_ids?: string;
+  employee_ids?: string;
   date_from?: string;
   date_to?: string;
   collection_type?: CollectionType;

@@ -4,9 +4,11 @@ export type AmountMode = "gt" | "lt" | "between";
 export type Period = "daily" | "monthly" | "yearly";
 
 export type DashboardFilters = {
-  employee_id: number | null;
-  destination_id: number | null;
-  currency_type: CurrencyType | "";
+  /** multi-select ids (empty = no filter) */
+  employee_ids: number[];
+  office_ids: number[];
+  destination_ids: number[];
+  currency_types: CurrencyType[];
   /** YYYY-MM-DD or "" */
   date_from: string;
   /** YYYY-MM-DD or "" */

@@ -8,6 +8,8 @@ type Props = {
   dateFrom: string;
   dateTo: string;
   lbpRate: number | null;
+  /** names of offices chosen in the dashboard filter (overrides the switcher chip) */
+  selectedOffices?: string[];
 };
 
 const Chip = ({
@@ -28,12 +30,18 @@ const Chip = ({
   </span>
 );
 
-export default function DashboardHeader({ dateFrom, dateTo, lbpRate }: Props) {
+export default function DashboardHeader({ dateFrom, dateTo, lbpRate, selectedOffices = [] }: Props) {
   const { availableOffices, currentOfficeId } = usePermissions();
-  const officeName =
+  const switcherName =
     currentOfficeId == null
       ? "جميع المكاتب"
       : availableOffices.find((o) => o.office_id === currentOfficeId)?.office_name ?? "المكتب الحالي";
+  const officeName =
+    selectedOffices.length === 0
+      ? switcherName
+      : selectedOffices.length === 1
+        ? selectedOffices[0]
+        : `${selectedOffices.length} مكاتب محددة`;
 
   const rangeText =
     dateFrom && dateTo

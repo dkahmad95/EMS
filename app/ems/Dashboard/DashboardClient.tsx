@@ -34,9 +34,20 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <DashboardHeader dateFrom={date_from} dateTo={date_to} lbpRate={d.meta.lbp_rate} />
+      <DashboardHeader
+        dateFrom={date_from}
+        dateTo={date_to}
+        lbpRate={d.meta.lbp_rate}
+        selectedOffices={d.offices.filter((o) => f.filters.office_ids.includes(o.id)).map((o) => o.name)}
+      />
 
-      <FiltersBar f={f} employees={d.employees} currencies={d.currencies} destinations={d.destinations} />
+      <FiltersBar
+        f={f}
+        employees={d.employees}
+        offices={d.offices}
+        currencies={d.currencies}
+        destinations={d.destinations}
+      />
 
       <KpiGrid
         currencies={d.currencies}
