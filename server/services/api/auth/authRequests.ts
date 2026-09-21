@@ -27,6 +27,15 @@ export const withToken = async <T>(
     };
     return (await callback(decodedToken, authHeader)).data;
   } catch (error: any) {
+    // An axios error carries the backend's message — rethrow it instead of mislabeling
+    // every failure as a token problem. (Next.js masks the text in production.)
+    const apiMsg = error?.response?.data?.message;
+    if (apiMsg) {
+      throw new Error(Array.isArray(apiMsg) ? apiMsg.join("، ") : String(apiMsg));
+    }
+    if (error?.response || error?.request) {
+      throw new Error("تعذر تنفيذ الطلب");
+    }
     throw new Error("Invalid or expired token");
   }
 };

@@ -13,6 +13,7 @@ import KpiGrid from "./Components/KpiGrid";
 import CategoryBarChart from "./Components/CategoryBarChart";
 import TimeChart from "./Components/TimeChart";
 import RevenuesTable from "./Components/RevenuesTable";
+import PrintReportMenu from "./Components/PrintReportMenu";
 
 /** Composition only — state lives in the hooks, presentation in the components. */
 export default function DashboardClient() {
@@ -31,6 +32,9 @@ export default function DashboardClient() {
   const freezedTotals = sumCollections(d.freezed);
 
   const chartProps = { loading: d.allLoading, fetching: d.allFetching, onReset: f.reset };
+  const selectedOfficeNames = d.offices
+    .filter((o) => f.filters.office_ids.includes(o.id))
+    .map((o) => o.name);
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -38,7 +42,18 @@ export default function DashboardClient() {
         dateFrom={date_from}
         dateTo={date_to}
         lbpRate={d.meta.lbp_rate}
-        selectedOffices={d.offices.filter((o) => f.filters.office_ids.includes(o.id)).map((o) => o.name)}
+        selectedOffices={selectedOfficeNames}
+        actions={
+          <PrintReportMenu
+            charts={charts}
+            rows={d.rows}
+            dateFrom={date_from}
+            dateTo={date_to}
+            lbpRate={d.meta.lbp_rate}
+            selectedOffices={selectedOfficeNames}
+            loading={d.allLoading}
+          />
+        }
       />
 
       <FiltersBar

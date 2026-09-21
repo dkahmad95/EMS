@@ -14,6 +14,16 @@ interface OfficeReportFormDialogProps {
   selectedReport: OfficeReport | null;
 }
 
+const DESCRIPTION_MAX = 10000;
+
+/** Server Actions mask error text in production — show the backend message only when it survives. */
+const showApiError = (err: unknown, fallback: string) => {
+  const m = err instanceof Error ? err.message : "";
+  const usable =
+    m && m.length < 300 && m !== "Invalid or expired token" && !/^An error occurred/i.test(m);
+  message.error(usable ? m : fallback);
+};
+
 const emptyForm = () => ({
   employeeId: null as number | null,
   date: "",
@@ -52,8 +62,8 @@ const OfficeReportFormDialog: React.FC<OfficeReportFormDialogProps> = ({
       message.success("تم إضافة التقرير بنجاح");
       onClose();
     },
-    onError: () => {
-      message.error("حدث خطأ أثناء إضافة التقرير.");
+    onError: (err: unknown) => {
+      showApiError(err, "حدث خطأ أثناء إضافة التقرير.");
     },
   });
 
@@ -65,8 +75,8 @@ const OfficeReportFormDialog: React.FC<OfficeReportFormDialogProps> = ({
       message.success("تم تحديث التقرير بنجاح");
       onClose();
     },
-    onError: () => {
-      message.error("حدث خطأ أثناء تحديث التقرير.");
+    onError: (err: unknown) => {
+      showApiError(err, "حدث خطأ أثناء تحديث التقرير.");
     },
   });
 
@@ -132,6 +142,8 @@ const OfficeReportFormDialog: React.FC<OfficeReportFormDialogProps> = ({
         multiline
         rows={4}
         required
+        slotProps={{ htmlInput: { maxLength: DESCRIPTION_MAX } }}
+        helperText={`${form.description.length.toLocaleString("en-US")} / ${DESCRIPTION_MAX.toLocaleString("en-US")}`}
       />
     </FormModal>
   );

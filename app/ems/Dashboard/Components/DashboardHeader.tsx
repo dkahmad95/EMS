@@ -10,6 +10,8 @@ type Props = {
   lbpRate: number | null;
   /** names of offices chosen in the dashboard filter (overrides the switcher chip) */
   selectedOffices?: string[];
+  /** extra header actions (e.g. the print-report menu), rendered before the chips */
+  actions?: React.ReactNode;
 };
 
 const Chip = ({
@@ -30,7 +32,7 @@ const Chip = ({
   </span>
 );
 
-export default function DashboardHeader({ dateFrom, dateTo, lbpRate, selectedOffices = [] }: Props) {
+export default function DashboardHeader({ dateFrom, dateTo, lbpRate, selectedOffices = [], actions }: Props) {
   const { availableOffices, currentOfficeId } = usePermissions();
   const switcherName =
     currentOfficeId == null
@@ -61,6 +63,7 @@ export default function DashboardHeader({ dateFrom, dateTo, lbpRate, selectedOff
         <p className="page-subtitle mt-1">نظرة عامة على الإيرادات والاستقطاب حسب الفلاتر المحددة</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        {actions}
         <Chip icon={CalendarDaysIcon} title="الفترة المحددة">
           <span dir="ltr">{rangeText}</span>
         </Chip>

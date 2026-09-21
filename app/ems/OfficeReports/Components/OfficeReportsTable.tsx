@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, PlusIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
@@ -14,6 +14,7 @@ import { useServerTable } from "@/app/hooks/useServerTable";
 import { useOfficeReports } from "@/server/store/officeReports";
 import * as api from "@/server/services/api/officeReports/officeReports";
 import OfficeReportFormDialog from "./OfficeReportFormDialog";
+import OfficeReportViewDialog from "./OfficeReportViewDialog";
 import DeleteOfficeReportModal from "./DeleteOfficeReportModal";
 
 const OfficeReportsTable = () => {
@@ -29,6 +30,17 @@ const OfficeReportsTable = () => {
   const [selectedReport, setSelectedReport] = useState<OfficeReport | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  const openViewModal = (report: OfficeReport) => {
+    setSelectedReport(report);
+    setIsViewModalOpen(true);
+  };
+
+  const closeViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedReport(null);
+  };
 
   const openCreateModal = () => {
     setSelectedReport(null);
@@ -95,10 +107,14 @@ const OfficeReportsTable = () => {
     {
       field: "actions",
       headerName: "العمليات",
-      width: 120,
+      width: 140,
       sortable: false,
       renderCell: (params: { row: OfficeReport }) => (
         <div className="flex gap-2 items-center justify-center">
+          <EyeIcon
+            className="w-5 text-gray-500 cursor-pointer mt-4"
+            onClick={() => openViewModal(params.row)}
+          />
           <PermissionGate resource="office_reports" action="update">
             <PencilIcon
               className="w-5 text-blue-400 cursor-pointer mt-4"
@@ -158,6 +174,12 @@ const OfficeReportsTable = () => {
         open={isFormModalOpen}
         onClose={closeFormModal}
         selectedReport={selectedReport}
+      />
+
+      <OfficeReportViewDialog
+        open={isViewModalOpen}
+        onClose={closeViewModal}
+        report={selectedReport}
       />
 
       <DeleteOfficeReportModal
