@@ -1,10 +1,14 @@
 /**
- * "تقرير عمل يومي ( المكاتب )" — the organisation's daily office form (MHR-F21), built
- * from the dashboard's already-loaded data. One page per office.
+ * Office form reports built from the dashboard's already-loaded data, one page per office:
+ *  - "daily":       تقرير عمل يومي ( المكاتب ) (form MHR-F21) — revenue + collections tables
+ *  - "collections": الإستقطاب والتوزيع / تجميد و سحب only
  */
 import { escapeHtml } from "@/app/utils/print";
 import { fmtNum } from "../utils/chartTheme";
 import { formatDateDisplay } from "../utils/date";
+import { FORM_HEADER_CSS, formHeaderHtml, signatureHtml } from "./formHeader";
+
+export type OfficeReportKind = "daily" | "collections";
 
 export type DailyReportInput = {
   /** full filtered revenue set (all=true) */
@@ -53,84 +57,98 @@ const collectionType = (c: Collection): string => c.collection_type as unknown a
 const collectionEmployee = (c: Collection): string =>
   c.employee?.name ?? c.employeeName ?? "—";
 
-type EmpAgg = { total: Money; perDest: Map<string, Money> };
+/** The form's fixed destination groups: two named destinations, everything else combined. */
+type GroupKey = "internal" | "orphanBox" | "other";
+const GROUPS: { key: GroupKey; label: string; id?: number; name?: string }[] = [
+  { key: "internal", label: "تكفل داخلي", id: 2, name: "تكفل داخلي" },
+  { key: "orphanBox", label: "قجة الايتام", id: 4, name: "قجة الايتام" },
+  { key: "other", label: "وجهات مختلفة" },
+];
+/** loose Arabic compare: collapse spaces, unify alef/hamza forms */
+const norm = (s: string) => s.replace(/[أإآ]/g, "ا").replace(/\s+/g, " ").trim();
+const groupOf = (r: DashboardRevenueRow): GroupKey => {
+  const name = norm(r.destination?.name ?? "");
+  const id = r.destination?.id;
+  const byLabel = GROUPS.find((g) => g.name && norm(g.name) === name);
+  if (byLabel) return byLabel.key;
+  const byId = GROUPS.find((g) => g.id != null && g.id === id);
+  return byId?.key ?? "other";
+};
+type Groups = Record<GroupKey, Money>;
+const groups = (): Groups => ({ internal: money(), orphanBox: money(), other: money() });
 
-/** Tables A + B: revenue per employee per destination for one office. */
+type EmpAgg = { total: Money; perGroup: Groups };
+
+/** Tables A + B: revenue per employee per destination group for one office. */
 const revenueTables = (officeRows: DashboardRevenueRow[], officeName: string): string => {
-  const dests = Array.from(
-    new Set(officeRows.map((r) => r.destination?.name ?? "—")),
-  ).sort(byName);
   const emps = new Map<string, EmpAgg>();
   const officeTotal = money();
-  const destTotal = new Map<string, Money>(dests.map((d) => [d, money()]));
+  const groupTotal = groups();
 
   for (const r of officeRows) {
     const name = r.employee?.name ?? "—";
-    const dest = r.destination?.name ?? "—";
+    const g = groupOf(r);
     let e = emps.get(name);
     if (!e) {
-      e = { total: money(), perDest: new Map() };
+      e = { total: money(), perGroup: groups() };
       emps.set(name, e);
     }
-    let dm = e.perDest.get(dest);
-    if (!dm) {
-      dm = money();
-      e.perDest.set(dest, dm);
-    }
-    addRow(dm, r);
+    addRow(e.perGroup[g], r);
     addRow(e.total, r);
     addRow(officeTotal, r);
-    addRow(destTotal.get(dest)!, r);
+    addRow(groupTotal[g], r);
   }
   const names = Array.from(emps.keys()).sort(byName);
-  const get = (e: EmpAgg, d: string) => e.perDest.get(d) ?? money();
 
-  // Table A — counts per destination + revenue
+  // Table A — receipt counts per group + revenue
   const headA =
     `<tr><th rowspan="2" class="name">المندوب</th><th rowspan="2">عدد الإيصالات</th>` +
-    (dests.length ? `<th colspan="${dests.length}">الوجهات (العدد)</th>` : "") +
-    `<th rowspan="2">الإيرادات</th></tr>` +
-    `<tr>${dests.map((d) => `<th>${escapeHtml(d)}</th>`).join("")}</tr>`;
+    `<th colspan="${GROUPS.length}">الوجهات (العدد)</th><th rowspan="2">الإيرادات</th></tr>` +
+    `<tr>${GROUPS.map((g) => `<th>${g.label}</th>`).join("")}</tr>`;
   const bodyA = names
     .map((n) => {
       const e = emps.get(n)!;
       return (
-        `<tr>${nameCell(n)}${numCell(e.total.count)}` +
-        dests.map((d) => numCell(get(e, d).count)).join("") +
-        moneyCell(e.total) + `</tr>`
+        `<tr>${nameCell(n)}${numCell(e.total.count, true)}` +
+        GROUPS.map((g) => numCell(e.perGroup[g.key].count, true)).join("") +
+        moneyCell(e.total) +
+        `</tr>`
       );
     })
     .join("");
   const footA =
     `<tr>${nameCell(`إجمالي ${officeName}`)}${numCell(officeTotal.count, true)}` +
-    dests.map((d) => numCell(destTotal.get(d)!.count, true)).join("") +
-    moneyCell(officeTotal) + `</tr>`;
+    GROUPS.map((g) => numCell(groupTotal[g.key].count, true)).join("") +
+    moneyCell(officeTotal) +
+    `</tr>`;
 
-  // Table B — count / LBP / USD per destination
+  // Table B — count / LBP / USD per group
   const headB =
     `<tr><th rowspan="2" class="name">المندوب</th>` +
-    dests.map((d) => `<th colspan="3">${escapeHtml(d)}</th>`).join("") +
+    GROUPS.map((g) => `<th colspan="3">${g.label}</th>`).join("") +
     `<th rowspan="2">الإجمالي</th></tr>` +
-    `<tr>${dests.map(() => `<th>العدد</th><th>ل.ل</th><th>$</th>`).join("")}</tr>`;
+    `<tr>${GROUPS.map(() => `<th>العدد</th><th>ل.ل</th><th>$</th>`).join("")}</tr>`;
   const trio = (m: Money) =>
-    numCell(m.count) +
+    numCell(m.count, true) +
     cell(m.lbp ? fmtNum(m.lbp, 0) : "", "num") +
     cell(m.usd ? fmtNum(m.usd, 2) : "", "num");
   const bodyB = names
     .map((n) => {
       const e = emps.get(n)!;
-      return `<tr>${nameCell(n)}${dests.map((d) => trio(get(e, d))).join("")}${moneyCell(e.total)}</tr>`;
+      return `<tr>${nameCell(n)}${GROUPS.map((g) => trio(e.perGroup[g.key])).join("")}${moneyCell(e.total)}</tr>`;
     })
     .join("");
   const footB =
     `<tr>${nameCell("إجمالي إيرادات المكتب العامة")}` +
-    dests.map((d) => trio(destTotal.get(d)!)).join("") +
-    moneyCell(officeTotal) + `</tr>`;
+    GROUPS.map((g) => trio(groupTotal[g.key])).join("") +
+    moneyCell(officeTotal) +
+    `</tr>`;
 
-  const empty = `<tr><td colspan="${3 + dests.length}" class="empty">لا توجد إيرادات ضمن الفلاتر المحددة</td></tr>`;
+  const emptyA = `<tr><td colspan="${3 + GROUPS.length}" class="empty">لا توجد إيرادات ضمن الفلاتر المحددة</td></tr>`;
+  const emptyB = `<tr><td colspan="${2 + GROUPS.length * 3}" class="empty">—</td></tr>`;
   return (
-    `<table class="rep"><thead>${headA}</thead><tbody>${bodyA || empty}</tbody><tfoot>${footA}</tfoot></table>` +
-    `<table class="rep"><thead>${headB}</thead><tbody>${bodyB || `<tr><td colspan="${2 + dests.length * 3}" class="empty">—</td></tr>`}</tbody><tfoot>${footB}</tfoot></table>`
+    `<table class="rep"><thead>${headA}</thead><tbody>${bodyA || emptyA}</tbody><tfoot>${footA}</tfoot></table>` +
+    `<table class="rep"><thead>${headB}</thead><tbody>${bodyB || emptyB}</tbody><tfoot>${footB}</tfoot></table>`
   );
 };
 
@@ -185,10 +203,26 @@ const rangeText = (from: string, to: string): string =>
         ? `حتى ${formatDateDisplay(to)}`
         : "كل الفترات";
 
+type PageOptions = { title: string; code?: string; revenue: boolean; collections: boolean };
+
+const KINDS: Record<OfficeReportKind, PageOptions> = {
+  daily: {
+    title: "تقرير عمل يومي ( المكاتب )",
+    code: "الرمز: MHR-F21 · الاصدار: 01",
+    revenue: true,
+    collections: true,
+  },
+  collections: {
+    title: "تقرير الإستقطاب والتوزيع / تجميد و سحب",
+    revenue: false,
+    collections: true,
+  },
+};
+
 const officePage = (
   office: { id: number; name: string },
   input: DailyReportInput,
-  origin: string,
+  opts: PageOptions,
 ): string => {
   const { rows, collections, freezed, employees, username, dateFrom, dateTo } = input;
   const officeRows = rows.filter((r) => r.office?.id === office.id);
@@ -203,65 +237,57 @@ const officePage = (
     ]),
   );
 
+  const revenue = opts.revenue
+    ? `<h2>الإنتاجية والإيرادات المالية:</h2>` + revenueTables(officeRows, office.name)
+    : "";
+  const collected = opts.collections
+    ? `<h2>الإستقطاب والتوزيع / تجميد و سحب:</h2><div class="two">` +
+      collectionTable(officeCols, names, "عدد القجج الموزعة", "عدد الكفالات الجديدة") +
+      collectionTable(officeFreezed, names, "عدد القجج المسحوبة", "عدد الكفالات المجمدة") +
+      `</div>`
+    : "";
+
   return (
     `<section class="page">` +
-    `<table class="hdr"><tr>` +
-    `<td class="hdr-r"><div class="org">جمعية المبرات الخيرية</div><div>دائرة العلاقات والتكفل</div>` +
-    `<div class="code">الرمز: MHR-F21 &nbsp;·&nbsp; الاصدار: 01</div></td>` +
-    `<td class="hdr-c"><div class="bism">باسمه تعالى</div><div class="ttl">تقرير عمل يومي ( المكاتب )</div></td>` +
-    `<td class="hdr-l"><img src="${escapeHtml(origin)}/almabbaratLogo.webp" alt="" /></td>` +
-    `</tr></table>` +
-    `<p class="line"><span>الإسم: <b>${escapeHtml(username)}</b></span>` +
-    `<span>المكتب: <b>${escapeHtml(office.name)}</b></span>` +
-    `<span>التاريخ: <b dir="ltr">${escapeHtml(rangeText(dateFrom, dateTo))}</b></span></p>` +
-    `<h2>الإنتاجية والإيرادات المالية:</h2>` +
-    revenueTables(officeRows, office.name) +
-    `<h2>الإستقطاب والتوزيع / تجميد و سحب:</h2>` +
-    `<div class="two">` +
-    collectionTable(officeCols, names, "عدد القجج الموزعة", "عدد الكفالات الجديدة") +
-    collectionTable(officeFreezed, names, "عدد القجج المسحوبة", "عدد الكفالات المجمدة") +
-    `</div>` +
-    `<p class="sign">اسم المرسل والتوقيع: <b>${escapeHtml(username)}</b><span class="sigline"></span></p>` +
+    formHeaderHtml({
+      title: opts.title,
+      code: opts.code,
+      meta: [
+        { label: "الإسم", value: username },
+        { label: "المكتب", value: office.name },
+        { label: "التاريخ", value: rangeText(dateFrom, dateTo), ltr: true },
+      ],
+    }) +
+    revenue +
+    collected +
+    signatureHtml(username) +
     `</section>`
   );
 };
 
 export const DAILY_REPORT_CSS = `
-  @page { size: A4 landscape; margin: 12mm; }
-  body { margin: 0; }
+  @page { size: A4 landscape; }
   .page { page-break-after: always; }
   .page:last-child { page-break-after: auto; }
-  table.hdr { border-bottom: 2px solid #111827; margin-bottom: 8px; }
-  table.hdr td { border: 0; vertical-align: middle; padding: 4px 6px; }
-  .hdr-r { width: 40%; font-size: 13px; }
-  .hdr-r .org { font-size: 16px; font-weight: 700; }
-  .hdr-r .code { color: #4b5563; font-size: 11px; margin-top: 2px; }
-  .hdr-c { text-align: center; }
-  .hdr-c .bism { font-size: 12px; color: #4b5563; }
-  .hdr-c .ttl { font-size: 18px; font-weight: 700; margin-top: 2px; }
-  .hdr-l { text-align: left; width: 20%; }
-  .hdr-l img { height: 64px; }
-  .line { display: flex; flex-wrap: wrap; gap: 8px 32px; font-size: 13px; margin: 6px 0 10px; }
-  h2 { font-size: 14px; margin: 12px 0 6px; }
-  table.rep { margin-bottom: 10px; }
-  table.rep th, table.rep td { text-align: center; padding: 4px 6px; font-size: 11px; vertical-align: middle; }
+  ${FORM_HEADER_CSS}
+  h2 { font-size: 13px; margin: 8px 0 4px; }
+  table.rep { margin-bottom: 8px; }
+  table.rep th, table.rep td { text-align: center; padding: 3px 5px; font-size: 10.5px; vertical-align: middle; }
   table.rep th.name, table.rep td.name { text-align: right; min-width: 120px; }
   table.rep td.money { white-space: nowrap; direction: rtl; text-align: center; }
   table.rep td.empty { color: #6b7280; padding: 8px; }
   .two { display: flex; gap: 16px; align-items: flex-start; }
   .two > table { width: 50%; }
-  .sign { margin-top: 26px; font-size: 13px; display: flex; align-items: flex-end; gap: 12px; }
-  .sign .sigline { display: inline-block; width: 220px; border-bottom: 1px solid #111827; }
 `;
 
 /** Build the report HTML for the offices in scope (see DailyReportInput.officeIds). */
-export const buildDailyOfficeReportHtml = (input: DailyReportInput): string => {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+export const buildOfficeReportHtml = (input: DailyReportInput, kind: OfficeReportKind): string => {
+  const opts = KINDS[kind];
   const nameById = new Map<number, string>(input.offices.map((o) => [o.id, o.name]));
   for (const r of input.rows) if (r.office?.id && !nameById.has(r.office.id)) nameById.set(r.office.id, r.office.name);
 
   const hasData = (id: number) =>
-    input.rows.some((r) => r.office?.id === id) ||
+    (opts.revenue && input.rows.some((r) => r.office?.id === id)) ||
     input.collections.some((c) => c.office_id === id) ||
     input.freezed.some((c) => c.office_id === id);
 
@@ -275,5 +301,8 @@ export const buildDailyOfficeReportHtml = (input: DailyReportInput): string => {
   if (offices.length === 0) {
     return `<section class="page"><p class="empty">لا توجد بيانات ضمن الفلاتر المحددة.</p></section>`;
   }
-  return offices.map((o) => officePage(o, input, origin)).join("");
+  return offices.map((o) => officePage(o, input, opts)).join("");
 };
+
+export const buildDailyOfficeReportHtml = (input: DailyReportInput): string =>
+  buildOfficeReportHtml(input, "daily");

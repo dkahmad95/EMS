@@ -5,32 +5,26 @@ import { Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material
 import { PrinterIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/app/Components/Button";
 import { escapeHtml, openPrintWindow } from "@/app/utils/print";
+import { FORM_HEADER_CSS, formHeaderHtml } from "@/app/ems/Dashboard/print/formHeader";
 
 const reportDate = (report: OfficeReport | null): string =>
   report?.date?.split("T")[0] ?? report?.date ?? "";
 
-/** Print a single office report from its row data (RTL window, description pre-wrapped). */
+/** Print a single office report from its row data (organisation header, description pre-wrapped). */
 export const printOfficeReport = (report: OfficeReport): void => {
-  const fields: [string, string][] = [
-    ["التاريخ", reportDate(report)],
-    ["الموظف", report.employee?.name ?? "—"],
-    ["المكتب", report.employee?.office?.name ?? "—"],
-  ];
   const body =
-    `<h1>تقرير عمل المكتب</h1>` +
-    `<div class="meta"><span>تاريخ الطباعة: <b dir="ltr">${escapeHtml(
-      new Date().toLocaleString("en-GB"),
-    )}</b></span></div>` +
-    `<table><tbody>` +
-    fields
-      .map(
-        ([k, v]) =>
-          `<tr><th style="width:120px">${escapeHtml(k)}</th><td dir="auto">${escapeHtml(v)}</td></tr>`,
-      )
-      .join("") +
-    `<tr><th>الوصف</th><td class="pre" dir="auto">${escapeHtml(report.description ?? "")}</td></tr>` +
-    `</tbody></table>`;
-  openPrintWindow("تقرير عمل المكتب", body);
+    formHeaderHtml({
+      title: "تقرير عمل المكتب",
+      meta: [
+        { label: "التاريخ", value: reportDate(report), ltr: true },
+        { label: "الموظف", value: report.employee?.name ?? "—" },
+        { label: "المكتب", value: report.employee?.office?.name ?? "—" },
+        { label: "تاريخ الطباعة", value: new Date().toLocaleString("en-GB"), ltr: true },
+      ],
+    }) +
+    `<table><tbody><tr><th style="width:120px">الوصف</th>` +
+    `<td class="pre" dir="auto">${escapeHtml(report.description ?? "")}</td></tr></tbody></table>`;
+  openPrintWindow("تقرير عمل المكتب", body, FORM_HEADER_CSS);
 };
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (

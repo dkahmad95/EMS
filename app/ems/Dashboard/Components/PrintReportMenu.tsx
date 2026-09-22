@@ -9,14 +9,24 @@ import type { ChartDatum, SeriesDef } from "../types";
 import { fmtNum } from "../utils/chartTheme";
 import { formatDateDisplay } from "../utils/date";
 import { useChartData } from "../hooks/useChartData";
-import { DAILY_REPORT_CSS, buildDailyOfficeReportHtml } from "../print/dailyOfficeReport";
+import { DAILY_REPORT_CSS, buildOfficeReportHtml } from "../print/dailyOfficeReport";
+import { FORM_HEADER_CSS, formHeaderHtml, type HeaderMeta } from "../print/formHeader";
 
 type Charts = ReturnType<typeof useChartData>;
 
-type ReportKind = "daily" | "employee" | "office" | "destination" | "currency" | "time" | "log";
+type ReportKind =
+  | "daily"
+  | "collections"
+  | "employee"
+  | "office"
+  | "destination"
+  | "currency"
+  | "time"
+  | "log";
 
 const REPORTS: { kind: ReportKind; label: string }[] = [
   { kind: "daily", label: "تقرير عمل يومي (المكاتب)" },
+  { kind: "collections", label: "الإستقطاب والتوزيع / تجميد و سحب" },
   { kind: "employee", label: "الإيرادات حسب الموظف" },
   { kind: "office", label: "الإيرادات حسب المكتب" },
   { kind: "destination", label: "الإيرادات حسب الوجهة" },
@@ -33,7 +43,7 @@ type Props = {
   freezed: Collection[];
   employees: Employee[];
   offices: { id: number; name: string }[];
-  /** offices pinned by the filter / switcher for the daily report; null = all with data */
+  /** offices pinned by the filter / switcher for the office reports; null = all with data */
   officeIds: number[] | null;
   dateFrom: string;
   dateTo: string;
@@ -135,34 +145,41 @@ export default function PrintReportMenu({
           ? `حتى ${formatDateDisplay(dateTo)}`
           : "كل الفترات";
 
-  const metaHtml = (): string => {
-    const parts = [
-      `الفترة: <b dir="ltr">${escapeHtml(rangeText)}</b>`,
-      `المكتب: <b>${escapeHtml(officeName)}</b>`,
-      lbpRate != null && lbpRate > 0
-        ? `سعر الصرف: <b dir="ltr">1 $ = ${fmtNum(lbpRate, 0)} ل.ل</b>`
-        : "",
-      `عدد السجلات: <b>${fmtNum(rows.length, 0)}</b>`,
-      `تاريخ الطباعة: <b dir="ltr">${escapeHtml(new Date().toLocaleString("en-GB"))}</b>`,
-    ].filter(Boolean);
-    return `<div class="meta">${parts.map((p) => `<span>${p}</span>`).join("")}</div>`;
+  /** organisation header (same as the daily form) + the الإسم/المكتب/التاريخ line */
+  const headerHtml = (title: string): string => {
+    const meta: HeaderMeta[] = [
+      { label: "الإسم", value: username ?? "" },
+      { label: "المكتب", value: officeName },
+      { label: "التاريخ", value: rangeText, ltr: true },
+    ];
+    if (lbpRate != null && lbpRate > 0) {
+      meta.push({ label: "سعر الصرف", value: `1 $ = ${fmtNum(lbpRate, 0)} ل.ل`, ltr: true });
+    }
+    meta.push(
+      { label: "عدد السجلات", value: fmtNum(rows.length, 0) },
+      { label: "تاريخ الطباعة", value: new Date().toLocaleString("en-GB"), ltr: true },
+    );
+    return formHeaderHtml({ title, meta });
   };
 
   const handlePrint = (kind: ReportKind) => {
     setAnchorEl(null);
     const label = REPORTS.find((r) => r.kind === kind)?.label ?? "";
-    if (kind === "daily") {
-      const html = buildDailyOfficeReportHtml({
-        rows,
-        collections,
-        freezed,
-        employees,
-        offices,
-        officeIds,
-        dateFrom,
-        dateTo,
-        username: username ?? "",
-      });
+    if (kind === "daily" || kind === "collections") {
+      const html = buildOfficeReportHtml(
+        {
+          rows,
+          collections,
+          freezed,
+          employees,
+          offices,
+          officeIds,
+          dateFrom,
+          dateTo,
+          username: username ?? "",
+        },
+        kind,
+      );
       openPrintWindow(label, html, DAILY_REPORT_CSS);
       return;
     }
@@ -189,7 +206,7 @@ export default function PrintReportMenu({
         extraCss = "@page { size: A4 landscape; }";
         break;
     }
-    openPrintWindow(label, `<h1>${escapeHtml(label)}</h1>${metaHtml()}${table}`, extraCss);
+    openPrintWindow(label, headerHtml(label) + table, FORM_HEADER_CSS + extraCss);
   };
 
   return (
