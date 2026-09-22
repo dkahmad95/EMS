@@ -35,6 +35,12 @@ export default function DashboardClient() {
   const selectedOfficeNames = d.offices
     .filter((o) => f.filters.office_ids.includes(o.id))
     .map((o) => o.name);
+  // offices the daily report is pinned to: the multi-select wins, then the switcher, else all with data
+  const reportOfficeIds = f.filters.office_ids.length
+    ? f.filters.office_ids
+    : currentOfficeId != null
+      ? [currentOfficeId]
+      : null;
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -47,6 +53,11 @@ export default function DashboardClient() {
           <PrintReportMenu
             charts={charts}
             rows={d.rows}
+            collections={d.collections}
+            freezed={d.freezed}
+            employees={d.employees}
+            offices={d.offices}
+            officeIds={reportOfficeIds}
             dateFrom={date_from}
             dateTo={date_to}
             lbpRate={d.meta.lbp_rate}

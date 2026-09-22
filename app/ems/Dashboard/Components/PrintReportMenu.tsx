@@ -9,12 +9,14 @@ import type { ChartDatum, SeriesDef } from "../types";
 import { fmtNum } from "../utils/chartTheme";
 import { formatDateDisplay } from "../utils/date";
 import { useChartData } from "../hooks/useChartData";
+import { DAILY_REPORT_CSS, buildDailyOfficeReportHtml } from "../print/dailyOfficeReport";
 
 type Charts = ReturnType<typeof useChartData>;
 
-type ReportKind = "employee" | "office" | "destination" | "currency" | "time" | "log";
+type ReportKind = "daily" | "employee" | "office" | "destination" | "currency" | "time" | "log";
 
 const REPORTS: { kind: ReportKind; label: string }[] = [
+  { kind: "daily", label: "تقرير عمل يومي (المكاتب)" },
   { kind: "employee", label: "الإيرادات حسب الموظف" },
   { kind: "office", label: "الإيرادات حسب المكتب" },
   { kind: "destination", label: "الإيرادات حسب الوجهة" },
@@ -27,6 +29,12 @@ type Props = {
   charts: Charts;
   /** full filtered row set (all=true) — the log prints ALL of these */
   rows: DashboardRevenueRow[];
+  collections: Collection[];
+  freezed: Collection[];
+  employees: Employee[];
+  offices: { id: number; name: string }[];
+  /** offices pinned by the filter / switcher for the daily report; null = all with data */
+  officeIds: number[] | null;
   dateFrom: string;
   dateTo: string;
   lbpRate: number | null;
@@ -90,6 +98,11 @@ const logTable = (rows: DashboardRevenueRow[]): string => {
 export default function PrintReportMenu({
   charts,
   rows,
+  collections,
+  freezed,
+  employees,
+  offices,
+  officeIds,
   dateFrom,
   dateTo,
   lbpRate,
@@ -97,7 +110,7 @@ export default function PrintReportMenu({
   loading = false,
 }: Props) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const { availableOffices, currentOfficeId } = usePermissions();
+  const { availableOffices, currentOfficeId, username } = usePermissions();
 
   // same resolution as DashboardHeader's office chip
   const switcherName =
@@ -138,6 +151,21 @@ export default function PrintReportMenu({
   const handlePrint = (kind: ReportKind) => {
     setAnchorEl(null);
     const label = REPORTS.find((r) => r.kind === kind)?.label ?? "";
+    if (kind === "daily") {
+      const html = buildDailyOfficeReportHtml({
+        rows,
+        collections,
+        freezed,
+        employees,
+        offices,
+        officeIds,
+        dateFrom,
+        dateTo,
+        username: username ?? "",
+      });
+      openPrintWindow(label, html, DAILY_REPORT_CSS);
+      return;
+    }
     let table = "";
     let extraCss = "";
     switch (kind) {
