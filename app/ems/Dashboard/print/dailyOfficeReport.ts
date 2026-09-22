@@ -207,7 +207,7 @@ type PageOptions = { title: string; code?: string; revenue: boolean; collections
 
 const KINDS: Record<OfficeReportKind, PageOptions> = {
   daily: {
-    title: "تقرير عمل يومي ( المكاتب )",
+    title: "تقرير عمل ( المكاتب )",
     code: "الرمز: MHR-F21 · الاصدار: 01",
     revenue: true,
     collections: true,

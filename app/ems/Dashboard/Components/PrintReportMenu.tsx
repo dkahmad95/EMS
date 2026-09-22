@@ -25,7 +25,7 @@ type ReportKind =
   | "log";
 
 const REPORTS: { kind: ReportKind; label: string }[] = [
-  { kind: "daily", label: "تقرير عمل يومي (المكاتب)" },
+  { kind: "daily", label: "تقرير عمل (المكاتب)" },
   { kind: "collections", label: "الإستقطاب والتوزيع / تجميد و سحب" },
   { kind: "employee", label: "الإيرادات حسب الموظف" },
   { kind: "office", label: "الإيرادات حسب المكتب" },
