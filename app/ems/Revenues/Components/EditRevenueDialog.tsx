@@ -45,6 +45,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
   const [currencyId, setCurrencyId] = useState<number | null>(null);
   const [date, setDate] = useState("");
   const [revenueAmount, setRevenueAmount] = useState<string>("");
+  const [receiptsCount, setReceiptsCount] = useState<string>("1");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -55,6 +56,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
       setCurrencyId(entry.currency_id);
       setDate(entry.date?.split("T")[0] ?? entry.date ?? "");
       setRevenueAmount(String(entry.revenue_amount));
+      setReceiptsCount(String(entry.receipts_count ?? 1));
       setNotes(entry.notes ?? "");
     }
   }, [entry]);
@@ -73,8 +75,11 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
     },
   });
 
+  const receiptsNum = Number(receiptsCount);
+  const receiptsValid = receiptsCount === "" || (Number.isInteger(receiptsNum) && receiptsNum >= 1);
+
   const handleSave = async () => {
-    if (!entry?.id) return;
+    if (!entry?.id || !receiptsValid) return;
 
     await updateRevenue({
       id: entry.id,
@@ -85,6 +90,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
         currency_id: currencyId ?? undefined,
         date: date || undefined,
         revenue_amount: revenueAmount ? Number(revenueAmount) : undefined,
+        receipts_count: receiptsCount ? receiptsNum : undefined,
         notes: notes || undefined,
       },
     });
@@ -152,6 +158,17 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
             renderInput={(params) => <TextField {...params} label="العملة" />}
           />
 
+          {/* Receipts count */}
+          <TextField
+            type="number"
+            label="عدد الإيصالات"
+            value={receiptsCount}
+            onChange={(e) => setReceiptsCount(e.target.value)}
+            slotProps={{ htmlInput: { min: 1, step: 1 } }}
+            error={!receiptsValid}
+            fullWidth
+          />
+
           {/* Notes */}
           <TextField
             label="ملاحظات"
@@ -167,7 +184,7 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
         </Button>
         <Button
           onClick={handleSave}
-          disabled={isPending}
+          disabled={isPending || !receiptsValid}
           className="bg-blue-600 text-white flex items-center gap-2"
         >
           {isPending ? <Loader borderColor="white" /> : "حفظ التعديلات"}

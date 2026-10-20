@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Autocomplete,
   TextField,
@@ -19,11 +19,34 @@ import { useDestinations } from "@/server/store/destinations";
 import { useCurrencies } from "@/server/store/currencies";
 import { message } from "antd";
 import Loader from "@/app/Components/Loader";
+import { todayLocal } from "@/app/ems/Dashboard/utils/date";
+import { LAST_REVENUE_OFFICE_KEY } from "@/app/utils/storageKeys";
 
 interface AddRevenueFormProps {
   open: boolean;
   onClose: () => void;
 }
+
+const readLastOffice = (): number | null => {
+  try {
+    const raw = localStorage.getItem(LAST_REVENUE_OFFICE_KEY);
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveLastOffice = (id: number): void => {
+  try {
+    localStorage.setItem(LAST_REVENUE_OFFICE_KEY, String(id));
+  } catch {
+    /* storage unavailable */
+  }
+};
+
+const isUsd = (c: Currency): boolean =>
+  (c.currency_type as unknown as string) === "USD" || c.code?.toUpperCase() === "USD";
 
 const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
   const queryClient = useQueryClient();
@@ -37,9 +60,25 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
   const [officeId, setOfficeId] = useState<number | null>(null);
   const [destinationId, setDestinationId] = useState<number | null>(null);
   const [currencyId, setCurrencyId] = useState<number | null>(null);
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(todayLocal);
   const [revenueAmount, setRevenueAmount] = useState<string>("");
+  const [receiptsCount, setReceiptsCount] = useState<string>("1");
   const [notes, setNotes] = useState("");
+
+  // The dialog stays mounted (only `open` toggles), so defaults are (re)applied on open:
+  // currency -> USD, office -> the last office this user picked. Both only fill empty fields.
+  useEffect(() => {
+    if (!open) return;
+    if (currencyId == null) {
+      const usd = currenciesList?.find(isUsd);
+      if (usd?.id != null) setCurrencyId(usd.id);
+    }
+    if (officeId == null) {
+      const last = readLastOffice();
+      if (last != null && officeList?.some((o) => o.id === last)) setOfficeId(last);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currenciesList, officeList]);
 
   const { mutateAsync: createRevenue, isPending } = useMutation({
     mutationFn: (data: Revenue) => api.createRevenue(data),
@@ -60,18 +99,22 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
     setOfficeId(null);
     setDestinationId(null);
     setCurrencyId(null);
-    setDate("");
+    setDate(todayLocal());
     setRevenueAmount("");
+    setReceiptsCount("1");
     setNotes("");
   };
 
+  const receiptsNum = Number(receiptsCount);
   const isFormValid =
     employeeId !== null &&
     officeId !== null &&
     destinationId !== null &&
     currencyId !== null &&
     date !== "" &&
-    revenueAmount !== "";
+    revenueAmount !== "" &&
+    Number.isInteger(receiptsNum) &&
+    receiptsNum >= 1;
 
   const handleAdd = async () => {
     if (!isFormValid) return;
@@ -83,6 +126,7 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
       currency_id: currencyId!,
       date,
       revenue_amount: Number(revenueAmount),
+      receipts_count: receiptsNum,
       notes: notes || undefined,
     });
   };
@@ -124,7 +168,10 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
             options={officeList ?? []}
             getOptionLabel={(option) => option.name}
             value={officeList?.find((o) => o.id === officeId) ?? null}
-            onChange={(_, newValue) => setOfficeId(newValue?.id ?? null)}
+            onChange={(_, newValue) => {
+              setOfficeId(newValue?.id ?? null);
+              if (newValue?.id != null) saveLastOffice(newValue.id);
+            }}
             disabled={isPending}
             renderInput={(params) => (
               <TextField {...params} label="المكتب" variant="outlined" />
@@ -171,6 +218,17 @@ const AddRevenueForm: React.FC<AddRevenueFormProps> = ({ open, onClose }) => {
             renderInput={(params) => (
               <TextField {...params} label="العملة" variant="outlined" />
             )}
+          />
+
+          <TextField
+            type="number"
+            label="عدد الإيصالات"
+            value={receiptsCount}
+            onChange={(e) => setReceiptsCount(e.target.value)}
+            slotProps={{ htmlInput: { min: 1, step: 1 } }}
+            error={receiptsCount !== "" && !(Number.isInteger(receiptsNum) && receiptsNum >= 1)}
+            disabled={isPending}
+            fullWidth
           />
 
           <TextField

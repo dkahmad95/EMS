@@ -1,6 +1,7 @@
 /**
  * Office form reports built from the dashboard's already-loaded data, one page per office:
  *  - "daily":       تقرير عمل يومي ( المكاتب ) (form MHR-F21) — revenue + collections tables
+ *                   + the saved office reports (تقرير عمل المكتب) of the office's employees
  *  - "collections": الإستقطاب والتوزيع / تجميد و سحب only
  */
 import { escapeHtml } from "@/app/utils/print";
@@ -16,6 +17,8 @@ export type DailyReportInput = {
   collections: Collection[];
   freezed: Collection[];
   employees: Employee[];
+  /** saved office reports in the date range; matched to an office through employee.office_id */
+  officeReports?: OfficeReport[];
   offices: { id: number; name: string }[];
   /** offices pinned by the filter / switcher; null = every office that has data */
   officeIds: number[] | null;
@@ -192,6 +195,29 @@ const collectionTable = (
   );
 };
 
+const reportOffice = (r: OfficeReport): number | undefined =>
+  r.employee?.office_id ?? r.employee?.office?.id;
+
+/** Table E: the saved office reports (date / employee / description) of one office. */
+const officeReportsTable = (reports: OfficeReport[]): string => {
+  const sorted = [...reports].sort(
+    (a, b) => a.date.localeCompare(b.date) || (a.id ?? 0) - (b.id ?? 0),
+  );
+  const body = sorted
+    .map(
+      (r) =>
+        `<tr>${cell(`<span dir="ltr">${escapeHtml(formatDateDisplay(r.date))}</span>`, "num")}` +
+        nameCell(r.employee?.name ?? "—") +
+        cell(escapeHtml(r.description ?? ""), "desc") +
+        `</tr>`,
+    )
+    .join("");
+  return (
+    `<table class="rep"><thead><tr><th style="width:90px">التاريخ</th><th class="name">الموظف</th><th>الوصف</th></tr></thead>` +
+    `<tbody>${body || `<tr><td colspan="3" class="empty">لا توجد تقارير ضمن الفترة المحددة</td></tr>`}</tbody></table>`
+  );
+};
+
 const rangeText = (from: string, to: string): string =>
   from && to
     ? from === to
@@ -203,7 +229,14 @@ const rangeText = (from: string, to: string): string =>
         ? `حتى ${formatDateDisplay(to)}`
         : "كل الفترات";
 
-type PageOptions = { title: string; code?: string; revenue: boolean; collections: boolean };
+type PageOptions = {
+  title: string;
+  code?: string;
+  revenue: boolean;
+  collections: boolean;
+  /** include the saved office reports section */
+  reports: boolean;
+};
 
 const KINDS: Record<OfficeReportKind, PageOptions> = {
   daily: {
@@ -211,11 +244,13 @@ const KINDS: Record<OfficeReportKind, PageOptions> = {
     code: "الرمز: MHR-F21 · الاصدار: 01",
     revenue: true,
     collections: true,
+    reports: true,
   },
   collections: {
     title: "تقرير الإستقطاب والتوزيع / تجميد و سحب",
     revenue: false,
     collections: true,
+    reports: false,
   },
 };
 
@@ -228,6 +263,7 @@ const officePage = (
   const officeRows = rows.filter((r) => r.office?.id === office.id);
   const officeCols = collections.filter((c) => c.office_id === office.id);
   const officeFreezed = freezed.filter((c) => c.office_id === office.id);
+  const officeReports = (input.officeReports ?? []).filter((r) => reportOffice(r) === office.id);
   // every employee of the office + anyone who appears in its collection rows
   const names = Array.from(
     new Set([
@@ -246,6 +282,9 @@ const officePage = (
       collectionTable(officeFreezed, names, "عدد القجج المسحوبة", "عدد الكفالات المجمدة") +
       `</div>`
     : "";
+  const reports = opts.reports
+    ? `<h2>تقرير عمل المكتب:</h2>` + officeReportsTable(officeReports)
+    : "";
 
   return (
     `<section class="page">` +
@@ -260,6 +299,7 @@ const officePage = (
     }) +
     revenue +
     collected +
+    reports +
     signatureHtml(username) +
     `</section>`
   );
@@ -276,6 +316,7 @@ export const DAILY_REPORT_CSS = `
   table.rep th.name, table.rep td.name { text-align: right; min-width: 120px; }
   table.rep td.money { white-space: nowrap; direction: rtl; text-align: center; }
   table.rep td.empty { color: #6b7280; padding: 8px; }
+  table.rep td.desc { text-align: right; white-space: pre-wrap; word-break: break-word; }
   .two { display: flex; gap: 16px; align-items: flex-start; }
   .two > table { width: 50%; }
 `;
@@ -285,11 +326,17 @@ export const buildOfficeReportHtml = (input: DailyReportInput, kind: OfficeRepor
   const opts = KINDS[kind];
   const nameById = new Map<number, string>(input.offices.map((o) => [o.id, o.name]));
   for (const r of input.rows) if (r.office?.id && !nameById.has(r.office.id)) nameById.set(r.office.id, r.office.name);
+  const officeReports = opts.reports ? input.officeReports ?? [] : [];
+  for (const r of officeReports) {
+    const o = r.employee?.office;
+    if (o?.id && !nameById.has(o.id)) nameById.set(o.id, o.name);
+  }
 
   const hasData = (id: number) =>
     (opts.revenue && input.rows.some((r) => r.office?.id === id)) ||
     input.collections.some((c) => c.office_id === id) ||
-    input.freezed.some((c) => c.office_id === id);
+    input.freezed.some((c) => c.office_id === id) ||
+    officeReports.some((r) => reportOffice(r) === id);
 
   const ids = input.officeIds?.length
     ? input.officeIds

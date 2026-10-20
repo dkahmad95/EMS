@@ -4,7 +4,9 @@ import { useServerTable } from "@/app/hooks/useServerTable";
 import { useDashboardRevenues } from "@/server/store/revenues";
 import { useAllCollections } from "@/server/store/collections";
 import { useAllFreezedCollections } from "@/server/store/freezedCollections";
+import { useAllOfficeReports } from "@/server/store/officeReports";
 import { useAllEmployees } from "@/server/store/employees";
+import { usePermissions } from "@/app/hooks/usePermissions";
 import { useDashboardCurrencies } from "@/server/store/currencies";
 import { useDestinations } from "@/server/store/destinations";
 import { useTokenOffices } from "@/app/hooks/useTokenOffices";
@@ -18,6 +20,7 @@ const EMPTY_ROWS: DashboardRevenueRow[] = [];
  *  - `allQ`  → full filtered set (KPIs + charts)           GET /revenues/dashboard?all=true
  *  - `pageQ` → current table page                          GET /revenues/dashboard?page&limit
  *  - collections / freezed collections (office+employee+date filters only)
+ *  - office reports (same filters; only when the user may read them) for the printed office report
  *  - lookup lists for the filter bar
  */
 export function useDashboardData(
@@ -25,6 +28,7 @@ export function useDashboardData(
   currentOfficeId: number | null | undefined,
 ) {
   const { apiParams, paramsKey, collectionParams } = f;
+  const { hasPermission } = usePermissions();
 
   const allParams = useMemo<DashboardRevenueParams>(
     () => ({ ...apiParams, all: true }),
@@ -41,6 +45,9 @@ export function useDashboardData(
 
   const collectionsQ = useAllCollections(collectionParams);
   const freezedQ = useAllFreezedCollections(collectionParams);
+  const officeReportsQ = useAllOfficeReports(collectionParams, {
+    enabled: hasPermission("office_reports", "read"),
+  });
 
   const employeesQ = useAllEmployees(currentOfficeId);
   const currenciesQ = useDashboardCurrencies();
@@ -70,6 +77,9 @@ export function useDashboardData(
     collectionsLoading: collectionsQ.isLoading,
     freezed: freezedQ.data ?? [],
     freezedLoading: freezedQ.isLoading,
+    // office reports (empty when the user lacks office_reports.read)
+    officeReports: officeReportsQ.data ?? [],
+    officeReportsLoading: officeReportsQ.isLoading,
     // lookups
     employees: employeesQ.data ?? [],
     currencies: (currenciesQ.data ?? []) as unknown as DashboardCurrency[],

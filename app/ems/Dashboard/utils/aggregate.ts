@@ -49,7 +49,22 @@ const categoryName = (r: DashboardRevenueRow, by: CategoryKey): string => {
   }
 };
 
-/** Sum of chart_amount per category, split by currency_type series. Sorted by total desc. */
+/** Entity id for the categories that have one (lets a bar click identify its office/employee). */
+const categoryId = (r: DashboardRevenueRow, by: CategoryKey): number | undefined => {
+  switch (by) {
+    case "employee":
+      return r.employee?.id;
+    case "office":
+      return r.office?.id;
+    default:
+      return undefined;
+  }
+};
+
+/**
+ * Sum of chart_amount per category, split by currency_type series. Sorted by total desc.
+ * Employee / office bars are grouped by id (two same-named employees stay separate).
+ */
 export const groupByCategory = (
   rows: DashboardRevenueRow[],
   by: CategoryKey,
@@ -60,13 +75,16 @@ export const groupByCategory = (
 
   for (const r of rows) {
     const name = categoryName(r, by);
+    const id = categoryId(r, by);
+    const mapKey = id != null ? `#${id}` : name;
     const s = seriesKeyOf(r);
     seen.add(s);
     if (!labels.has(s) && r.chart_series) labels.set(s, r.chart_series);
-    let d = map.get(name);
+    let d = map.get(mapKey);
     if (!d) {
       d = makeDatum(name, name);
-      map.set(name, d);
+      if (id != null) d.id = id;
+      map.set(mapKey, d);
     }
     addToDatum(d, s, r);
   }

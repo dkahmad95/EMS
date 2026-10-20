@@ -40,7 +40,9 @@ export type ChartDatum = {
   key: string;
   total: number;
   raw: Record<string, number>;
-} & Record<string, string | number | Record<string, number>>;
+  /** entity id for employee / office categories (drill-down on bar click) */
+  id?: number;
+} & Record<string, string | number | Record<string, number> | undefined>;
 
 export type CategoryKey = "employee" | "office" | "destination" | "currency";
 

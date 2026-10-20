@@ -14,6 +14,8 @@ type Props = {
   loading?: boolean;
   fetching?: boolean;
   onReset?: () => void;
+  /** Bar click -> the clicked category datum (bars get a pointer cursor when set). */
+  onBarClick?: (datum: ChartDatum) => void;
 };
 
 /** Grouped bars per category (one Bar per currency-type series). */
@@ -25,8 +27,15 @@ export default function CategoryBarChart({
   loading,
   fetching,
   onReset,
+  onBarClick,
 }: Props) {
   const many = data.length > 8;
+  const handleBarClick = onBarClick
+    ? (entry: unknown) => {
+        const payload = (entry as { payload?: ChartDatum } | null)?.payload;
+        if (payload) onBarClick(payload);
+      }
+    : undefined;
 
   return (
     <ChartCard
@@ -80,6 +89,8 @@ export default function CategoryBarChart({
                 radius={[6, 6, 0, 0]}
                 maxBarSize={28}
                 isAnimationActive={false}
+                cursor={onBarClick ? "pointer" : undefined}
+                onClick={handleBarClick}
               />
             ))}
           </BarChart>

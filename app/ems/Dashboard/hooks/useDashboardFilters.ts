@@ -1,6 +1,8 @@
 "use client";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useDebouncedValue } from "@/app/hooks/useDebouncedValue";
+import { usePersistentState } from "@/app/hooks/usePersistentState";
+import { DASHBOARD_FILTERS_KEY } from "@/app/utils/storageKeys";
 import type { AmountMode, DashboardFilters } from "../types";
 import { todayLocal } from "../utils/date";
 
@@ -15,6 +17,34 @@ export const makeDefaultFilters = (): DashboardFilters => ({
   amount_min: "",
   amount_max: "",
 });
+
+const AMOUNT_MODES: AmountMode[] = ["gt", "lt", "between"];
+const isNumArray = (v: unknown): v is number[] =>
+  Array.isArray(v) && v.every((n) => typeof n === "number" && Number.isFinite(n));
+const isStrArray = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((s) => typeof s === "string");
+const str = (v: unknown, def: string): string => (typeof v === "string" ? v : def);
+
+/** Merge a previously saved filter object over the defaults, field by field (type-checked). */
+export const restoreFilters = (saved: unknown, def: DashboardFilters): DashboardFilters => {
+  if (!saved || typeof saved !== "object") return def;
+  const s = saved as Partial<Record<keyof DashboardFilters, unknown>>;
+  return {
+    employee_ids: isNumArray(s.employee_ids) ? s.employee_ids : def.employee_ids,
+    office_ids: isNumArray(s.office_ids) ? s.office_ids : def.office_ids,
+    destination_ids: isNumArray(s.destination_ids) ? s.destination_ids : def.destination_ids,
+    currency_types: isStrArray(s.currency_types)
+      ? (s.currency_types as unknown as CurrencyType[])
+      : def.currency_types,
+    date_from: str(s.date_from, def.date_from),
+    date_to: str(s.date_to, def.date_to),
+    amount_mode: AMOUNT_MODES.includes(s.amount_mode as AmountMode)
+      ? (s.amount_mode as AmountMode)
+      : def.amount_mode,
+    amount_min: str(s.amount_min, def.amount_min),
+    amount_max: str(s.amount_max, def.amount_max),
+  };
+};
 
 export type CollectionFilterParams = {
   office_id?: number;
@@ -33,9 +63,15 @@ const joinIds = (ids: readonly (number | string)[]) =>
  * GET /revenues/dashboard (+ the subset used by /collections and /freezed-collections).
  * Multi-select filters are arrays; amount inputs are debounced (400ms) before hitting the API.
  * Office rule: selected office_ids win; otherwise the Office Switcher's currentOfficeId applies.
+ * The filters are mirrored into sessionStorage so leaving and reopening the dashboard
+ * (same tab) restores the last selection.
  */
 export function useDashboardFilters(currentOfficeId: number | null | undefined) {
-  const [filters, setFilters] = useState<DashboardFilters>(makeDefaultFilters);
+  const [filters, setFilters] = usePersistentState<DashboardFilters>(
+    DASHBOARD_FILTERS_KEY,
+    makeDefaultFilters,
+    { restore: restoreFilters },
+  );
 
   const debouncedMin = useDebouncedValue(filters.amount_min, 400);
   const debouncedMax = useDebouncedValue(filters.amount_max, 400);

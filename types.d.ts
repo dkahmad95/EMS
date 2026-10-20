@@ -69,6 +69,8 @@ type DashboardRevenueRow = {
   notes: string | null;
   /** raw amount as entered */
   revenue_amount: number;
+  /** number of receipts behind the entry (>= 1) */
+  receipts_count: number;
   /** OTHERS ÷ rate, USD/LBP raw — for KPIs + tables */
   display_amount: number;
   /** USD units for charts: USD raw, LBP ÷ rate, OTHERS ÷ rate */
@@ -98,6 +100,9 @@ type UserListParams = PaginationParams;
 type OfficeReportListParams = PaginationParams & {
   office_id?: number | null;
   employee_id?: number | null;
+  /** Multi-select variants: comma-separated ids */
+  office_ids?: string;
+  employee_ids?: string;
   date_from?: string;
   date_to?: string;
 };
@@ -179,6 +184,7 @@ type Currency = {
   name: string;
   code: string;
   rate: number;
+  currency_type?: CurrencyType;
 };
 
 type PermissionGroup = {
@@ -274,6 +280,8 @@ type Revenue = {
   currency_id: number;
   date: string;
   revenue_amount: number;
+  /** number of receipts behind the entry (>= 1, defaults to 1) */
+  receipts_count?: number;
   notes?: string;
   employee?: { id: number; name: string };
   office?: { id: number; name: string };

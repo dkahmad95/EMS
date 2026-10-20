@@ -7,6 +7,7 @@ import { message } from "antd";
 import { useState } from "react";
 
 import * as authApi from "../../server/services/api/auth/auth";
+import { clearUserStorage } from "../utils/storageKeys";
 import DeleteModal from "./DeleteModal";
 
 const PowerButton = () => {
@@ -19,6 +20,7 @@ const PowerButton = () => {
     onSuccess: () => {
       queryClient.clear();
       localStorage.removeItem("currentOfficeId");
+      clearUserStorage();
       router.replace("/");
       router.refresh();
       message.open({

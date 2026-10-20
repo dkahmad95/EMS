@@ -42,6 +42,8 @@ type Props = {
   collections: Collection[];
   freezed: Collection[];
   employees: Employee[];
+  /** saved office reports in range (printed inside تقرير عمل (المكاتب)) */
+  officeReports?: OfficeReport[];
   offices: { id: number; name: string }[];
   /** offices pinned by the filter / switcher for the office reports; null = all with data */
   officeIds: number[] | null;
@@ -111,6 +113,7 @@ export default function PrintReportMenu({
   collections,
   freezed,
   employees,
+  officeReports = [],
   offices,
   officeIds,
   dateFrom,
@@ -172,6 +175,7 @@ export default function PrintReportMenu({
           collections,
           freezed,
           employees,
+          officeReports,
           offices,
           officeIds,
           dateFrom,

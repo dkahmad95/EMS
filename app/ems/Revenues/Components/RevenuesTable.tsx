@@ -100,6 +100,14 @@ const RevenuesTable = () => {
       width: 100,
       valueGetter: (params: any) => params?.name ?? "",
     },
+    {
+      field: "receipts_count",
+      headerName: "عدد الإيصالات",
+      width: 120,
+      align: "center",
+      headerAlign: "center",
+      valueGetter: (params: any) => params ?? 1,
+    },
     { field: "notes", headerName: "ملاحظات", width: 200 },
     {
       field: "actions",
