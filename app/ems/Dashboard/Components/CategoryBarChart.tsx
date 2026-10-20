@@ -60,7 +60,7 @@ export default function CategoryBarChart({
               dataKey="name"
               tick={TICK}
               tickLine={false}
-              axisLine={{ stroke: "#e5e7eb" }}
+              axisLine={{ stroke: GRID }}
               tickFormatter={(v: string) => truncateLabel(String(v))}
               interval={many ? "preserveStartEnd" : 0}
               angle={many ? -25 : 0}

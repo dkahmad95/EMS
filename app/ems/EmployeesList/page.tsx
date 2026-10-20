@@ -16,7 +16,7 @@ const EmployeesList = () => {
   const { currentOfficeId } = usePermissions();
 
   const table = useServerTable({ resetDeps: [currentOfficeId] });
-  const { data, isLoading, isFetching } = useEmployees({
+  const { data, isLoading, isFetching, isError, refetch } = useEmployees({
     ...table.params,
     office_id: currentOfficeId,
   });
@@ -27,8 +27,15 @@ const EmployeesList = () => {
     queryClient.invalidateQueries({ queryKey: ["employees"] });
   };
 
+  const createButton = (
+    <Button variant="primary" onClick={() => setCreateOpen(true)}>
+      <PlusIcon className="w-4 h-4" aria-hidden="true" />
+      إضافة موظف
+    </Button>
+  );
+
   return (
-    <div className="flex flex-col h-full min-h-0 gap-4 animate-fade-in">
+    <div className="flex flex-col h-full min-h-0 gap-4">
 
       {/* Page header */}
       <div className="page-header !mb-0 flex-none">
@@ -53,13 +60,7 @@ const EmployeesList = () => {
           <div className="flex-1 hidden md:block" />
 
           {/* Add button */}
-          <Button
-            variant="primary"
-            onClick={() => setCreateOpen(true)}
-          >
-            <PlusIcon className="w-4 h-4" />
-            إضافة موظف
-          </Button>
+          {createButton}
         </div>
       </div>
 
@@ -67,11 +68,15 @@ const EmployeesList = () => {
       <EmployeesTable
         employees={data?.data ?? []}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={() => refetch()}
         loading={isFetching}
+        search={table.search}
         rowCount={data?.total}
         paginationModel={table.paginationModel}
         onPaginationModelChange={table.setPaginationModel}
         onSuccess={handleSuccess}
+        emptyAction={createButton}
       />
 
       <CreateEmployeeModal

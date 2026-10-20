@@ -11,6 +11,7 @@ import * as api from "../../../../../server/services/api/destinations/destinatio
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import TabsSkeleton from "./SkeletonTabs";
+import { EmptyState } from "@/app/Components/EmptyState";
 
 export default function DestinationsTab() {
   const queryClient = useQueryClient();
@@ -80,29 +81,41 @@ export default function DestinationsTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="section-title mb-0">الوجهات</h2>
         <Button variant="primary" size="sm" onClick={openCreateModal}>
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" aria-hidden="true" />
           إضافة
         </Button>
       </div>
 
       {/* List */}
       {destinationsLoading ? <TabsSkeleton /> : (
-          <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
-        <ul className="space-y-2">
-          {data?.map((destination) => (
-            <li key={destination.id} className="settings-list-item">
-              <span className="text-sm font-medium text-gray-900">{destination.name}</span>
-              <div className="flex gap-1.5">
-                <button onClick={() => openEditModal(destination)} className="table-action-edit" title="تعديل">
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button onClick={() => { setDeleteID(destination.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+          <div className="h-[calc(100vh-260px)] overflow-y-auto pe-1">
+        {data && data.length > 0 ? (
+          <ul className="space-y-2">
+            {data?.map((destination) => (
+              <li key={destination.id} className="settings-list-item">
+                <span className="text-sm font-medium text-gray-900">{destination.name}</span>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={() => openEditModal(destination)} className="table-action-edit" title="تعديل" aria-label="تعديل">
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => { setDeleteID(destination.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف" aria-label="حذف">
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="الوجهات"
+            action={
+              <Button variant="primary" size="sm" onClick={openCreateModal}>
+                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                إضافة
+              </Button>
+            }
+          />
+        )}
         </div>
       )}
 

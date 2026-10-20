@@ -1,6 +1,6 @@
 "use client";
 import type { ChartDatum } from "../types";
-import { fmtNum } from "../utils/chartTheme";
+import { TICK, fmtNum } from "../utils/chartTheme";
 
 /**
  * Loosely typed on purpose: recharts' TooltipContentProps is generic over ValueType/NameType
@@ -32,11 +32,7 @@ export default function ChartTooltip({ active, payload, label, titleFormatter }:
   const total = payload.reduce((s, p) => s + (Number(p.value) || 0), 0);
 
   return (
-    <div
-      dir="rtl"
-      className="min-w-[180px] rounded-xl border border-gray-200 bg-white/95 px-3 py-2.5 text-right shadow-dropdown backdrop-blur-sm"
-      style={{ fontFamily: "Cairo, sans-serif" }}
-    >
+    <div className="min-w-[180px] rounded-lg border border-gray-200 bg-white px-3 py-2 text-start text-sm shadow-dropdown">
       <p className="mb-1.5 border-b border-gray-100 pb-1.5 text-xs font-semibold text-gray-900">
         {title}
       </p>
@@ -49,12 +45,12 @@ export default function ChartTooltip({ active, payload, label, titleFormatter }:
               <span className="flex items-center gap-1.5 text-gray-600">
                 <span
                   className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: String(p.color ?? "#9ca3af") }}
+                  style={{ backgroundColor: String(p.color ?? TICK.fill) }}
                   aria-hidden="true"
                 />
                 {String(p.name ?? key)}
               </span>
-              <span className="text-left tabular-nums">
+              <span className="text-end tabular-nums">
                 <span className="block font-semibold text-gray-900" dir="ltr">
                   {fmtNum(Number(p.value) || 0)} $
                 </span>

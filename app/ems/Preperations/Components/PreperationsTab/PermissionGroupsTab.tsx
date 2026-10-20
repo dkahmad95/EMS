@@ -13,9 +13,12 @@ import {
   deletePermissionGroup,
 } from "@/server/services/api/permissionGroups/permissionGroups";
 import { usePermissionGroups } from "@/server/store/permissionGroups";
+import { EmptyState } from "@/app/Components/EmptyState";
+import { ErrorState } from "@/app/Components/ErrorState";
+import TabsSkeleton from "./SkeletonTabs";
 
 const checkboxCls =
-  "w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer accent-indigo-600";
+  "w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer accent-primary-600";
 
 const labelFor = (key: string) =>
   key === "create"
@@ -52,7 +55,7 @@ const PermSection = ({
   resource: string;
   onChange: (resource: any, action: string, value: boolean) => void;
 }) => (
-  <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50">
+  <div className="form-section">
     <h3 className="text-sm font-semibold text-gray-700 mb-3">{title}</h3>
     <div className="grid grid-cols-2 gap-2">
       {keys.map((key) => (
@@ -91,7 +94,7 @@ export default function PermissionGroupsTab() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
-  const { data: groups, isLoading, error } = usePermissionGroups();
+  const { data: groups, isLoading, error, refetch } = usePermissionGroups();
 
   const createMutation = useMutation({
     mutationFn: createPermissionGroup,
@@ -167,9 +170,7 @@ export default function PermissionGroupsTab() {
     return (
       <div>
         <h2 className="section-title">مجموعات الصلاحيات</h2>
-        <div className="flex justify-center items-center h-48">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent border-primary-500" />
-        </div>
+        <TabsSkeleton />
       </div>
     );
   }
@@ -178,9 +179,10 @@ export default function PermissionGroupsTab() {
     return (
       <div>
         <h2 className="section-title">مجموعات الصلاحيات</h2>
-        <div className="card p-4 border-r-4 border-danger-400 text-sm text-danger-700">
-          حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.
-        </div>
+        <ErrorState
+          title="حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى."
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -207,12 +209,12 @@ export default function PermissionGroupsTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="section-title mb-0">مجموعات الصلاحيات</h2>
         <Button variant="primary" size="sm" onClick={openCreateModal}>
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" aria-hidden="true" />
           إضافة مجموعة
         </Button>
       </div>
 
-      <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
+      <div className="h-[calc(100vh-260px)] overflow-y-auto pe-1">
         <div className="space-y-3">
           {groups && groups.length > 0 ? (
             groups.map((group) => (
@@ -240,10 +242,11 @@ export default function PermissionGroupsTab() {
                   </div>
                 </div>
                 <div className="flex gap-1.5 flex-shrink-0 mt-1">
-                  <button onClick={() => openEditModal(group)} className="table-action-edit" title="تعديل">
-                    <PencilIcon className="w-4 h-4" />
+                  <button type="button" onClick={() => openEditModal(group)} className="table-action-edit" title="تعديل" aria-label="تعديل">
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       if (group.id) {
                         setSelectedGroupId(group.id);
@@ -251,14 +254,24 @@ export default function PermissionGroupsTab() {
                       }
                     }}
                     className="table-action-delete"
-                    title="حذف">
-                    <TrashIcon className="w-4 h-4" />
+                    title="حذف"
+                    aria-label="حذف">
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center text-sm text-gray-400 py-10">لا توجد مجموعات صلاحيات بعد</div>
+            <EmptyState
+              title="مجموعات الصلاحيات"
+              description="لا توجد مجموعات صلاحيات بعد"
+              action={
+                <Button variant="primary" size="sm" onClick={openCreateModal}>
+                  <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                  إضافة مجموعة
+                </Button>
+              }
+            />
           )}
         </div>
       </div>
@@ -279,12 +292,13 @@ export default function PermissionGroupsTab() {
         />
         <div className="flex items-center gap-2 mb-4">
           <input
+            id="permission-group-select-all"
             type="checkbox"
             className={checkboxCls}
             checked={allChecked}
             onChange={(e) => toggleAllPermissions(e.target.checked)}
           />
-          <label className="text-sm text-gray-700 font-medium">تحديد  جميع الصلاحيات</label>
+          <label htmlFor="permission-group-select-all" className="text-sm text-gray-700 font-medium cursor-pointer select-none">تحديد  جميع الصلاحيات</label>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-700 mb-3">الصلاحيات</p>

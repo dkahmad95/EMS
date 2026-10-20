@@ -14,7 +14,7 @@ export default function SideNav() {
           bg-white
           border border-gray-200
           rounded-2xl
-          shadow-sm
+          shadow-card
           overflow-hidden
         "
       >
@@ -25,13 +25,12 @@ export default function SideNav() {
             flex items-center justify-center md:justify-start
             px-3 md:px-5
             py-3 md:py-4
-            bg-gradient-to-l from-primary-600 to-secondary-600
-            hover:from-primary-700 hover:to-secondary-700
-            transition-all duration-200
+            bg-primary-600 hover:bg-primary-700
+            transition-[background-color] duration-fast ease-out
             flex-shrink-0
           "
-                  >
-            <Logo
+        >
+          <Logo
             logoSize={40}
             nameWidth={120}
             textSize="10px"
@@ -46,6 +45,7 @@ export default function SideNav() {
           className="
             flex flex-col flex-1
             overflow-y-auto
+            scrollbar-hide
             px-2 md:px-3
             pt-3 md:pt-5
             pb-2 md:pb-3
@@ -56,11 +56,9 @@ export default function SideNav() {
             className="
               hidden md:block
               px-3 mb-2
-              text-[11px]
+              text-xs
               font-semibold
-              text-gray-400
-              uppercase
-              tracking-widest
+              text-gray-500
             "
           >
             القائمة الرئيسية
@@ -68,11 +66,14 @@ export default function SideNav() {
 
           {/* Nav */}
           <nav
+            aria-label="القائمة الرئيسية"
             className="
               flex
               flex-row md:flex-col
               gap-1
+              -mx-2 px-2 md:mx-0 md:px-0
               overflow-x-auto md:overflow-visible
+              snap-x snap-mandatory md:snap-none
               scrollbar-hide
             "
           >
@@ -87,7 +88,7 @@ export default function SideNav() {
             className="
               border-t border-gray-100
               pt-3 mt-3
-               md:block
+              md:block
             "
           >
             <PowerButton />

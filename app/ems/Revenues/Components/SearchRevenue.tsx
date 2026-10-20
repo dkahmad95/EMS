@@ -21,21 +21,6 @@ interface SearchRevenueProps {
   onSearch: (filters: RevenueSearchFilters) => void;
 }
 
-const muiSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontFamily: "Cairo, sans-serif",
-    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#d1d5db" },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4f46e5", borderWidth: "2px" },
-  },
-  "& .MuiInputLabel-root": {
-    fontFamily: "Cairo, sans-serif",
-    fontSize: "14px",
-    "&.Mui-focused": { color: "#4f46e5" },
-  },
-};
-
 const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   const { data: employeeList } = useAllEmployees();
   const { data: destinationsList } = useDestinations();
@@ -67,9 +52,9 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
   };
 
   return (
-    <div >
+    <div>
       <p className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+        <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" aria-hidden="true" />
         بحث الإيرادات
       </p>
 
@@ -84,7 +69,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           renderInput={(params) => (
             <TextField {...params} label="اسم الموظف" variant="outlined" size="small" />
           )}
-          sx={{ minWidth: 200, ...muiSx }}
+          sx={{ minWidth: 200 }}
         />
 
         {/* Destination */}
@@ -97,7 +82,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           renderInput={(params) => (
             <TextField {...params} label="الوجهة" variant="outlined" size="small" />
           )}
-          sx={{ minWidth: 180, ...muiSx }}
+          sx={{ minWidth: 180 }}
         />
 
         {/* Currency */}
@@ -110,7 +95,7 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           renderInput={(params) => (
             <TextField {...params} label="العملة" variant="outlined" size="small" />
           )}
-          sx={{ minWidth: 180, ...muiSx }}
+          sx={{ minWidth: 180 }}
         />
 
         {/* Start date */}
@@ -120,7 +105,6 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ ...muiSx }}
           size="small"
         />
 
@@ -131,18 +115,17 @@ const SearchRevenue: React.FC<SearchRevenueProps> = ({ onSearch }) => {
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ ...muiSx }}
           size="small"
         />
 
         {/* Actions */}
         <Button variant="primary" onClick={handleSearch}>
-          <MagnifyingGlassIcon className="w-4 h-4" />
+          <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
           بحث
         </Button>
 
         <Button variant="outline" onClick={handleReset}>
-          <ArrowPathIcon className="w-4 h-4" />
+          <ArrowPathIcon className="w-4 h-4" aria-hidden="true" />
           إعادة تعيين
         </Button>
       </div>

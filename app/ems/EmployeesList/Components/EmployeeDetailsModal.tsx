@@ -1,15 +1,8 @@
 "use client";
 import React, { useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-} from "@mui/material";
+import { TextField, MenuItem } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
-import { Button } from "@/app/Components/Button";
+import FormModal from "@/app/Components/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/employees/employees";
 import { useJobTitles } from "@/server/store/jobTitles";
@@ -17,7 +10,6 @@ import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useEducationLevels } from "@/server/store/educationLevels";
 import { useCities } from "@/server/store/cities";
 import { message } from "antd";
-import Loader from "@/app/Components/Loader";
 
 interface EmployeeDetailsModalProps {
   open: boolean;
@@ -200,16 +192,16 @@ export default function EmployeeDetailsModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth   maxWidth="lg" dir="rtl">
-      <DialogTitle className="font-bold text-lg">تفاصيل الموظف</DialogTitle>
-      <div className="mt-2">
-      <DialogContent
-  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3"
-  sx={{
-    maxHeight: "70vh",
-    overflowY: "auto",
-  }}
->
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title="تفاصيل الموظف"
+      size="xl"
+      onConfirm={() => handleSubmit(onSubmit)()}
+      isLoading={isPending}
+      confirmLabel="تحديث"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Controller
             name="id"
             control={control}
@@ -411,20 +403,7 @@ export default function EmployeeDetailsModal({
               <TextField label="ملاحظات" {...field} fullWidth multiline rows={3} />
             )}
           />
-        </DialogContent>
       </div>
-      <DialogActions className="flex justify-end gap-3 p-4">
-        <Button variant="muted" onClick={onClose}>
-          إلغاء
-        </Button>
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={isPending}
-          className="bg-blue-600 text-white flex items-center gap-2"
-        >
-          {isPending ? <Loader borderColor="white" /> : "تحديث"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    </FormModal>
   );
 }

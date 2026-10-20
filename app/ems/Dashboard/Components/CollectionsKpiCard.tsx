@@ -26,10 +26,7 @@ export default function CollectionsKpiCard({
   const total = totals.SPONSORSHIP + totals.BOX;
 
   return (
-    <div
-      className={`kpi-card ${a.border} transition-shadow duration-200 hover:shadow-card-hover`}
-      aria-busy={loading || undefined}
-    >
+    <div className="kpi-card" aria-busy={loading || undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-gray-600">{title}</p>

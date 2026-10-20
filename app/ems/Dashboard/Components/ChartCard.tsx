@@ -41,7 +41,7 @@ export default function ChartCard({
       </header>
 
       <div
-        className={`relative h-[280px] w-full md:h-[340px] transition-opacity duration-200 ${
+        className={`relative h-[280px] w-full md:h-[340px] transition-opacity duration-base ease-out ${
           fetching && !loading ? "opacity-70" : "opacity-100"
         }`}
       >

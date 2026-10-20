@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
-import { DataTableSkeleton } from "@/app/Components/DataTableSkeleton";
 import DataTable from "@/app/Components/DataTable";
+import { SkeletonTable } from "@/app/Components/Skeleton";
+import { EmptyState } from "@/app/Components/EmptyState";
+import { ErrorState } from "@/app/Components/ErrorState";
 import SearchBar from "@/app/Components/SearchBar";
 import { Button } from "@/app/Components/Button";
 import PermissionGate from "@/app/Components/PermissionGate";
@@ -22,7 +24,7 @@ const OfficeReportsTable = () => {
   const { currentOfficeId } = usePermissions();
 
   const table = useServerTable({ resetDeps: [currentOfficeId] });
-  const { data, isLoading, isFetching } = useOfficeReports({
+  const { data, isLoading, isFetching, isError, refetch } = useOfficeReports({
     ...table.params,
     office_id: currentOfficeId,
   });
@@ -84,6 +86,15 @@ const OfficeReportsTable = () => {
     await deleteReport(selectedReport.id);
   };
 
+  const createButton = (
+    <PermissionGate resource="office_reports" action="create">
+      <Button variant="primary" size="sm" onClick={openCreateModal}>
+        <PlusIcon className="w-4 h-4" aria-hidden="true" />
+        إضافة تقرير
+      </Button>
+    </PermissionGate>
+  );
+
   const columns = [
     { field: "id", headerName: "الرقم", width: 70 },
     {
@@ -110,30 +121,76 @@ const OfficeReportsTable = () => {
       width: 140,
       sortable: false,
       renderCell: (params: { row: OfficeReport }) => (
-        <div className="flex gap-2 items-center justify-center">
-          <EyeIcon
-            className="w-5 text-gray-500 cursor-pointer mt-4"
+        <div className="flex h-full items-center justify-center gap-1.5">
+          <button
+            type="button"
+            className="table-action-btn bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+            aria-label="عرض"
+            title="عرض"
             onClick={() => openViewModal(params.row)}
-          />
+          >
+            <EyeIcon className="w-4 h-4" aria-hidden="true" />
+          </button>
           <PermissionGate resource="office_reports" action="update">
-            <PencilIcon
-              className="w-5 text-blue-400 cursor-pointer mt-4"
+            <button
+              type="button"
+              className="table-action-edit"
+              aria-label="تعديل"
+              title="تعديل"
               onClick={() => openEditModal(params.row)}
-            />
+            >
+              <PencilIcon className="w-4 h-4" aria-hidden="true" />
+            </button>
           </PermissionGate>
           <PermissionGate resource="office_reports" action="delete">
-            <TrashIcon
-              className="w-5 text-red-600 cursor-pointer mt-4"
+            <button
+              type="button"
+              className="table-action-delete"
+              aria-label="حذف"
+              title="حذف"
               onClick={() => openDeleteModal(params.row)}
-            />
+            >
+              <TrashIcon className="w-4 h-4" aria-hidden="true" />
+            </button>
           </PermissionGate>
         </div>
       ),
     },
   ];
 
+  const rows = data?.data ?? [];
+
+  let body: React.ReactNode;
+  if (isLoading) {
+    body = <SkeletonTable fullHeight cols={columns.length} />;
+  } else if (isError) {
+    body = (
+      <div className="card flex-1 min-h-0 flex items-center justify-center">
+        <ErrorState title="حدث خطأ أثناء تحميل البيانات" onRetry={() => refetch()} />
+      </div>
+    );
+  } else if (rows.length === 0) {
+    body = (
+      <div className="card flex-1 min-h-0 flex items-center justify-center">
+        <EmptyState title="لا توجد تقارير" action={createButton} />
+      </div>
+    );
+  } else {
+    body = (
+      <DataTable
+        fullHeight
+        columns={columns}
+        rows={rows}
+        rowCount={data?.total}
+        paginationModel={table.paginationModel}
+        onPaginationModelChange={table.setPaginationModel}
+        loading={isFetching}
+      />
+    );
+  }
+
   return (
-    <div dir="rtl" className="flex-1 min-h-0 flex flex-col gap-4">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
       {/* Toolbar */}
       <div className="card p-4 flex-none">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
@@ -147,28 +204,11 @@ const OfficeReportsTable = () => {
 
           <div className="flex-1 hidden md:block" />
 
-          <PermissionGate resource="office_reports" action="create">
-            <Button variant="primary" size="sm" onClick={openCreateModal}>
-              <PlusIcon className="w-4 h-4" />
-              إضافة تقرير
-            </Button>
-          </PermissionGate>
+          {createButton}
         </div>
       </div>
 
-      {isLoading ? (
-        <DataTableSkeleton fullHeight />
-      ) : (
-        <DataTable
-          fullHeight
-          columns={columns}
-          rows={data?.data ?? []}
-          rowCount={data?.total}
-          paginationModel={table.paginationModel}
-          onPaginationModelChange={table.setPaginationModel}
-          loading={isFetching}
-        />
-      )}
+      {body}
 
       <OfficeReportFormDialog
         open={isFormModalOpen}

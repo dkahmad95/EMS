@@ -18,10 +18,7 @@ export default function DestinationsKpiCard({ counts, loading = false, className
   const rest = counts.length - top.length;
 
   return (
-    <div
-      className={`kpi-card ${a.border} transition-shadow duration-200 hover:shadow-card-hover ${className}`}
-      aria-busy={loading || undefined}
-    >
+    <div className={`kpi-card ${className}`} aria-busy={loading || undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-gray-600">الوجهات</p>

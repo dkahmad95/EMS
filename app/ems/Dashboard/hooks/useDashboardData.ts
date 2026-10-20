@@ -66,6 +66,7 @@ export function useDashboardData(
     allLoading: allQ.isLoading,
     allFetching: allQ.isFetching,
     allError: allQ.isError,
+    refetchAll: allQ.refetch,
     // table page
     table,
     pageRows: pageQ.data?.data ?? EMPTY_ROWS,

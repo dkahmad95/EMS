@@ -129,7 +129,6 @@ const CollectionFormDialog: React.FC<CollectionFormDialogProps> = ({
       isLoading={isPending}
       confirmLabel={isEditing ? "تحديث" : "إضافة"}
       size="md"
-      
     >
       <Autocomplete
         options={employeeList ?? []}

@@ -12,7 +12,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/Components/Button";
-import Loader from "@/app/Components/Loader";
 import { Input } from "@/app/Components/Input";
 import { useMutation } from "@tanstack/react-query";
 import { message } from "antd";
@@ -85,24 +84,9 @@ export default function LoginForm() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className="
-        min-h-screen
-        flex flex-col lg:flex-row
-        bg-gray-50
-      "
-    >
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
       {/* Mobile Header */}
-      <div
-        className="
-          lg:hidden
-          bg-gradient-to-l from-primary-700 via-primary-600 to-secondary-600
-          px-6 py-5
-          flex justify-center
-          shadow-sm
-        "
-      >
+      <div className="lg:hidden bg-gradient-to-l from-primary-700 to-primary-500 px-6 py-5 flex justify-center">
         <Logo
           logoSize={42}
           nameWidth={140}
@@ -111,19 +95,10 @@ export default function LoginForm() {
       </div>
 
       {/* Login Section */}
-      <div
-        className="
-          flex-1
-          flex items-center justify-center
-          px-5 py-8
-          sm:px-8
-          lg:px-16
-          bg-white
-        "
-      >
+      <div className="flex-1 flex items-center justify-center px-5 py-8 sm:px-8 lg:px-16 bg-white">
         <div className="w-full max-w-md">
           {/* Heading */}
-          <div className="mb-8 text-center lg:text-right">
+          <div className="mb-8 text-center lg:text-start">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               مرحباً بك
             </h1>
@@ -139,117 +114,62 @@ export default function LoginForm() {
             className="space-y-5"
           >
             {/* Username */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                اسم المستخدم
-              </label>
-
-              <div className="relative">
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="أدخل اسم المستخدم"
-                  autoComplete="username"
-                  {...register("username", {
-                    required: "اسم المستخدم مطلوب",
-                  })}
-                  error={errors.username?.message}
-                  className="pl-10"
-                />
-
-                <UserCircleIcon
-                  className="
-                    pointer-events-none
-                    absolute left-3 top-1/2
-                    h-4 w-4
-                    -translate-y-1/2
-                    text-gray-400
-                  "
-                />
-              </div>
-            </div>
+            <Input
+              id="username"
+              label="اسم المستخدم"
+              type="text"
+              placeholder="أدخل اسم المستخدم"
+              autoComplete="username"
+              startIcon={<UserCircleIcon />}
+              {...register("username", {
+                required: "اسم المستخدم مطلوب",
+              })}
+              error={errors.username?.message}
+            />
 
             {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                كلمة المرور
-              </label>
-
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="أدخل كلمة المرور"
-                  autoComplete="current-password"
-                  {...register("password", {
-                    required: "كلمة المرور مطلوبة",
-                    minLength: {
-                      value: 6,
-                      message:
-                        "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
-                    },
-                  })}
-                  error={errors.password?.message}
-                  className="pl-20"
-                />
-
-                <KeyIcon
-                  className="
-                    pointer-events-none
-                    absolute left-10 top-1/2
-                    h-4 w-4
-                    -translate-y-1/2
-                    text-gray-400
-                  "
-                />
-
+            <Input
+              id="password"
+              label="كلمة المرور"
+              type={showPassword ? "text" : "password"}
+              placeholder="أدخل كلمة المرور"
+              autoComplete="current-password"
+              startIcon={<KeyIcon />}
+              endIcon={
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() =>
-                    setShowPassword((prev) => !prev)
-                  }
-                  className="
-                    absolute left-3 top-1/2
-                    -translate-y-1/2
-                    text-gray-400
-                    hover:text-gray-600
-                    transition-colors
-                    cursor-pointer
-                  "
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  aria-pressed={showPassword}
+                  className="flex items-center justify-center rounded-md p-1 -m-1 text-gray-400 hover:text-gray-600 cursor-pointer
+                             transition-[color] duration-fast ease-out
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-4 w-4" />
+                    <EyeSlashIcon className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <EyeIcon className="h-4 w-4" />
+                    <EyeIcon className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
-              </div>
-            </div>
+              }
+              {...register("password", {
+                required: "كلمة المرور مطلوبة",
+                minLength: {
+                  value: 6,
+                  message: "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+                },
+              })}
+              error={errors.password?.message}
+            />
 
             {/* Submit */}
             <Button
               type="submit"
-              disabled={isPending}
               size="lg"
-              className="
-                w-full
-                bg-primary-600
-                hover:bg-primary-700
-                text-white
-                shadow-sm
-              "
+              loading={isPending}
+              className="w-full"
             >
-              {isPending && (
-                <Loader borderColor="white" />
-              )}
-
               تسجيل الدخول
             </Button>
           </form>
@@ -257,23 +177,10 @@ export default function LoginForm() {
       </div>
 
       {/* Branding Section */}
-      <div
-        className="
-          hidden lg:flex
-          w-[42%]
-          relative
-          overflow-hidden
-          bg-gradient-to-br
-          from-primary-700
-          via-primary-600
-          to-secondary-600
-          items-center justify-center
-          px-10 py-14
-        "
-      >
+      <div className="hidden lg:flex w-[42%] relative overflow-hidden bg-gradient-to-br from-primary-700 to-primary-500 items-center justify-center px-10 py-14">
         {/* Background Effects */}
-        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute bottom-[-80px] left-[-80px] w-72 h-72 rounded-full bg-secondary-400/10 blur-3xl" />
+        <div className="absolute -top-24 -end-24 w-80 h-80 rounded-full bg-white/5 blur-3xl" aria-hidden="true" />
+        <div className="absolute -bottom-20 -start-20 w-72 h-72 rounded-full bg-primary-300/10 blur-3xl" aria-hidden="true" />
 
         <div className="relative z-10 max-w-md w-full">
           {/* Logo */}
@@ -287,7 +194,7 @@ export default function LoginForm() {
 
           {/* Subtitle */}
           <div className="text-center mb-10">
-            <p className="text-white/75 text-sm leading-relaxed">
+            <p className="text-primary-50/80 text-sm leading-relaxed">
               نظام إدارة الموظفين والإيرادات
             </p>
           </div>
@@ -300,26 +207,10 @@ export default function LoginForm() {
               return (
                 <div
                   key={feature.title}
-                  className="
-                    flex items-start gap-4
-                    rounded-2xl
-                    border border-white/10
-                    bg-white/10
-                    backdrop-blur-md
-                    p-4
-                  "
+                  className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/10 p-4"
                 >
-                  <div
-                    className="
-                      flex items-center justify-center
-                      w-10 h-10
-                      rounded-xl
-                      bg-white/10
-                      border border-white/10
-                      flex-shrink-0
-                    "
-                  >
-                    <Icon className="w-5 h-5 text-white" />
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 border border-white/10 flex-shrink-0">
+                    <Icon className="w-5 h-5 text-white" aria-hidden="true" />
                   </div>
 
                   <div>
@@ -327,7 +218,7 @@ export default function LoginForm() {
                       {feature.title}
                     </h3>
 
-                    <p className="text-white/65 text-xs leading-relaxed">
+                    <p className="text-primary-50/70 text-xs leading-relaxed">
                       {feature.desc}
                     </p>
                   </div>

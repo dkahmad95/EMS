@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/app/hooks/usePermissions";
 import GovernoratesTab from "./Components/PreperationsTab/GovernoratesTab";
@@ -14,6 +14,7 @@ import CurrenciesTab from "./Components/PreperationsTab/CurrencyTab";
 import DestinationsTab from "./Components/PreperationsTab/DestinationTab";
 import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/app/Components/Button";
+import Loader from "@/app/Components/Loader";
 
 const preparationTabs = [
   { id: "governorates", label: "المحافظات" },
@@ -27,15 +28,19 @@ const preparationTabs = [
   { id: "groups", label: "مجموعات الصلاحيات" },
 ];
 
+const tabId = (id: string) => `preparations-tab-${id}`;
+const panelId = (id: string) => `preparations-panel-${id}`;
+
 export default function PreperationsPage() {
   const router = useRouter();
   const { canAccessControlPanel, isLoading } = usePermissions();
-  const [activeTab, setActiveTab] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>(preparationTabs[0].id);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent border-primary-500" />
+        <Loader size="lg" />
       </div>
     );
   }
@@ -43,8 +48,8 @@ export default function PreperationsPage() {
   if (!canAccessControlPanel()) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center mb-5">
-          <ShieldExclamationIcon className="w-8 h-8 text-rose-500" />
+        <div className="w-16 h-16 bg-danger-50 text-danger-600 rounded-xl flex items-center justify-center mb-5">
+          <ShieldExclamationIcon className="w-8 h-8" aria-hidden="true" />
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">غير مصرح</h1>
         <p className="text-sm text-gray-500 mb-6 max-w-sm">
@@ -57,6 +62,39 @@ export default function PreperationsPage() {
     );
   }
 
+  const selectTab = (index: number) => {
+    const next = preparationTabs[(index + preparationTabs.length) % preparationTabs.length];
+    setActiveTab(next.id);
+    tabRefs.current[next.id]?.focus();
+  };
+
+  // RTL: ArrowRight goes to the previous tab, ArrowLeft to the next.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    switch (e.key) {
+      case "ArrowRight":
+        e.preventDefault();
+        selectTab(index - 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        e.preventDefault();
+        selectTab(index + 1);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        selectTab(index - 1);
+        break;
+      case "Home":
+        e.preventDefault();
+        selectTab(0);
+        break;
+      case "End":
+        e.preventDefault();
+        selectTab(preparationTabs.length - 1);
+        break;
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "governorates": return <GovernoratesTab />;
@@ -68,23 +106,12 @@ export default function PreperationsPage() {
       case "currencies": return <CurrenciesTab />;
       case "destinations": return <DestinationsTab />;
       case "groups": return <PermissionGroupsTab />;
-      default:
-        return (
-          <div className="flex flex-col items-center justify-center h-48 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
-              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-gray-500">اختر تبويباً من القائمة الجانبية</p>
-          </div>
-        );
+      default: return null;
     }
   };
 
   return (
-    <div className="animate-fade-in space-y-5">
+    <div className="space-y-5">
       {/* Page header */}
       <div className="page-header">
         <h1 className="page-title">إدارة النظام</h1>
@@ -96,30 +123,54 @@ export default function PreperationsPage() {
         {/* Tab sidebar */}
         <div className="w-full md:w-52 flex-shrink-0">
           <div className="card p-3">
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest px-2 mb-2">
+            <p className="text-xs font-semibold text-gray-500 px-2 mb-2">
               الإعدادات
             </p>
-            <nav className="flex md:flex-col flex-wrap gap-1">
-              {preparationTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center w-auto md:w-full text-right px-3 py-2.5 rounded-lg text-sm font-medium
-                    transition-all duration-150 cursor-pointer
-                    ${activeTab === tab.id
-                      ? "bg-primary-600 text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <nav
+              role="tablist"
+              aria-label="أقسام إدارة النظام"
+              aria-orientation="vertical"
+              className="flex md:flex-col flex-wrap gap-1"
+            >
+              {preparationTabs.map((tab, index) => {
+                const selected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    ref={(el) => { tabRefs.current[tab.id] = el; }}
+                    type="button"
+                    role="tab"
+                    id={tabId(tab.id)}
+                    aria-selected={selected}
+                    aria-controls={panelId(tab.id)}
+                    tabIndex={selected ? 0 : -1}
+                    onClick={() => setActiveTab(tab.id)}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    className={`flex items-center w-auto md:w-full text-start px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer
+                      transition-[background-color,color] duration-fast ease-out
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1
+                      active:scale-[0.97]
+                      ${selected
+                        ? "bg-primary-50 text-primary-700 font-semibold"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </nav>
           </div>
         </div>
 
         {/* Content area */}
-        <div className="card flex-1 p-5 md:p-6 overflow-y-auto">
+        <div
+          role="tabpanel"
+          id={panelId(activeTab)}
+          aria-labelledby={tabId(activeTab)}
+          tabIndex={0}
+          className="card flex-1 p-5 md:p-6 overflow-y-auto"
+        >
           {renderContent()}
         </div>
       </div>

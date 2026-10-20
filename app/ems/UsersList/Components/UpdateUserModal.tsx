@@ -1,16 +1,8 @@
 "use client";
 
 import React from "react";
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Box,
-    Autocomplete,
-} from "@mui/material";
-import { Button } from "@/app/Components/Button";
+import { TextField, Autocomplete } from "@mui/material";
+import FormModal from "@/app/Components/FormModal";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUser } from "@/server/services/api/users/users";
@@ -140,159 +132,126 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
     if (!user) return null;
 
     return (
-        <Dialog
+        <FormModal
             open={open}
             onClose={handleClose}
-            fullWidth
-            maxWidth="sm"
-            dir="rtl"
+            title="تعديل بيانات المستخدم"
+            size="md"
+            onConfirm={() => handleSubmit(onSubmit)()}
+            isLoading={updateMutation.isPending}
+            confirmLabel="حفظ التعديلات"
         >
-            <DialogTitle className="font-bold text-lg">
-                تعديل بيانات المستخدم
-            </DialogTitle>
+            {/* الاسم */}
+            <TextField
+                fullWidth
+                label="الاسم"
+                variant="outlined"
+                {...register("name", {
+                    required: "الاسم مطلوب",
+                    minLength: {
+                        value: 3,
+                        message: "الاسم يجب أن يكون 3 أحرف على الأقل",
+                    },
+                })}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                disabled={updateMutation.isPending}
+            />
 
-            <DialogContent>
-                <Box
-                    component="form"
-                    onSubmit={handleSubmit(onSubmit)}
-                    sx={{ mt: 2 }}
-                >
-                    {/* الاسم */}
+            {/* اسم المستخدم */}
+            <TextField
+                fullWidth
+                label="اسم المستخدم"
+                variant="outlined"
+                {...register("username", {
+                    required: "اسم المستخدم مطلوب",
+                    minLength: {
+                        value: 3,
+                        message: "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
+                    },
+                })}
+                error={!!errors.username}
+                helperText={errors.username?.message}
+                disabled={updateMutation.isPending}
+            />
+
+            {/* المكتب */}
+            <Autocomplete
+                key={`office-${user.id}-${open}`}
+                options={officeOptions}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                defaultValue={selectedOffice}
+                onChange={(_, val) => {
+                    setValue("officeId", (val ? val.id : undefined) as number | null, {
+                        shouldValidate: true,
+                    });
+                }}
+                renderInput={(params) => (
                     <TextField
-                        fullWidth
-                        label="الاسم"
-                        variant="outlined"
-                        margin="normal"
-                        {...register("name", {
-                            required: "الاسم مطلوب",
-                            minLength: {
-                                value: 3,
-                                message: "الاسم يجب أن يكون 3 أحرف على الأقل",
-                            },
-                        })}
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
+                        {...params}
+                        label="المكتب"
+                        error={!!errors.officeId}
+                        helperText={errors.officeId?.message}
                         disabled={updateMutation.isPending}
                     />
+                )}
+            />
 
-                    {/* اسم المستخدم */}
+            {/* مجموعة الصلاحيات */}
+            <Autocomplete
+                key={`pg-${user.id}-${open}`}
+                options={permissionGroupsList ?? []}
+                getOptionLabel={(option) => option.name}
+                defaultValue={selectedPermissionGroup}
+                onChange={(_, val) => {
+                    setValue("permissionGroupId", val?.id as number, {
+                        shouldValidate: true,
+                    });
+                }}
+                renderInput={(params) => (
                     <TextField
-                        fullWidth
-                        label="اسم المستخدم"
-                        variant="outlined"
-                        margin="normal"
-                        {...register("username", {
-                            required: "اسم المستخدم مطلوب",
-                            minLength: {
-                                value: 3,
-                                message: "اسم المستخدم يجب أن يكون 3 أحرف على الأقل",
-                            },
-                        })}
-                        error={!!errors.username}
-                        helperText={errors.username?.message}
+                        {...params}
+                        label="مجموعة الصلاحيات"
+                        error={!!errors.permissionGroupId}
+                        helperText={errors.permissionGroupId?.message}
                         disabled={updateMutation.isPending}
                     />
+                )}
+            />
 
-                    {/* المكتب */}
-                    <Autocomplete
-                        key={`office-${user.id}-${open}`}
-                        options={officeOptions}
-                        getOptionLabel={(option) => option.name}
-                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                        defaultValue={selectedOffice}
-                        onChange={(_, val) => {
-                            setValue("officeId", (val ? val.id : undefined) as number | null, {
-                                shouldValidate: true,
-                            });
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="المكتب"
-                                margin="normal"
-                                error={!!errors.officeId}
-                                helperText={errors.officeId?.message}
-                                disabled={updateMutation.isPending}
-                            />
-                        )}
-                    />
+            {/* كلمة المرور الجديدة (اختياري) */}
+            <TextField
+                fullWidth
+                type="password"
+                label="كلمة المرور الجديدة (اختياري)"
+                {...register("password", {
+                    minLength: {
+                        value: 8,
+                        message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+                    },
+                })}
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                disabled={updateMutation.isPending}
+            />
 
-                    {/* مجموعة الصلاحيات */}
-                    <Autocomplete
-                        key={`pg-${user.id}-${open}`}
-                        options={permissionGroupsList ?? []}
-                        getOptionLabel={(option) => option.name}
-                        defaultValue={selectedPermissionGroup}
-                        onChange={(_, val) => {
-                            setValue("permissionGroupId", val?.id as number, {
-                                shouldValidate: true,
-                            });
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="مجموعة الصلاحيات"
-                                margin="normal"
-                                error={!!errors.permissionGroupId}
-                                helperText={errors.permissionGroupId?.message}
-                                disabled={updateMutation.isPending}
-                            />
-                        )}
-                    />
-
-                    {/* كلمة المرور الجديدة (اختياري) */}
-                    <TextField
-                        fullWidth
-                        type="password"
-                        label="كلمة المرور الجديدة (اختياري)"
-                        margin="normal"
-                        {...register("password", {
-                            minLength: {
-                                value: 8,
-                                message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
-                            },
-                        })}
-                        error={!!errors.password}
-                        helperText={errors.password?.message}
-                        disabled={updateMutation.isPending}
-                    />
-
-                    {/* تأكيد كلمة المرور */}
-                    <TextField
-                        fullWidth
-                        type="password"
-                        label="تأكيد كلمة المرور"
-                        margin="normal"
-                        {...register("confirmPassword", {
-                            validate: (v) =>
-                                !watchedPassword ||
-                                v === watchedPassword ||
-                                "كلمتا المرور غير متطابقتين",
-                        })}
-                        error={!!errors.confirmPassword}
-                        helperText={errors.confirmPassword?.message}
-                        disabled={updateMutation.isPending}
-                    />
-                </Box>
-            </DialogContent>
-
-            <DialogActions className="flex justify-end gap-3 p-4">
-                <Button
-                    variant="muted"
-                    onClick={handleClose}
-                    disabled={updateMutation.isPending}
-                >
-                    إلغاء
-                </Button>
-
-                <Button
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={updateMutation.isPending}
-                >
-                    {updateMutation.isPending ? "جاري التحديث..." : "حفظ التعديلات"}
-                </Button>
-            </DialogActions>
-        </Dialog>
+            {/* تأكيد كلمة المرور */}
+            <TextField
+                fullWidth
+                type="password"
+                label="تأكيد كلمة المرور"
+                {...register("confirmPassword", {
+                    validate: (v) =>
+                        !watchedPassword ||
+                        v === watchedPassword ||
+                        "كلمتا المرور غير متطابقتين",
+                })}
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                disabled={updateMutation.isPending}
+            />
+        </FormModal>
     );
 };
 

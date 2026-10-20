@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { usePermissions } from "../hooks/usePermissions";
+import Loader from "./Loader";
 import {
   UserGroupIcon,
   Cog6ToothIcon,
@@ -84,8 +85,8 @@ export default function NavLinks({ collapsed = false }: NavLinksProps) {
 
   if (permissions.isLoading) {
     return (
-      <div className="flex justify-center items-center py-4">
-        <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-primary-500" />
+      <div className="w-full py-4" role="status" aria-live="polite">
+        <Loader />
       </div>
     );
   }
@@ -104,17 +105,19 @@ export default function NavLinks({ collapsed = false }: NavLinksProps) {
             key={link.name}
             href={link.href}
             title={collapsed ? link.name : undefined}
+            aria-current={isActive ? "page" : undefined}
             className={clsx(
-              "nav-link",
+              "nav-link snap-start flex-shrink-0 md:flex-shrink",
               isActive && "nav-link-active",
               collapsed ? "justify-center px-2" : "px-3"
             )}
           >
-            <LinkIcon className="w-5 h-5 flex-shrink-0" />
+            <LinkIcon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span
-              className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${
+              className={clsx(
+                "overflow-hidden whitespace-nowrap transition-[width,opacity] duration-base ease-out",
                 collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-              }`}
+              )}
             >
               {link.name}
             </span>

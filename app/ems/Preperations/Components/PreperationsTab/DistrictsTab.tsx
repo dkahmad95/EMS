@@ -12,8 +12,8 @@ import * as api from "../../../../../server/services/api/districts/districts";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import TabsSkeleton from "./SkeletonTabs";
-
-const selectCls = "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 hover:border-gray-400 transition-all";
+import { EmptyState } from "@/app/Components/EmptyState";
+import { Select } from "@/app/Components/Select";
 
 export default function DistrictsTab() {
   const queryClient = useQueryClient();
@@ -90,32 +90,44 @@ export default function DistrictsTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="section-title mb-0">الأقضية</h2>
         <Button variant="primary" size="sm" onClick={openCreateModal}>
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" aria-hidden="true" />
           إضافة
         </Button>
       </div>
 
       {/* List */}
       {districtsLoading ? <TabsSkeleton /> : (
-             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
-        <ul className="space-y-2">
-          {districts?.map((district) => (
-            <li key={district.id} className="settings-list-item">
-              <div>
-                <span className="text-sm font-medium text-gray-900">{district.name}</span>
-                <span className="text-xs text-gray-400 mr-2">({getGovernorateName(district.governorate_id)})</span>
-              </div>
-              <div className="flex gap-1.5">
-                <button onClick={() => openEditModal(district)} className="table-action-edit" title="تعديل">
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button onClick={() => { setDeleteID(district.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pe-1">
+        {districts && districts.length > 0 ? (
+          <ul className="space-y-2">
+            {districts?.map((district) => (
+              <li key={district.id} className="settings-list-item">
+                <div>
+                  <span className="text-sm font-medium text-gray-900">{district.name}</span>
+                  <span className="text-xs text-gray-400 ms-2">({getGovernorateName(district.governorate_id)})</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={() => openEditModal(district)} className="table-action-edit" title="تعديل" aria-label="تعديل">
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => { setDeleteID(district.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف" aria-label="حذف">
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="الأقضية"
+            action={
+              <Button variant="primary" size="sm" onClick={openCreateModal}>
+                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                إضافة
+              </Button>
+            }
+          />
+        )}
         </div>
       )}
 
@@ -134,20 +146,17 @@ export default function DistrictsTab() {
           value={formState.name}
           onChange={(e) => setFormState((p) => ({ ...p, name: e.target.value }))}
         />
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">المحافظة</label>
-          <select
-            value={formState.governorate_id || ""}
-            onChange={(e) => setFormState((p) => ({ ...p, governorate_id: Number(e.target.value) }))}
-            className={selectCls}
-          >
-            <option value="">اختر المحافظة</option>
-            {governorates?.map((gov) => (
-              <option key={gov.id} value={gov.id}>{gov.name}</option>
-            ))}
-          </select>
-        </div>
-        {error && <p className="text-xs text-rose-600">{error}</p>}
+        <Select
+          label="المحافظة"
+          value={formState.governorate_id || ""}
+          onChange={(e) => setFormState((p) => ({ ...p, governorate_id: Number(e.target.value) }))}
+        >
+          <option value="">اختر المحافظة</option>
+          {governorates?.map((gov) => (
+            <option key={gov.id} value={gov.id}>{gov.name}</option>
+          ))}
+        </Select>
+        {error && <p className="text-xs text-danger-600" role="alert">{error}</p>}
       </FormModal>
 
       {/* Delete modal */}

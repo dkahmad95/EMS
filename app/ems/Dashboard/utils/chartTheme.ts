@@ -1,16 +1,13 @@
 import type { SeriesKey } from "../types";
+import tokens from "@/app/theme/tokens";
 
-/** Series palette from the Tailwind tokens (primary-600 / accent-600 / warning-500). */
-export const SERIES_COLOR: Record<SeriesKey, string> = {
-  USD: "#16a34a",
-  LBP: "#0284c7",
-  OTHERS: "#f59e0b",
-};
+/** Series palette from the design tokens (primary-600 / accent-600 / warning-500). */
+export const SERIES_COLOR: Record<SeriesKey, string> = tokens.chart.series;
 
 export const SERIES_ORDER: SeriesKey[] = ["USD", "LBP", "OTHERS"];
 
 /** Fallback colors for any series beyond the three currency types. */
-export const EXTRA_COLORS = ["#14b8a6", "#f43f5e", "#8b5cf6"];
+export const EXTRA_COLORS = tokens.chart.extra;
 
 /** Default Arabic labels when the API hasn't supplied a `chart_series` yet. */
 export const SERIES_DEFAULT_LABEL: Record<SeriesKey, string> = {
@@ -26,9 +23,9 @@ export const SERIES_UNIT: Record<SeriesKey, string> = {
   OTHERS: "$ (محوّل)",
 };
 
-export const GRID = "#f3f4f6";
-export const CURSOR = "#f0fdf4";
-export const TICK = { fill: "#6b7280", fontSize: 11, fontFamily: "Cairo, sans-serif" } as const;
+export const GRID = tokens.chart.grid;
+export const CURSOR = tokens.chart.cursor;
+export const TICK = { fill: tokens.chart.tick, fontSize: 11, fontFamily: tokens.font } as const;
 
 /** 1,234,567.89 (Latin digits). */
 export const fmtNum = (v: number | null | undefined, maxFraction = 2): string =>

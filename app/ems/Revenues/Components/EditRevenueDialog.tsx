@@ -1,15 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Autocomplete,
-} from "@mui/material";
-import { Button } from "@/app/Components/Button";
+import { TextField, Autocomplete } from "@mui/material";
+import FormModal from "@/app/Components/FormModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/server/services/api/revenues/revenues";
 import { useAllEmployees } from "@/server/store/employees";
@@ -17,7 +10,6 @@ import { useTokenOffices } from "@/app/hooks/useTokenOffices";
 import { useDestinations } from "@/server/store/destinations";
 import { useCurrencies } from "@/server/store/currencies";
 import { message } from "antd";
-import Loader from "@/app/Components/Loader";
 
 interface EditRevenueDialogProps {
   open: boolean;
@@ -97,100 +89,90 @@ const EditRevenueDialog: React.FC<EditRevenueDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" dir="rtl">
-      <DialogTitle>تعديل الإيراد</DialogTitle>
-      <div className="mt-2">
-        <DialogContent className="grid grid-cols-1 gap-4">
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title="تعديل الإيراد"
+      onConfirm={handleSave}
+      isLoading={isPending}
+      confirmLabel="حفظ التعديلات"
+      size="md"
+    >
+      {/* Employee */}
+      <Autocomplete
+        options={employeeList ?? []}
+        getOptionLabel={(option) => option.name}
+        value={employeeList?.find((e) => e.id === employeeId) ?? null}
+        onChange={(_, val) => setEmployeeId(val?.id ?? null)}
+        renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
+      />
 
-          {/* Employee */}
-          <Autocomplete
-            options={employeeList ?? []}
-            getOptionLabel={(option) => option.name}
-            value={employeeList?.find((e) => e.id === employeeId) ?? null}
-            onChange={(_, val) => setEmployeeId(val?.id ?? null)}
-            renderInput={(params) => <TextField {...params} label="اسم الموظف" />}
-          />
+      {/* Office */}
+      <Autocomplete
+        options={officeList ?? []}
+        getOptionLabel={(option) => option.name}
+        value={officeList?.find((o) => o.id === officeId) ?? null}
+        onChange={(_, val) => setOfficeId(val?.id ?? null)}
+        renderInput={(params) => <TextField {...params} label="المكتب" />}
+      />
 
-          {/* Office */}
-          <Autocomplete
-            options={officeList ?? []}
-            getOptionLabel={(option) => option.name}
-            value={officeList?.find((o) => o.id === officeId) ?? null}
-            onChange={(_, val) => setOfficeId(val?.id ?? null)}
-            renderInput={(params) => <TextField {...params} label="المكتب" />}
-          />
+      {/* Destination */}
+      <Autocomplete
+        options={destinationsList ?? []}
+        getOptionLabel={(option) => option.name}
+        value={destinationsList?.find((d) => d.id === destinationId) ?? null}
+        onChange={(_, val) => setDestinationId(val?.id ?? null)}
+        renderInput={(params) => <TextField {...params} label="الوجهة" />}
+      />
 
-          {/* Destination */}
-          <Autocomplete
-            options={destinationsList ?? []}
-            getOptionLabel={(option) => option.name}
-            value={destinationsList?.find((d) => d.id === destinationId) ?? null}
-            onChange={(_, val) => setDestinationId(val?.id ?? null)}
-            renderInput={(params) => <TextField {...params} label="الوجهة" />}
-          />
+      {/* Date */}
+      <TextField
+        type="date"
+        label="التاريخ"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        slotProps={{ inputLabel: { shrink: true } }}
+        fullWidth
+      />
 
-          {/* Date */}
-          <TextField
-            type="date"
-            label="التاريخ"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            fullWidth
-          />
+      {/* Revenue Amount */}
+      <TextField
+        type="number"
+        label="قيمة الإيراد"
+        value={revenueAmount}
+        onChange={(e) => setRevenueAmount(e.target.value)}
+        fullWidth
+      />
 
-          {/* Revenue Amount */}
-          <TextField
-            type="number"
-            label="قيمة الإيراد"
-            value={revenueAmount}
-            onChange={(e) => setRevenueAmount(e.target.value)}
-            fullWidth
-          />
+      {/* Currency */}
+      <Autocomplete
+        options={currenciesList ?? []}
+        getOptionLabel={(c) => `${c.name} (${c.code})`}
+        isOptionEqualToValue={(o, v) => o.id === v.id}
+        value={currenciesList?.find((c) => c.id === currencyId) ?? null}
+        onChange={(_, val) => setCurrencyId(val?.id ?? null)}
+        renderInput={(params) => <TextField {...params} label="العملة" />}
+      />
 
-          {/* Currency */}
-          <Autocomplete
-            options={currenciesList ?? []}
-            getOptionLabel={(c) => `${c.name} (${c.code})`}
-            isOptionEqualToValue={(o, v) => o.id === v.id}
-            value={currenciesList?.find((c) => c.id === currencyId) ?? null}
-            onChange={(_, val) => setCurrencyId(val?.id ?? null)}
-            renderInput={(params) => <TextField {...params} label="العملة" />}
-          />
+      {/* Receipts count */}
+      <TextField
+        type="number"
+        label="عدد الإيصالات"
+        value={receiptsCount}
+        onChange={(e) => setReceiptsCount(e.target.value)}
+        slotProps={{ htmlInput: { min: 1, step: 1 } }}
+        error={!receiptsValid}
+        fullWidth
+      />
 
-          {/* Receipts count */}
-          <TextField
-            type="number"
-            label="عدد الإيصالات"
-            value={receiptsCount}
-            onChange={(e) => setReceiptsCount(e.target.value)}
-            slotProps={{ htmlInput: { min: 1, step: 1 } }}
-            error={!receiptsValid}
-            fullWidth
-          />
-
-          {/* Notes */}
-          <TextField
-            label="ملاحظات"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            fullWidth
-          />
-        </DialogContent>
-      </div>
-      <DialogActions className="flex justify-end gap-3 p-4">
-        <Button variant="muted" onClick={onClose}>
-          إلغاء
-        </Button>
-        <Button
-          onClick={handleSave}
-          disabled={isPending || !receiptsValid}
-          className="bg-blue-600 text-white flex items-center gap-2"
-        >
-          {isPending ? <Loader borderColor="white" /> : "حفظ التعديلات"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {/* Notes */}
+      <TextField
+        label="ملاحظات"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        fullWidth
+      />
+    </FormModal>
   );
 };
 

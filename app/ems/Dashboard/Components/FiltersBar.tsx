@@ -17,25 +17,8 @@ type Props = {
   destinations: Destination[];
 };
 
-/** Shared MUI field styling (green focus ring = primary). */
-const fieldSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    fontSize: "14px",
-    fontFamily: "Cairo, sans-serif",
-    backgroundColor: "#fff",
-    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#d1d5db" },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#16a34a", borderWidth: "2px" },
-  },
-  "& .MuiInputLabel-root": {
-    fontFamily: "Cairo, sans-serif",
-    fontSize: "14px",
-    "&.Mui-focused": { color: "#15803d" },
-  },
-  "& .MuiFormHelperText-root": { fontFamily: "Cairo, sans-serif", marginInline: "4px" },
-  "& .MuiChip-root": { fontFamily: "Cairo, sans-serif", height: 22, fontSize: 12 },
-} as const;
+/** Layout only; color, radius and font come from the global MUI theme. */
+const fieldSx = { width: "100%" } as const;
 
 const AMOUNT_MODES: { value: AmountMode; label: string }[] = [
   { value: "gt", label: "أكبر من" },
@@ -120,11 +103,11 @@ export default function FiltersBar({ f, employees, offices, currencies, destinat
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="dashboard-filters-body"
-            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 text-gray-600 transition-colors duration-200 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:hidden"
+            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-gray-200 text-gray-600 transition-[background-color,color,transform] duration-fast ease-out hover:bg-gray-50 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:hidden"
           >
             <span className="sr-only">{open ? "إخفاء الفلاتر" : "إظهار الفلاتر"}</span>
             <ChevronDownIcon
-              className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+              className={`h-4 w-4 transition-transform duration-base ease-out ${open ? "rotate-180" : ""}`}
               aria-hidden="true"
             />
           </button>
@@ -234,7 +217,7 @@ export default function FiltersBar({ f, employees, offices, currencies, destinat
                 sx={{ ...fieldSx, width: 116, minWidth: 116, flex: "0 0 auto" }}
               >
                 {AMOUNT_MODES.map((m) => (
-                  <MenuItem key={m.value} value={m.value} sx={{ fontFamily: "Cairo, sans-serif", fontSize: 14 }}>
+                  <MenuItem key={m.value} value={m.value}>
                     {m.label}
                   </MenuItem>
                 ))}

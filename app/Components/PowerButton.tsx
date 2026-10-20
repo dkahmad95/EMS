@@ -34,10 +34,18 @@ const PowerButton = () => {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
-        className="nav-link text-gray-500 hover:text-rose-600 hover:bg-rose-50 w-full cursor-pointer"
+        aria-label="خروج"
+        className="
+          nav-link w-full justify-center md:justify-start
+          text-gray-500 hover:text-danger-600 hover:bg-danger-50
+          transition-[background-color,color,transform] duration-fast ease-out
+          active:scale-[0.97]
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
+        "
       >
-        <PowerIcon className="w-5 h-5 flex-shrink-0" />
+        <PowerIcon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
         <span className="hidden md:block">خروج</span>
       </button>
 

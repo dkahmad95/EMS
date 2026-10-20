@@ -11,6 +11,7 @@ import * as api from "../../../../../server/services/api/jobTitles/jobTitles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import TabsSkeleton from "./SkeletonTabs";
+import { EmptyState } from "@/app/Components/EmptyState";
 
 export default function JobTitlesTab() {
   const queryClient = useQueryClient();
@@ -80,29 +81,41 @@ export default function JobTitlesTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="section-title mb-0">المسميات الوظيفية</h2>
         <Button variant="primary" size="sm" onClick={openCreateModal}>
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" aria-hidden="true" />
           إضافة
         </Button>
       </div>
 
       {/* List */}
       {jobTitlesLoading ? <TabsSkeleton /> : (
-             <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
-        <ul className="space-y-2">
-          {data?.map((title) => (
-            <li key={title.id} className="settings-list-item">
-              <span className="text-sm font-medium text-gray-900">{title.name}</span>
-              <div className="flex gap-1.5">
-                <button onClick={() => openEditModal(title)} className="table-action-edit" title="تعديل">
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button onClick={() => { setDeleteID(title.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+             <div className="h-[calc(100vh-260px)] overflow-y-auto pe-1">
+        {data && data.length > 0 ? (
+          <ul className="space-y-2">
+            {data?.map((title) => (
+              <li key={title.id} className="settings-list-item">
+                <span className="text-sm font-medium text-gray-900">{title.name}</span>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={() => openEditModal(title)} className="table-action-edit" title="تعديل" aria-label="تعديل">
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => { setDeleteID(title.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف" aria-label="حذف">
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="المسميات الوظيفية"
+            action={
+              <Button variant="primary" size="sm" onClick={openCreateModal}>
+                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                إضافة
+              </Button>
+            }
+          />
+        )}
         </div>
       )}
 

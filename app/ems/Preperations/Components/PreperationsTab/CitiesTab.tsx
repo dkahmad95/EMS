@@ -12,8 +12,8 @@ import * as api from "../../../../../server/services/api/cities/cities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import TabsSkeleton from "./SkeletonTabs";
-
-const selectCls = "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 hover:border-gray-400 transition-all";
+import { EmptyState } from "@/app/Components/EmptyState";
+import { Select } from "@/app/Components/Select";
 
 export default function CitiesTab() {
   const queryClient = useQueryClient();
@@ -87,32 +87,44 @@ export default function CitiesTab() {
       <div className="flex items-center justify-between mb-5">
         <h2 className="section-title mb-0">المدن</h2>
         <Button variant="primary" size="sm" onClick={openCreateModal}>
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" aria-hidden="true" />
           إضافة
         </Button>
       </div>
 
       {/* List */}
       {citiesLoading ? <TabsSkeleton /> : (
-        <div className="h-[calc(100vh-260px)] overflow-y-auto pr-1">
-        <ul className="space-y-2">
-          {cities?.map((city) => (
-            <li key={city.id} className="settings-list-item">
-              <div>
-                <span className="text-sm font-medium text-gray-900">{city.name}</span>
-                <span className="text-xs text-gray-400 mr-2">({getDistrictName(city.district_id)})</span>
-              </div>
-              <div className="flex gap-1.5">
-                <button onClick={() => openEditModal(city)} className="table-action-edit" title="تعديل">
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button onClick={() => { setDeleteID(city.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="h-[calc(100vh-260px)] overflow-y-auto pe-1">
+        {cities && cities.length > 0 ? (
+          <ul className="space-y-2">
+            {cities?.map((city) => (
+              <li key={city.id} className="settings-list-item">
+                <div>
+                  <span className="text-sm font-medium text-gray-900">{city.name}</span>
+                  <span className="text-xs text-gray-400 ms-2">({getDistrictName(city.district_id)})</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <button type="button" onClick={() => openEditModal(city)} className="table-action-edit" title="تعديل" aria-label="تعديل">
+                    <PencilIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => { setDeleteID(city.id); setOpenDeleteDS(true); }} className="table-action-delete" title="حذف" aria-label="حذف">
+                    <TrashIcon className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="المدن"
+            action={
+              <Button variant="primary" size="sm" onClick={openCreateModal}>
+                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                إضافة
+              </Button>
+            }
+          />
+        )}
         </div>
       )}
 
@@ -132,20 +144,17 @@ export default function CitiesTab() {
           onChange={(e) => setFormState((p) => ({ ...p, name: e.target.value }))}
           error={errors.name}
         />
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">القضاء</label>
-          <select
-            value={formState.district_id || ""}
-            onChange={(e) => setFormState((p) => ({ ...p, district_id: Number(e.target.value) }))}
-            className={selectCls}
-          >
-            <option value="">اختر القضاء</option>
-            {districts?.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-          {errors.district && <p className="text-xs text-rose-600 mt-1.5">{errors.district}</p>}
-        </div>
+        <Select
+          label="القضاء"
+          value={formState.district_id || ""}
+          onChange={(e) => setFormState((p) => ({ ...p, district_id: Number(e.target.value) }))}
+          error={errors.district}
+        >
+          <option value="">اختر القضاء</option>
+          {districts?.map((d) => (
+            <option key={d.id} value={d.id}>{d.name}</option>
+          ))}
+        </Select>
       </FormModal>
 
       {/* Delete modal */}

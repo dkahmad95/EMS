@@ -38,9 +38,9 @@ function Segmented({ value, onChange }: { value: Period; onChange: (p: Period) =
             role="tab"
             aria-selected={active}
             onClick={() => onChange(p.value)}
-            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+            className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
               active
-                ? "bg-white text-primary-700 shadow-sm"
+                ? "bg-white text-primary-700 shadow-card"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -98,7 +98,7 @@ export default function TimeChart({
               dataKey="name"
               tick={TICK}
               tickLine={false}
-              axisLine={{ stroke: "#e5e7eb" }}
+              axisLine={{ stroke: GRID }}
               interval={many ? "preserveStartEnd" : 0}
               minTickGap={12}
               height={30}

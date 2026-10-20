@@ -5,7 +5,7 @@ import { formatDateDisplay } from "./date";
 
 const CURRENCY_BADGE: Record<string, string> = {
   USD: "badge badge-success",
-  LBP: "badge bg-sky-50 text-sky-700 border border-sky-200",
+  LBP: "badge bg-accent-50 text-accent-700 border border-accent-200",
   OTHERS: "badge badge-warning",
 };
 
