@@ -323,8 +323,18 @@ type OfficeReport = {
   employee_id: number;
   description: string;
   employee?: { id: number; name: string; office_id?: number; office?: { id: number; name: string } };
+  attachments?: OfficeReportAttachment[];
   created_at?: string;
   updated_at?: string;
+};
+
+/** A file attached to an office report (stored in Neon Object Storage, opened via a signed URL). */
+type OfficeReportAttachment = {
+  id: number;
+  file_name: string;
+  content_type: string;
+  size: number; // bytes
+  created_at?: string;
 };
 
 type Collection = {

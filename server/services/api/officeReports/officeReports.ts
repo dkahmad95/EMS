@@ -60,3 +60,59 @@ export const deleteOfficeReport = async (
       withCredentials: true,
     }),
   );
+
+// ── Attachments (Neon Object Storage) ──
+// The file itself never passes through here: the browser PUTs it straight to the signed URL.
+
+export type AttachmentUploadTarget = {
+  key: string;
+  url: string;
+  headers: Record<string, string>;
+};
+
+/** Step 1: get a short-lived upload URL for one file. */
+export const presignOfficeReportAttachment = async (
+  reportId: number,
+  data: { file_name: string; content_type: string; size: number },
+): Promise<AttachmentUploadTarget | null> =>
+  withToken((_decodedToken, authHeader) =>
+    axios.post(api.OFFICE_REPORTS_API.ATTACHMENT_PRESIGN(reportId), data, {
+      headers: authHeader,
+      withCredentials: true,
+    }),
+  );
+
+/** Step 2: record the uploaded file on the report. */
+export const confirmOfficeReportAttachment = async (
+  reportId: number,
+  data: { key: string; file_name: string },
+): Promise<OfficeReportAttachment | null> =>
+  withToken((_decodedToken, authHeader) =>
+    axios.post(api.OFFICE_REPORTS_API.ATTACHMENT_CONFIRM(reportId), data, {
+      headers: authHeader,
+      withCredentials: true,
+    }),
+  );
+
+/** Short-lived URL to view / download an attachment. */
+export const getOfficeReportAttachmentUrl = async (
+  reportId: number,
+  attachmentId: number,
+): Promise<{ url: string } | null> =>
+  withToken((_decodedToken, authHeader) =>
+    axios.get(api.OFFICE_REPORTS_API.ATTACHMENT_URL(reportId, attachmentId), {
+      headers: authHeader,
+      withCredentials: true,
+    }),
+  );
+
+export const deleteOfficeReportAttachment = async (
+  reportId: number,
+  attachmentId: number,
+): Promise<{ message: string } | null> =>
+  withToken((_decodedToken, authHeader) =>
+    axios.delete(api.OFFICE_REPORTS_API.ATTACHMENT_DELETE(reportId, attachmentId), {
+      headers: authHeader,
+      withCredentials: true,
+    }),
+  );
