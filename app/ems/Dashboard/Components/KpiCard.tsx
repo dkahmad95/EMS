@@ -55,19 +55,19 @@ export default function KpiCard({
     <div className={`kpi-card ${className}`} aria-busy={loading || undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium text-gray-600">{label}</p>
+          <p className="break-words text-xs font-medium text-gray-600">{label}</p>
           {loading ? (
             <div className="mt-2 h-7 w-28 skeleton-shimmer" aria-hidden="true" />
           ) : (
             <p
-              className={`mt-1 truncate text-end text-2xl font-bold leading-tight tabular-nums ${a.value}`}
+              className={`mt-1 break-all text-end text-2xl font-bold leading-tight tabular-nums ${a.value}`}
               dir="ltr"
             >
               {value}
             </p>
           )}
           {sub !== undefined && (
-            <p className="mt-1 truncate text-xs text-gray-500 tabular-nums">{sub}</p>
+            <p className="mt-1 break-words text-xs text-gray-500 tabular-nums">{sub}</p>
           )}
         </div>
         <span

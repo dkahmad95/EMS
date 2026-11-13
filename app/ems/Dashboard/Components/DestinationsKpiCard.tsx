@@ -17,7 +17,7 @@ export default function DestinationsKpiCard({ counts, loading = false, className
     <div className={`kpi-card ${className}`} aria-busy={loading || undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium text-gray-600">الوجهات</p>
+          <p className="break-words text-xs font-medium text-gray-600">الوجهات</p>
           {loading ? (
             <div className="mt-2 h-7 w-16 skeleton-shimmer" aria-hidden="true" />
           ) : (
@@ -49,10 +49,10 @@ export default function DestinationsKpiCard({ counts, loading = false, className
           counts.map((d) => (
             <span
               key={d.name}
-              className="badge badge-gray gap-1.5 max-w-full"
+              className="badge badge-gray max-w-full gap-1.5 whitespace-normal text-start"
               title={`${d.name}: ${fmtNum(d.count, 0)}`}
             >
-              <span className="truncate">{d.name}</span>
+              <span className="break-words">{d.name}</span>
               <span className="rounded-full bg-accent-100 px-1.5 text-[11px] font-semibold text-accent-700 tabular-nums">
                 {fmtNum(d.count, 0)}
               </span>

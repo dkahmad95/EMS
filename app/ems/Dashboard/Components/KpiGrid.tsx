@@ -57,7 +57,7 @@ export default function KpiGrid({
   return (
     <div className="space-y-4">
       {/* Row 1 — currency totals + receipts count */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-4">
         {currencyCards.map(({ type, label }) => {
           const t = currencyTotals[type];
           const cfg = CURRENCY_CARD[type];

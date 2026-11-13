@@ -29,7 +29,7 @@ export default function CollectionsKpiCard({
     <div className="kpi-card" aria-busy={loading || undefined}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium text-gray-600">{title}</p>
+          <p className="break-words text-xs font-medium text-gray-600">{title}</p>
           {loading ? (
             <div className="mt-2 h-7 w-24 skeleton-shimmer" aria-hidden="true" />
           ) : (
