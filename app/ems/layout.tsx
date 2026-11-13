@@ -1,4 +1,5 @@
 import SideNav from "../Components/SideNav";
+import SideNavShell from "../Components/SideNavShell";
 import { PermissionsProvider } from "../contexts/PermissionsContext";
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
@@ -26,9 +27,9 @@ export default async function RootLayout({
     <PermissionsProvider initialToken={decodedToken}>
       <div className="flex h-screen flex-col md:flex-row overflow-hidden bg-gray-50">
         {/* Sidebar */}
-        <div className="w-full flex-none md:w-64 flex-shrink-0">
+        <SideNavShell>
           <SideNav />
-        </div>
+        </SideNavShell>
         {/* Main content */}
         <main id="main" className="flex-grow min-h-0 overflow-y-auto flex flex-col bg-gray-50 p-5 md:p-7">
           {children}

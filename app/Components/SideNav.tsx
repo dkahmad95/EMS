@@ -22,7 +22,7 @@ export default function SideNav() {
         <Link
           href="/ems"
           className="
-            flex items-center justify-center md:justify-start
+            flex items-center justify-start
             px-3 md:px-5
             py-3 md:py-4
             bg-primary-600 hover:bg-primary-700
@@ -54,7 +54,6 @@ export default function SideNav() {
           {/* Title */}
           <p
             className="
-              hidden md:block
               px-3 mb-2
               text-xs
               font-semibold
@@ -68,20 +67,15 @@ export default function SideNav() {
           <nav
             aria-label="القائمة الرئيسية"
             className="
-              flex
-              flex-row md:flex-col
+              flex flex-col
               gap-1
-              -mx-2 px-2 md:mx-0 md:px-0
-              overflow-x-auto md:overflow-visible
-              snap-x snap-mandatory md:snap-none
-              scrollbar-hide
             "
           >
             <NavLinks />
           </nav>
 
           {/* Spacer */}
-          <div className="flex-1 hidden md:block" />
+          <div className="flex-1" />
 
           {/* Power Button */}
           <div
