@@ -123,7 +123,7 @@ export default function DashboardClient() {
           <KpiGrid
             currencies={d.currencies}
             currencyTotals={charts.currencyTotals}
-            total={d.total}
+            receiptsTotal={charts.receiptsTotal}
             destinationCounts={charts.destinationCounts}
             collections={collectionTotals}
             freezed={freezedTotals}

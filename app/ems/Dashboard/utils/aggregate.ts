@@ -161,6 +161,13 @@ export const sumByCurrencyType = (rows: DashboardRevenueRow[]): CurrencyTotals =
   return out;
 };
 
+/** Receipts behind one revenue entry (>= 1; entries without the field count as 1). */
+export const receiptsOf = (r: DashboardRevenueRow): number => Number(r.receipts_count) || 1;
+
+/** Total number of receipts across the rows. */
+export const sumReceipts = (rows: DashboardRevenueRow[]): number =>
+  rows.reduce((a, r) => a + receiptsOf(r), 0);
+
 /** Number of revenue records per destination, sorted desc. */
 export const countByDestination = (
   rows: DashboardRevenueRow[],

@@ -18,7 +18,8 @@ import KpiCard, { type KpiAccent } from "./KpiCard";
 type Props = {
   currencies: DashboardCurrency[];
   currencyTotals: CurrencyTotals;
-  total: number;
+  /** sum of receipts_count over the filtered rows */
+  receiptsTotal: number;
   destinationCounts: { name: string; count: number }[];
   collections: CollectionTotals;
   freezed: CollectionTotals;
@@ -39,7 +40,7 @@ const CURRENCY_CARD: Record<
 export default function KpiGrid({
   currencies,
   currencyTotals,
-  total,
+  receiptsTotal,
   destinationCounts,
   collections,
   freezed,
@@ -55,7 +56,7 @@ export default function KpiGrid({
 
   return (
     <div className="space-y-4">
-      {/* Row 1 — currency totals + record count */}
+      {/* Row 1 — currency totals + receipts count */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {currencyCards.map(({ type, label }) => {
           const t = currencyTotals[type];
@@ -73,9 +74,9 @@ export default function KpiGrid({
           );
         })}
         <KpiCard
-          label="عدد الإيرادات"
-          value={fmtNum(total, 0)}
-          sub="سجل ضمن الفلاتر الحالية"
+          label="عدد الإيصالات"
+          value={fmtNum(receiptsTotal, 0)}
+          sub="إيصال ضمن الفلاتر الحالية"
           icon={ListBulletIcon}
           accent="secondary"
           loading={loading}

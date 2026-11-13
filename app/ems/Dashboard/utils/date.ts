@@ -20,6 +20,17 @@ export const addDays = (iso: string, n: number): string => {
   return toLocalISO(d);
 };
 
+/** Shift by whole calendar months; the day is clamped to the target month's length. */
+export const addMonths = (iso: string, n: number): string => {
+  const d = parseLocal(iso);
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + n);
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, last));
+  return toLocalISO(d);
+};
+
 /** First day of the month containing `iso` (defaults to today). */
 export const startOfMonth = (iso: string = todayLocal()): string => `${iso.slice(0, 7)}-01`;
 

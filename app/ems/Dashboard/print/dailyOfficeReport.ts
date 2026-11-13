@@ -5,6 +5,7 @@
  *  - "collections": الإستقطاب والتوزيع / تجميد و سحب only
  */
 import { escapeHtml } from "@/app/utils/print";
+import { receiptsOf } from "../utils/aggregate";
 import { fmtNum } from "../utils/chartTheme";
 import { formatDateDisplay } from "../utils/date";
 import { FORM_HEADER_CSS, formHeaderHtml, signatureHtml } from "./formHeader";
@@ -35,7 +36,7 @@ const addRow = (m: Money, r: DashboardRevenueRow) => {
   const t = (r.currency?.currency_type as unknown as string) ?? "OTHERS";
   if (t === "LBP") m.lbp += Number(r.revenue_amount) || 0;
   else m.usd += Number(r.display_amount) || 0;
-  m.count += 1;
+  m.count += receiptsOf(r);
 };
 
 /**

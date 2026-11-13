@@ -6,6 +6,7 @@ import { usePermissions } from "@/app/hooks/usePermissions";
 import { Button } from "@/app/Components/Button";
 import { escapeHtml, openPrintWindow } from "@/app/utils/print";
 import type { ChartDatum, SeriesDef } from "../types";
+import { receiptsOf, sumReceipts } from "../utils/aggregate";
 import { fmtNum } from "../utils/chartTheme";
 import { formatDateDisplay } from "../utils/date";
 import { useChartData } from "../hooks/useChartData";
@@ -82,7 +83,7 @@ const aggTable = (data: ChartDatum[], series: SeriesDef[], firstCol: string): st
 const logTable = (rows: DashboardRevenueRow[]): string => {
   const head =
     `<tr><th>#</th><th>التاريخ</th><th>الموظف</th><th>المكتب</th><th>الوجهة</th>` +
-    `<th>العملة</th><th>المبلغ</th><th>المبلغ المعتمد</th><th>ملاحظات</th></tr>`;
+    `<th>العملة</th><th>عدد الإيصالات</th><th>المبلغ</th><th>المبلغ المعتمد</th><th>ملاحظات</th></tr>`;
   const body = rows
     .map((r, i) => {
       const type = (r.currency?.currency_type as unknown as string) ?? "OTHERS";
@@ -94,6 +95,7 @@ const logTable = (rows: DashboardRevenueRow[]): string => {
         `<td dir="auto">${escapeHtml(r.office?.name ?? "—")}</td>` +
         `<td dir="auto">${escapeHtml(r.destination?.name ?? "—")}</td>` +
         `<td dir="auto">${escapeHtml(r.currency?.name ?? "—")}</td>` +
+        `<td class="num">${fmtNum(receiptsOf(r), 0)}</td>` +
         `<td class="num">${fmtNum(r.revenue_amount, digits)} ${escapeHtml(r.currency?.code ?? "")}</td>` +
         `<td class="num">${fmtNum(r.display_amount, digits)}</td>` +
         `<td dir="auto">${escapeHtml(r.notes ?? "")}</td></tr>`
@@ -103,6 +105,7 @@ const logTable = (rows: DashboardRevenueRow[]): string => {
   const totalUsd = rows.reduce((a, r) => a + (Number(r.chart_amount) || 0), 0);
   const foot =
     `<tr><td colspan="6">الإجمالي (بالدولار)</td>` +
+    `<td class="num">${fmtNum(sumReceipts(rows), 0)}</td>` +
     `<td class="num" colspan="2">${fmtNum(totalUsd)} $</td><td></td></tr>`;
   return `<table><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
 };
@@ -159,7 +162,7 @@ export default function PrintReportMenu({
       meta.push({ label: "سعر الصرف", value: `1 $ = ${fmtNum(lbpRate, 0)} ل.ل`, ltr: true });
     }
     meta.push(
-      { label: "عدد السجلات", value: fmtNum(rows.length, 0) },
+      { label: "عدد الإيصالات", value: fmtNum(charts.receiptsTotal, 0) },
       { label: "تاريخ الطباعة", value: new Date().toLocaleString("en-GB"), ltr: true },
     );
     return formHeaderHtml({ title, meta });

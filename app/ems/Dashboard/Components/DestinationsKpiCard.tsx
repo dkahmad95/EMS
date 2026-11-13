@@ -9,13 +9,9 @@ type Props = {
   className?: string;
 };
 
-const TOP = 6;
-
-/** Revenue record counts per destination: top 6 chips + "+k" overflow. */
+/** Revenue record counts per destination: one chip each (scrolls when the list is long). */
 export default function DestinationsKpiCard({ counts, loading = false, className = "" }: Props) {
   const a = kpiAccentClasses("accent");
-  const top = counts.slice(0, TOP);
-  const rest = counts.length - top.length;
 
   return (
     <div className={`kpi-card ${className}`} aria-busy={loading || undefined}>
@@ -39,33 +35,29 @@ export default function DestinationsKpiCard({ counts, loading = false, className
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5" aria-label="عدد الإيرادات لكل وجهة">
+      <div
+        className="mt-3 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto"
+        aria-label="عدد الإيرادات لكل وجهة"
+      >
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <span key={i} className="h-6 w-20 skeleton-shimmer rounded-full" aria-hidden="true" />
           ))
-        ) : top.length === 0 ? (
+        ) : counts.length === 0 ? (
           <span className="text-xs text-gray-400">لا توجد وجهات</span>
         ) : (
-          <>
-            {top.map((d) => (
-              <span
-                key={d.name}
-                className="badge badge-gray gap-1.5 max-w-full"
-                title={`${d.name}: ${fmtNum(d.count, 0)}`}
-              >
-                <span className="truncate">{d.name}</span>
-                <span className="rounded-full bg-accent-100 px-1.5 text-[11px] font-semibold text-accent-700 tabular-nums">
-                  {fmtNum(d.count, 0)}
-                </span>
+          counts.map((d) => (
+            <span
+              key={d.name}
+              className="badge badge-gray gap-1.5 max-w-full"
+              title={`${d.name}: ${fmtNum(d.count, 0)}`}
+            >
+              <span className="truncate">{d.name}</span>
+              <span className="rounded-full bg-accent-100 px-1.5 text-[11px] font-semibold text-accent-700 tabular-nums">
+                {fmtNum(d.count, 0)}
               </span>
-            ))}
-            {rest > 0 && (
-              <span className="badge bg-gray-50 text-gray-500 border border-dashed border-gray-300 tabular-nums">
-                +{fmtNum(rest, 0)}
-              </span>
-            )}
-          </>
+            </span>
+          ))
         )}
       </div>
     </div>

@@ -1,7 +1,13 @@
 "use client";
 import { useMemo } from "react";
 import type { Period } from "../types";
-import { countByDestination, groupByCategory, groupByTime, sumByCurrencyType } from "../utils/aggregate";
+import {
+  countByDestination,
+  groupByCategory,
+  groupByTime,
+  sumByCurrencyType,
+  sumReceipts,
+} from "../utils/aggregate";
 
 /** Memoized aggregations over the full filtered row set. */
 export function useChartData(
@@ -17,6 +23,16 @@ export function useChartData(
   const byTime = useMemo(() => groupByTime(rows, period, from, to), [rows, period, from, to]);
   const currencyTotals = useMemo(() => sumByCurrencyType(rows), [rows]);
   const destinationCounts = useMemo(() => countByDestination(rows), [rows]);
+  const receiptsTotal = useMemo(() => sumReceipts(rows), [rows]);
 
-  return { byEmployee, byOffice, byDestination, byCurrency, byTime, currencyTotals, destinationCounts };
+  return {
+    byEmployee,
+    byOffice,
+    byDestination,
+    byCurrency,
+    byTime,
+    currencyTotals,
+    destinationCounts,
+    receiptsTotal,
+  };
 }

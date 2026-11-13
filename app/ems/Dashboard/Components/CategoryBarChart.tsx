@@ -14,7 +14,7 @@ type Props = {
   loading?: boolean;
   fetching?: boolean;
   onReset?: () => void;
-  /** Bar click -> the clicked category datum (bars get a pointer cursor when set). */
+  /** Column click -> the clicked category datum (the chart gets a pointer cursor when set). */
   onBarClick?: (datum: ChartDatum) => void;
 };
 
@@ -30,10 +30,14 @@ export default function CategoryBarChart({
   onBarClick,
 }: Props) {
   const many = data.length > 8;
-  const handleBarClick = onBarClick
-    ? (entry: unknown) => {
-        const payload = (entry as { payload?: ChartDatum } | null)?.payload;
-        if (payload) onBarClick(payload);
+  // Chart-level click: the whole category column (the hover band) is the target, not just
+  // the drawn bars — so short and zero-value bars are clickable too.
+  const handleChartClick = onBarClick
+    ? (state: { activeIndex?: number | string | null }) => {
+        const i = state?.activeIndex;
+        if (i == null || i === "") return;
+        const datum = data[Number(i)];
+        if (datum) onBarClick(datum);
       }
     : undefined;
 
@@ -54,6 +58,8 @@ export default function CategoryBarChart({
             margin={{ top: 8, right: 4, bottom: many ? 8 : 0, left: 4 }}
             barGap={2}
             barCategoryGap="22%"
+            onClick={handleChartClick}
+            style={onBarClick ? { cursor: "pointer" } : undefined}
           >
             <CartesianGrid vertical={false} stroke={GRID} />
             <XAxis
@@ -89,8 +95,6 @@ export default function CategoryBarChart({
                 radius={[6, 6, 0, 0]}
                 maxBarSize={28}
                 isAnimationActive={false}
-                cursor={onBarClick ? "pointer" : undefined}
-                onClick={handleBarClick}
               />
             ))}
           </BarChart>

@@ -5,7 +5,7 @@ import { AdjustmentsHorizontalIcon, ArrowPathIcon, ChevronDownIcon } from "@hero
 import { Button } from "@/app/Components/Button";
 import type { DashboardFiltersApi } from "../hooks/useDashboardFilters";
 import type { AmountMode, DashboardCurrency } from "../types";
-import { addDays, startOfMonth, todayLocal } from "../utils/date";
+import { addDays, addMonths, startOfMonth, todayLocal } from "../utils/date";
 
 type OfficeOption = { id: number; name: string };
 
@@ -62,10 +62,13 @@ export default function FiltersBar({ f, employees, offices, currencies, destinat
   );
 
   const today = todayLocal();
+  const yesterday = addDays(today, -1);
   const quick = [
+    { label: "أمس", apply: () => setRange(yesterday, yesterday) },
     { label: "اليوم", apply: () => setRange(today, today) },
     { label: "آخر 7 أيام", apply: () => setRange(addDays(today, -6), today) },
     { label: "هذا الشهر", apply: () => setRange(startOfMonth(today), today) },
+    { label: "آخر 3 أشهر", apply: () => setRange(addMonths(today, -3), today) },
   ];
 
   const showMin = filters.amount_mode !== "lt";
